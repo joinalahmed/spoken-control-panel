@@ -203,7 +203,7 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Templates</h2>
-            <p className="text-sm text-gray-600">Templates include placeholder slots ({{COMPANY_NAME}}, {{BUSINESS_TYPE}}, etc.) for easy customization</p>
+            <p className="text-sm text-gray-600">Templates include placeholder slots for easy customization</p>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
