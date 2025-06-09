@@ -1,122 +1,179 @@
 
 import { useState } from 'react';
-import { Mic, Settings, BarChart3, Users, Phone, PhoneOff } from 'lucide-react';
+import { Home, Users, FileText, Phone, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import DashboardStats from '@/components/DashboardStats';
 import AgentList from '@/components/AgentList';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [activeTab, setActiveTab] = useState('agents');
+  const [selectedAgent, setSelectedAgent] = useState({
+    id: '1',
+    name: 'Agent Name 01',
+    voice: 'Sarah',
+    status: 'active',
+    conversations: 247,
+    lastActive: '2 hours ago',
+    description: 'Voice assistant for Mary\'s Dental office'
+  });
+
+  const sidebarItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'agents', label: 'Agents', icon: Users },
+    { id: 'contacts', label: 'Contacts', icon: Users },
+    { id: 'files', label: 'Files', icon: FileText },
+    { id: 'phone', label: 'Phone Number', icon: Phone },
+    { id: 'integrations', label: 'Integrations', icon: Settings },
+    { id: 'call-logs', label: 'Call Logs', icon: BarChart3 },
+    { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
+  ];
+
+  const agents = [
+    { id: '1', name: 'Agent Name 01', isActive: true },
+    { id: '2', name: 'Agent Name 02', isActive: false },
+    { id: '3', name: 'Agent Name 03', isActive: false },
+    { id: '4', name: 'Agent Name 04', isActive: false },
+    { id: '5', name: 'Agent Name 05', isActive: false },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="container mx-auto p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Voice Agents Dashboard</h1>
-            <p className="text-slate-300">Manage and configure your ElevenLabs voice agents</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></div>
-              System Online
-            </Badge>
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </Button>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo */}
+        <div className="p-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">A</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">awer</span>
           </div>
         </div>
 
-        {/* Main Dashboard */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-slate-700">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="agents" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <Users className="w-4 h-4 mr-2" />
-              Agents
-            </TabsTrigger>
-            <TabsTrigger value="configure" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <Settings className="w-4 h-4 mr-2" />
-              Configure
-            </TabsTrigger>
-            <TabsTrigger value="conversation" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-              <Mic className="w-4 h-4 mr-2" />
-              Live Chat
-            </TabsTrigger>
-          </TabsList>
+        {/* Navigation */}
+        <nav className="flex-1 px-4">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
+                activeTab === item.id
+                  ? 'bg-purple-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-          <TabsContent value="dashboard" className="space-y-6">
+        {/* Upgrade Section */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-2">Upgrade to <Badge variant="secondary" className="bg-purple-100 text-purple-700">Propel</Badge></div>
+            <div className="text-lg font-bold text-gray-900 mb-1">Ignite</div>
+            <div className="text-sm text-gray-600 mb-3">1,980 Credit Left</div>
+            <Button className="w-full bg-purple-600 hover:bg-purple-700">
+              Upgrade Plan
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {activeTab === 'agents' && (
+          <>
+            {/* Agent List */}
+            <div className="w-80 bg-white border-r border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">All Agents</h2>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-4">
+                {agents.map((agent) => (
+                  <button
+                    key={agent.id}
+                    onClick={() => setSelectedAgent({
+                      id: agent.id,
+                      name: agent.name,
+                      voice: 'Sarah',
+                      status: 'active',
+                      conversations: 247,
+                      lastActive: '2 hours ago',
+                      description: 'Voice assistant for Mary\'s Dental office'
+                    })}
+                    className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                      selectedAgent?.id === agent.id
+                        ? 'bg-purple-50 border border-purple-200'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="font-medium text-gray-900">{agent.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Agent Configuration */}
+            <div className="flex-1">
+              <AgentConfiguration selectedAgent={selectedAgent} />
+            </div>
+          </>
+        )}
+
+        {activeTab === 'home' && (
+          <div className="flex-1 p-6">
             <DashboardStats />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-slate-800/50 border-slate-700">
+            <div className="mt-6">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="text-white">Recent Activity</CardTitle>
-                  <CardDescription className="text-slate-400">Latest conversations and agent interactions</CardDescription>
+                  <CardTitle>Welcome to your Voice Agents Dashboard</CardTitle>
+                  <CardDescription>Manage your ElevenLabs voice agents from here</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                          <div>
-                            <p className="text-sm font-medium text-white">Agent Sarah</p>
-                            <p className="text-xs text-slate-400">Customer support conversation</p>
-                          </div>
-                        </div>
-                        <span className="text-xs text-slate-400">2 min ago</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Quick Actions</CardTitle>
-                  <CardDescription className="text-slate-400">Common tasks and shortcuts</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full justify-start bg-purple-600 hover:bg-purple-700 text-white">
-                    <Mic className="w-4 h-4 mr-2" />
-                    Start New Conversation
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start border-slate-600 text-slate-300 hover:bg-slate-800">
-                    <Users className="w-4 h-4 mr-2" />
-                    Create New Agent
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start border-slate-600 text-slate-300 hover:bg-slate-800">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Agent Settings
-                  </Button>
+                  <p className="text-gray-600">Select "Agents" from the sidebar to get started with configuring your voice agents.</p>
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="agents">
-            <AgentList onSelectAgent={setSelectedAgent} />
-          </TabsContent>
-
-          <TabsContent value="configure">
-            <AgentConfiguration selectedAgent={selectedAgent} />
-          </TabsContent>
-
-          <TabsContent value="conversation">
+        {activeTab === 'call-logs' && (
+          <div className="flex-1">
             <ConversationInterface />
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
+
+        {/* Default content for other tabs */}
+        {!['agents', 'home', 'call-logs'].includes(activeTab) && (
+          <div className="flex-1 p-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="capitalize">{activeTab.replace('-', ' ')}</CardTitle>
+                <CardDescription>This section is coming soon</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Feature under development</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

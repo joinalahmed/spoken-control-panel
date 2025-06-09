@@ -8,8 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Save, TestTube, Volume2, Brain, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Phone, Copy, Volume2, Brain, Zap, Settings } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -29,307 +29,204 @@ const AgentConfiguration = ({ selectedAgent }: AgentConfigurationProps) => {
   const [config, setConfig] = useState({
     name: selectedAgent?.name || '',
     description: selectedAgent?.description || '',
-    prompt: 'You are a helpful AI assistant...',
-    firstMessage: 'Hello! How can I help you today?',
+    prompt: 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
+    firstMessage: 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
     language: 'en',
-    temperature: 0.7,
-    maxTokens: 1000,
-    responseTime: 'fast',
-    interruptions: true,
-    backgroundNoise: false,
-    debugMode: false
+    temperature: 7,
+    maxTokens: 23,
+    detectEmotion: true,
+    training: 'Select Files'
   });
-
-  const voices = [
-    { id: 'Sarah', name: 'Sarah - Professional Female' },
-    { id: 'Alex', name: 'Alex - Friendly Male' },
-    { id: 'Charlotte', name: 'Charlotte - Warm Female' },
-    { id: 'Brian', name: 'Brian - Confident Male' },
-    { id: 'Emma', name: 'Emma - Energetic Female' }
-  ];
 
   if (!selectedAgent) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <Brain className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-300 mb-2">No Agent Selected</h3>
-            <p className="text-slate-500">Select an agent from the Agents tab to configure its settings</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Brain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Agent Selected</h3>
+          <p className="text-gray-500">Select an agent from the list to configure its settings</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Configure Agent</h2>
-          <p className="text-slate-400">Customize {selectedAgent.name} settings and behavior</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-            <TestTube className="w-4 h-4 mr-2" />
-            Test Agent
-          </Button>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-            <Save className="w-4 h-4 mr-2" />
-            Save Changes
-          </Button>
+    <div className="flex-1 bg-white">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>lwigfweg0wee</span>
+              <Button size="sm" variant="ghost" className="p-1">
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" className="gap-2">
+              <Phone className="w-4 h-4" />
+              Talk with your Agent
+            </Button>
+            <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
+              Update
+            </Button>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-slate-700">
-          <TabsTrigger value="general" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            General
-          </TabsTrigger>
-          <TabsTrigger value="voice" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <Volume2 className="w-4 h-4 mr-2" />
-            Voice
-          </TabsTrigger>
-          <TabsTrigger value="behavior" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <Brain className="w-4 h-4 mr-2" />
-            Behavior
-          </TabsTrigger>
-          <TabsTrigger value="advanced" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <Zap className="w-4 h-4 mr-2" />
-            Advanced
-          </TabsTrigger>
-        </TabsList>
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <Tabs defaultValue="model" className="w-full">
+          <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0">
+            <TabsTrigger 
+              value="model" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              Model
+            </TabsTrigger>
+            <TabsTrigger 
+              value="voice" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Volume2 className="w-4 h-4 mr-2" />
+              Voice
+            </TabsTrigger>
+            <TabsTrigger 
+              value="functions" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Functions
+            </TabsTrigger>
+            <TabsTrigger 
+              value="advanced" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Advanced
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="general" className="space-y-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Basic Information</CardTitle>
-              <CardDescription className="text-slate-400">Configure the agent's basic details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+          <TabsContent value="model" className="p-6 space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-slate-300">Agent Name</Label>
-                  <Input
-                    id="name"
-                    value={config.name}
-                    onChange={(e) => setConfig({...config, name: e.target.value})}
-                    className="bg-slate-700 border-slate-600 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="language" className="text-slate-300">Language</Label>
-                  <Select value={config.language} onValueChange={(value) => setConfig({...config, language: value})}>
-                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <Label htmlFor="training" className="text-sm font-medium text-gray-700">Training</Label>
+                  <Select value={config.training} onValueChange={(value) => setConfig({...config, training: value})}>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="Select Files">Select Files</SelectItem>
+                      <SelectItem value="file1">Training File 1</SelectItem>
+                      <SelectItem value="file2">Training File 2</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-slate-300">Description</Label>
-                <Textarea
-                  id="description"
-                  value={config.description}
-                  onChange={(e) => setConfig({...config, description: e.target.value})}
-                  className="bg-slate-700 border-slate-600 text-white"
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Agent Prompt</CardTitle>
-              <CardDescription className="text-slate-400">Define how your agent should behave and respond</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="prompt" className="text-slate-300">System Prompt</Label>
-                <Textarea
-                  id="prompt"
-                  value={config.prompt}
-                  onChange={(e) => setConfig({...config, prompt: e.target.value})}
-                  className="bg-slate-700 border-slate-600 text-white"
-                  rows={5}
-                  placeholder="Define your agent's personality, knowledge, and behavior..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="firstMessage" className="text-slate-300">First Message</Label>
-                <Input
-                  id="firstMessage"
-                  value={config.firstMessage}
-                  onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
-                  className="bg-slate-700 border-slate-600 text-white"
-                  placeholder="How should your agent greet users?"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="voice" className="space-y-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Voice Settings</CardTitle>
-              <CardDescription className="text-slate-400">Customize the agent's voice and speech patterns</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="voice" className="text-slate-300">Voice Model</Label>
-                <Select value={config.voice} onValueChange={(value) => setConfig({...config, voice: value})}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {voices.map((voice) => (
-                      <SelectItem key={voice.id} value={voice.id}>{voice.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator className="bg-slate-700" />
-
-              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="responseTime" className="text-slate-300">Response Speed</Label>
-                  <Select value={config.responseTime} onValueChange={(value) => setConfig({...config, responseTime: value})}>
-                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      <SelectItem value="fast">Fast (Low latency)</SelectItem>
-                      <SelectItem value="balanced">Balanced</SelectItem>
-                      <SelectItem value="quality">High Quality</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="interruptions" className="text-slate-300">Allow Interruptions</Label>
-                    <Switch
-                      id="interruptions"
-                      checked={config.interruptions}
-                      onCheckedChange={(checked) => setConfig({...config, interruptions: checked})}
+                  <Label htmlFor="temperature" className="text-sm font-medium text-gray-700">Temperature</Label>
+                  <div className="relative">
+                    <input
+                      type="range"
+                      id="temperature"
+                      min="0"
+                      max="10"
+                      value={config.temperature}
+                      onChange={(e) => setConfig({...config, temperature: parseInt(e.target.value)})}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${config.temperature * 10}%, #e5e7eb ${config.temperature * 10}%, #e5e7eb 100%)`
+                      }}
                     />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="backgroundNoise" className="text-slate-300">Noise Suppression</Label>
-                    <Switch
-                      id="backgroundNoise"
-                      checked={config.backgroundNoise}
-                      onCheckedChange={(checked) => setConfig({...config, backgroundNoise: checked})}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="behavior" className="space-y-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">AI Behavior</CardTitle>
-              <CardDescription className="text-slate-400">Fine-tune the agent's conversational behavior</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="temperature" className="text-slate-300">
-                    Creativity Level: {config.temperature}
-                  </Label>
-                  <input
-                    type="range"
-                    id="temperature"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={config.temperature}
-                    onChange={(e) => setConfig({...config, temperature: parseFloat(e.target.value)})}
-                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-slate-500">
-                    <span>Conservative</span>
-                    <span>Creative</span>
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-2 py-1 rounded text-sm">
+                      {config.temperature}
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="maxTokens" className="text-slate-300">Max Response Length</Label>
+                  <Label htmlFor="maxTokens" className="text-sm font-medium text-gray-700">Max Tokens</Label>
                   <Input
                     id="maxTokens"
                     type="number"
                     value={config.maxTokens}
                     onChange={(e) => setConfig({...config, maxTokens: parseInt(e.target.value)})}
-                    className="bg-slate-700 border-slate-600 text-white"
-                    min="50"
-                    max="2000"
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="detectEmotion" className="text-sm font-medium text-gray-700">Detect Emotion</Label>
+                  <Switch
+                    id="detectEmotion"
+                    checked={config.detectEmotion}
+                    onCheckedChange={(checked) => setConfig({...config, detectEmotion: checked})}
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="advanced" className="space-y-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Advanced Settings</CardTitle>
-              <CardDescription className="text-slate-400">Developer and debugging options</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="debugMode" className="text-slate-300">Debug Mode</Label>
-                  <p className="text-sm text-slate-500">Enable detailed logging and debugging information</p>
+              {/* Right Column */}
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
+                  <Input
+                    id="firstMessage"
+                    value={config.firstMessage}
+                    onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
+                  </p>
                 </div>
-                <Switch
-                  id="debugMode"
-                  checked={config.debugMode}
-                  onCheckedChange={(checked) => setConfig({...config, debugMode: checked})}
-                />
-              </div>
 
-              <Separator className="bg-slate-700" />
-
-              <div className="space-y-4">
-                <h4 className="text-lg font-medium text-white">API Configuration</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey" className="text-slate-300">ElevenLabs API Key</Label>
-                    <Input
-                      id="apiKey"
-                      type="password"
-                      placeholder="sk-..."
-                      className="bg-slate-700 border-slate-600 text-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="agentId" className="text-slate-300">Agent ID</Label>
-                    <Input
-                      id="agentId"
-                      placeholder="agent_..."
-                      className="bg-slate-700 border-slate-600 text-white"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">System Prompt</Label>
+                  <Textarea
+                    id="prompt"
+                    value={config.prompt}
+                    onChange={(e) => setConfig({...config, prompt: e.target.value})}
+                    className="w-full h-64 resize-none"
+                  />
+                  <p className="text-xs text-gray-500">
+                    The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="voice" className="p-6">
+            <div className="text-center py-12">
+              <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Voice Configuration</h3>
+              <p className="text-gray-500">Voice settings will be available here</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="functions" className="p-6">
+            <div className="text-center py-12">
+              <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Functions</h3>
+              <p className="text-gray-500">Function configuration will be available here</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="advanced" className="p-6">
+            <div className="text-center py-12">
+              <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Settings</h3>
+              <p className="text-gray-500">Advanced configuration will be available here</p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
