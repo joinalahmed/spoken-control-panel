@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +22,7 @@ import CreateCampaignForm from '@/components/CreateCampaignForm';
 
 const Index = () => {
   const { user, signOut } = useAuth();
-  const { createAgent } = useAgents();
+  const { createAgent, updateAgent } = useAgents();
   const { createContact } = useContacts();
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -65,6 +64,32 @@ const Index = () => {
       setSelectedAgent(createdAgent);
     } catch (error) {
       console.error('Error creating agent:', error);
+    }
+  };
+
+  const handleAgentUpdated = async (agentData: any) => {
+    if (!selectedAgent) return;
+    
+    try {
+      console.log('Updating agent with data:', agentData);
+      
+      // Map the agent data to match the database schema
+      const mappedAgentData = {
+        id: selectedAgent.id,
+        name: agentData.name,
+        voice: agentData.voice,
+        description: agentData.description || null,
+        system_prompt: agentData.systemPrompt || null,
+        first_message: agentData.firstMessage || null,
+        knowledge_base_id: agentData.knowledgeBaseId || null
+      };
+
+      console.log('Mapped agent update data:', mappedAgentData);
+      
+      const updatedAgent = await updateAgent.mutateAsync(mappedAgentData);
+      setSelectedAgent(updatedAgent);
+    } catch (error) {
+      console.error('Error updating agent:', error);
     }
   };
 
@@ -259,6 +284,7 @@ const Index = () => {
             <AgentConfiguration 
               selectedAgent={selectedAgent} 
               onBack={handleBackToAgentsList}
+              onUpdate={handleAgentUpdated}
             />
           )}
 

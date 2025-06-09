@@ -7,32 +7,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Copy, Brain, Zap, Settings, ArrowLeft, BookOpen } from 'lucide-react';
-
-interface Agent {
-  id: string;
-  name: string;
-  voice: string;
-  status: string;
-  conversations: number;
-  lastActive: string;
-  description: string;
-  knowledgeBaseId?: string;
-}
+import { Agent } from '@/hooks/useAgents';
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
   onBack?: () => void;
+  onUpdate?: (agentData: any) => void;
 }
 
-const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) => {
+const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
   const [config, setConfig] = useState({
     name: selectedAgent?.name || '',
     description: selectedAgent?.description || '',
-    prompt: 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
-    firstMessage: 'Type Name',
+    prompt: selectedAgent?.system_prompt || 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
+    firstMessage: selectedAgent?.first_message || 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
     language: 'en',
-    knowledgeBaseId: selectedAgent?.knowledgeBaseId || 'none'
+    knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none'
   });
 
   // Mock knowledge base items
@@ -53,6 +44,20 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
     { id: 'Emma', name: 'Emma' },
     { id: 'Liam', name: 'Liam' }
   ];
+
+  const handleUpdate = () => {
+    if (onUpdate) {
+      const updateData = {
+        name: config.name,
+        voice: config.voice,
+        description: config.description,
+        systemPrompt: config.prompt,
+        firstMessage: config.firstMessage,
+        knowledgeBaseId: config.knowledgeBaseId === 'none' ? null : config.knowledgeBaseId
+      };
+      onUpdate(updateData);
+    }
+  };
 
   if (!selectedAgent) {
     return (
@@ -82,14 +87,17 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             </Button>
             <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>lwigfweg0wee</span>
+              <span>{selectedAgent.id}</span>
               <Button size="sm" variant="ghost" className="p-1">
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
+            <Button 
+              className="bg-purple-600 hover:bg-purple-700 gap-2"
+              onClick={handleUpdate}
+            >
               Update
             </Button>
           </div>
