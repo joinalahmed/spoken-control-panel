@@ -12,6 +12,7 @@ import ContactsList from '@/components/ContactsList';
 import CreateContactForm from '@/components/CreateContactForm';
 import KnowledgeBaseList from '@/components/KnowledgeBaseList';
 import CreateKnowledgeBaseForm from '@/components/CreateKnowledgeBaseForm';
+import HomeDashboard from '@/components/HomeDashboard';
 
 interface Agent {
   id: string;
@@ -214,6 +215,10 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex">
+        {activeTab === 'home' && (
+          <HomeDashboard />
+        )}
+
         {activeTab === 'agents' && !selectedAgent && (
           <CreateAgentFlow onAgentCreated={handleAgentCreated} />
         )}
@@ -286,23 +291,6 @@ const Index = () => {
             onBack={() => setKnowledgeBaseView('list')}
             onSave={handleKnowledgeBaseItemSaved}
           />
-        )}
-
-        {activeTab === 'home' && (
-          <div className="flex-1 p-6">
-            <DashboardStats />
-            <div className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Welcome to your Voice Agents Dashboard</CardTitle>
-                  <CardDescription>Manage your ElevenLabs voice agents from here</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Select "Agents" from the sidebar to get started with configuring your voice agents.</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         )}
 
         {activeTab === 'call-logs' && (
