@@ -31,7 +31,7 @@ export const useAgents = () => {
       
       const { data, error } = await supabase
         .from('agents')
-        .select('*')
+        .select('*, company')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -51,7 +51,7 @@ export const useAgents = () => {
       const { data, error } = await supabase
         .from('agents')
         .insert([{ ...agentData, user_id: user.id }])
-        .select()
+        .select('*, company')
         .single();
 
       if (error) throw error;
@@ -75,7 +75,7 @@ export const useAgents = () => {
         .from('agents')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
-        .select()
+        .select('*, company')
         .single();
 
       if (error) throw error;

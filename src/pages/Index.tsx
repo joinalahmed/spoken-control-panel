@@ -54,7 +54,8 @@ const Index = () => {
         description: agentData.description || null,
         system_prompt: agentData.systemPrompt || null,
         first_message: agentData.firstMessage || null,
-        knowledge_base_id: null
+        knowledge_base_id: null,
+        company: agentData.company || null
       };
 
       console.log('Mapped agent data:', mappedAgentData);
@@ -181,10 +182,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - Always visible */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      {/* Sidebar - Always visible, non-scrollable */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
         {/* Logo */}
-        <div className="p-6">
+        <div className="p-6 flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900">Dhwani</span>
@@ -193,8 +194,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4">
+        {/* Navigation - scrollable area */}
+        <nav className="flex-1 px-4 overflow-y-auto">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
@@ -227,7 +228,7 @@ const Index = () => {
         </nav>
 
         {/* User Menu */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full flex items-center gap-2 p-2">
@@ -257,7 +258,7 @@ const Index = () => {
         </div>
 
         {/* Footer in Sidebar */}
-        <div className="bg-gray-50 border-t border-gray-200 py-4 px-6">
+        <div className="bg-gray-50 border-t border-gray-200 py-4 px-6 flex-shrink-0">
           <div className="flex items-center justify-center text-sm text-gray-600">
             <span>Made with</span>
             <Heart className="w-4 h-4 mx-1 text-red-500 fill-current" />
