@@ -45,12 +45,12 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
       description: 'Efficiently handle FAQs, troubleshoot issues, and provide instant resolutions to user queries.',
       icon: Users,
       color: 'bg-purple-100 text-purple-600',
-      systemPrompt: `You are a helpful customer support agent for {{COMPANY_NAME}}, working in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Your goal is to assist customers with their questions and resolve issues efficiently. Be friendly, professional, and solution-oriented.
+      systemPrompt: `You are a helpful customer support agent for ${companyName}, working in the ${companyIndustry} industry. Your role is ${agentRole}. Your goal is to assist customers with their questions and resolve issues efficiently. Be friendly, professional, and solution-oriented.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 When helping customers, always:
 1. Listen carefully to their concerns
@@ -58,7 +58,7 @@ When helping customers, always:
 3. Provide clear, step-by-step solutions
 4. Follow up to ensure their issue is resolved
 5. Maintain a professional and empathetic tone`,
-      firstMessage: 'Hello! I\'m {{AGENT_ROLE}} at {{COMPANY_NAME}}. I\'m here to help you with any questions or issues you might have. How can I assist you today?'
+      firstMessage: `Hello! I'm ${agentRole} at ${companyName}. I'm here to help you with any questions or issues you might have. How can I assist you today?`
     },
     {
       id: 'appointment-setter',
@@ -66,12 +66,12 @@ When helping customers, always:
       description: 'Streamline bookings by managing appointments and sending reminders with ease.',
       icon: Calendar,
       color: 'bg-teal-100 text-teal-600',
-      systemPrompt: `You are an appointment scheduling assistant for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}.
+      systemPrompt: `You are an appointment scheduling assistant for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 Your goal is to help customers book, reschedule, or cancel appointments efficiently. When scheduling:
 
@@ -82,7 +82,7 @@ Your goal is to help customers book, reschedule, or cancel appointments efficien
 5. Provide appointment confirmation details
 
 Always confirm details and provide clear scheduling information.`,
-      firstMessage: 'Hi! I\'m {{AGENT_ROLE}} at {{COMPANY_NAME}}. I can help you schedule an appointment with us. What type of service are you looking to book?'
+      firstMessage: `Hi! I'm ${agentRole} at ${companyName}. I can help you schedule an appointment with us. What type of service are you looking to book?`
     },
     {
       id: 'feedback-collector',
@@ -90,12 +90,12 @@ Always confirm details and provide clear scheduling information.`,
       description: 'Capture user reviews, suggestions, and insights for continuous improvement.',
       icon: MessageSquare,
       color: 'bg-orange-100 text-orange-600',
-      systemPrompt: `You are a feedback collection specialist for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Your purpose is to gather user opinions, reviews, and suggestions in a friendly and engaging manner.
+      systemPrompt: `You are a feedback collection specialist for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. Your purpose is to gather user opinions, reviews, and suggestions in a friendly and engaging manner.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 When collecting feedback:
 1. Thank them for their time
@@ -103,7 +103,7 @@ When collecting feedback:
 3. Listen actively and ask follow-up questions
 4. Gather detailed insights about our services
 5. End with appreciation and next steps`,
-      firstMessage: 'We value your opinion about {{COMPANY_NAME}}! I\'m {{AGENT_ROLE}} and I\'d love to hear about your experience and gather your feedback to help us improve.'
+      firstMessage: `We value your opinion about ${companyName}! I'm ${agentRole} and I'd love to hear about your experience and gather your feedback to help us improve.`
     },
     {
       id: 'sales-assistant',
@@ -111,12 +111,12 @@ When collecting feedback:
       description: 'Guide users through products, answer queries, and support purchasing decisions.',
       icon: ShoppingCart,
       color: 'bg-yellow-100 text-yellow-600',
-      systemPrompt: `You are a sales assistant for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Your focus is helping customers find the right products/services for their needs.
+      systemPrompt: `You are a sales assistant for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. Your focus is helping customers find the right products/services for their needs.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 Be knowledgeable about:
 - Features and benefits of our offerings
@@ -125,7 +125,7 @@ Be knowledgeable about:
 - Industry-specific solutions
 
 Guide customers through their decision-making process with expertise and care.`,
-      firstMessage: 'Welcome to {{COMPANY_NAME}}! I\'m {{AGENT_ROLE}} and I\'m here to help you find the perfect solution for your {{COMPANY_INDUSTRY}} needs. What are you looking for today?'
+      firstMessage: `Welcome to ${companyName}! I'm ${agentRole} and I'm here to help you find the perfect solution for your ${companyIndustry} needs. What are you looking for today?`
     },
     {
       id: 'onboarding-helper',
@@ -133,12 +133,12 @@ Guide customers through their decision-making process with expertise and care.`,
       description: 'Welcome new users with step-by-step guidance and answer initial questions.',
       icon: UserPlus,
       color: 'bg-green-100 text-green-600',
-      systemPrompt: `You are an onboarding specialist for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Your purpose is to guide new customers through setup processes, explain our services, and ensure they feel welcomed and confident.
+      systemPrompt: `You are an onboarding specialist for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. Your purpose is to guide new customers through setup processes, explain our services, and ensure they feel welcomed and confident.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 During onboarding:
 1. Welcome them warmly
@@ -146,7 +146,7 @@ During onboarding:
 3. Guide through setup step-by-step
 4. Answer questions patiently
 5. Ensure they know how to get help`,
-      firstMessage: 'Welcome to {{COMPANY_NAME}}! I\'m {{AGENT_ROLE}} and I\'m excited to help you get started with our {{COMPANY_INDUSTRY}} services. Let me guide you through the setup process step by step.'
+      firstMessage: `Welcome to ${companyName}! I'm ${agentRole} and I'm excited to help you get started with our ${companyIndustry} services. Let me guide you through the setup process step by step.`
     },
     {
       id: 'event-reminder',
@@ -154,19 +154,19 @@ During onboarding:
       description: 'Send timely notifications for meetings, events, and important deadlines.',
       icon: Bell,
       color: 'bg-orange-100 text-orange-600',
-      systemPrompt: `You are an event reminder assistant for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Help customers track important dates, send reminders, and manage their calendar events efficiently.
+      systemPrompt: `You are an event reminder assistant for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. Help customers track important dates, send reminders, and manage their calendar events efficiently.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 Reminder responsibilities:
 1. Track upcoming appointments/events
 2. Send timely notifications
 3. Help reschedule if needed
 4. Provide event details and preparation info`,
-      firstMessage: 'Hello! I\'m {{AGENT_ROLE}} at {{COMPANY_NAME}}. I can help you manage your events and appointments with us. What upcoming events would you like me to track?'
+      firstMessage: `Hello! I'm ${agentRole} at ${companyName}. I can help you manage your events and appointments with us. What upcoming events would you like me to track?`
     },
     {
       id: 'lead-qualifier',
@@ -174,12 +174,12 @@ Reminder responsibilities:
       description: 'Engage prospects, ask qualifying questions, and pass on leads to your sales team.',
       icon: Target,
       color: 'bg-yellow-100 text-yellow-600',
-      systemPrompt: `You are a lead qualification specialist for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Your purpose is to ask strategic questions to understand prospect needs, budget, and timeline.
+      systemPrompt: `You are a lead qualification specialist for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. Your purpose is to ask strategic questions to understand prospect needs, budget, and timeline.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 Qualification process:
 1. Understand their specific needs
@@ -187,7 +187,7 @@ Qualification process:
 3. Determine timeline
 4. Identify decision-making process
 5. Qualify leads effectively for the sales team`,
-      firstMessage: 'Hi there! I\'m {{AGENT_ROLE}} at {{COMPANY_NAME}}. I\'d love to learn more about your {{COMPANY_INDUSTRY}} needs and see how we might be able to help. Could you tell me a bit about what you\'re looking for?'
+      firstMessage: `Hi there! I'm ${agentRole} at ${companyName}. I'd love to learn more about your ${companyIndustry} needs and see how we might be able to help. Could you tell me a bit about what you're looking for?`
     },
     {
       id: 'hr-assistant',
@@ -195,12 +195,12 @@ Qualification process:
       description: 'Answer employee inquiries about policies, leave, and more while automating HR tasks.',
       icon: Briefcase,
       color: 'bg-purple-100 text-purple-600',
-      systemPrompt: `You are an HR assistant for {{COMPANY_NAME}} in the {{COMPANY_INDUSTRY}} industry. Your role is {{AGENT_ROLE}}. Help employees with policy questions, leave requests, benefits information, and other HR-related inquiries.
+      systemPrompt: `You are an HR assistant for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. Help employees with policy questions, leave requests, benefits information, and other HR-related inquiries.
 
 Company Information:
-- Business: {{COMPANY_NAME}}
-- Industry: {{COMPANY_INDUSTRY}}
-- Your Role: {{AGENT_ROLE}}
+- Business: ${companyName}
+- Industry: ${companyIndustry}
+- Your Role: ${agentRole}
 
 Common HR topics:
 - Company policies and procedures
@@ -210,7 +210,7 @@ Common HR topics:
 - General HR support
 
 Be professional, helpful, and maintain confidentiality.`,
-      firstMessage: 'Hello! I\'m {{AGENT_ROLE}} in HR at {{COMPANY_NAME}}. I can help you with questions about policies, benefits, leave requests, and other HR matters. How can I assist you?'
+      firstMessage: `Hello! I'm ${agentRole} in HR at ${companyName}. I can help you with questions about policies, benefits, leave requests, and other HR matters. How can I assist you?`
     }
   ];
 
@@ -229,61 +229,12 @@ Be professional, helpful, and maintain confidentiality.`,
       return;
     }
     
-    // Replace placeholders in template prompts
-    const systemPrompt = template.systemPrompt
-      .replace(/{{COMPANY_NAME}}/g, company)
-      .replace(/{{COMPANY_INDUSTRY}}/g, industry)
-      .replace(/{{AGENT_ROLE}}/g, role);
-    
-    const firstMessage = template.firstMessage
-      .replace(/{{COMPANY_NAME}}/g, company)
-      .replace(/{{COMPANY_INDUSTRY}}/g, industry)
-      .replace(/{{AGENT_ROLE}}/g, role);
-    
     const agentData = {
       name,
       voice: 'Sarah',
       description: template.description,
-      systemPrompt,
-      firstMessage
-    };
-
-    onAgentCreated(agentData);
-    
-    toast({
-      title: "Agent Created",
-      description: `${name} has been created successfully!`,
-    });
-  };
-
-  const createCustomAgent = () => {
-    const name = agentName.trim();
-    const company = companyName.trim();
-    const industry = companyIndustry.trim();
-    const role = agentRole.trim();
-    
-    if (!name || !company || !industry || !role) {
-      toast({
-        title: "Required Fields Missing",
-        description: "Please fill in all required fields to create a custom agent.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const agentData = {
-      name,
-      voice: 'Sarah',
-      description: 'A custom AI assistant tailored for your business needs.',
-      systemPrompt: `You are ${role} for ${company}, working in the ${industry} industry. Be friendly, professional, and helpful in all your interactions.
-
-Company Information:
-- Business: ${company}
-- Industry: ${industry}
-- Your Role: ${role}
-
-Customize this prompt with your specific requirements and add more details about your services, policies, and procedures.`,
-      firstMessage: `Hello! I'm ${role} at ${company}. How can I help you today?`
+      systemPrompt: template.systemPrompt,
+      firstMessage: template.firstMessage
     };
 
     onAgentCreated(agentData);
@@ -383,34 +334,6 @@ Customize this prompt with your specific requirements and add more details about
             {!areAllFieldsValid && (
               <p className="text-sm text-red-500 mt-2">Please fill in all required fields to proceed</p>
             )}
-
-            <div className="text-center py-4">
-              <span className="text-gray-400 text-sm">Or</span>
-            </div>
-
-            <Card className={`border border-gray-200 ${!areAllFieldsValid ? 'opacity-50' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-gray-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">Custom Starter</h3>
-                    <p className="text-sm text-gray-600">
-                      Create a basic agent with your company details
-                    </p>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={createCustomAgent}
-                    disabled={!areAllFieldsValid}
-                  >
-                    →
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
 
