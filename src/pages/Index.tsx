@@ -257,11 +257,11 @@ const Index = () => {
           </DropdownMenu>
         </div>
 
-        {/* Footer in Sidebar */}
-        <div className="bg-gray-50 border-t border-gray-200 py-4 px-6 flex-shrink-0">
-          <div className="flex items-center justify-center text-sm text-gray-600">
+        {/* Footer in Sidebar - Single Line */}
+        <div className="bg-gray-50 border-t border-gray-200 py-3 px-6 flex-shrink-0">
+          <div className="flex items-center justify-center text-xs text-gray-500">
             <span>Made with</span>
-            <Heart className="w-4 h-4 mx-1 text-red-500 fill-current" />
+            <Heart className="w-3 h-3 mx-1 text-red-500 fill-current" />
             <span>by Aivar Innovations</span>
           </div>
         </div>
