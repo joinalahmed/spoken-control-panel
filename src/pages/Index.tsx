@@ -31,7 +31,7 @@ const Index = () => {
     { id: 'home', label: 'Home', icon: Home },
     { id: 'agents', label: 'Agents', icon: Users },
     { id: 'contacts', label: 'Contacts', icon: Users },
-    { id: 'files', label: 'Files', icon: FileText },
+    { id: 'files', label: 'Knowledge Bases', icon: FileText },
     { id: 'integrations', label: 'Integrations', icon: Settings },
     { id: 'call-logs', label: 'Call Logs', icon: BarChart3 },
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
