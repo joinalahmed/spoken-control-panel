@@ -34,7 +34,7 @@ export const useKnowledgeBase = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as KnowledgeBaseItem[];
     },
     enabled: !!user,
   });
@@ -50,7 +50,7 @@ export const useKnowledgeBase = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as KnowledgeBaseItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge_base'] });
@@ -71,7 +71,7 @@ export const useKnowledgeBase = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as KnowledgeBaseItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge_base'] });

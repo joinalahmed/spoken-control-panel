@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,7 +35,7 @@ export const useAgents = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Agent[];
     },
     enabled: !!user,
   });
@@ -52,7 +51,7 @@ export const useAgents = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
@@ -73,7 +72,7 @@ export const useAgents = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });

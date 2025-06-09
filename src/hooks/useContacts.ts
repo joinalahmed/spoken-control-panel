@@ -35,7 +35,7 @@ export const useContacts = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Contact[];
     },
     enabled: !!user,
   });
@@ -51,7 +51,7 @@ export const useContacts = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Contact;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
@@ -72,7 +72,7 @@ export const useContacts = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Contact;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
