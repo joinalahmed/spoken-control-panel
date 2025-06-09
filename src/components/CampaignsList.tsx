@@ -28,6 +28,8 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
         return 'text-yellow-600 bg-yellow-100';
       case 'completed':
         return 'text-blue-600 bg-blue-100';
+      case 'draft':
+        return 'text-orange-600 bg-orange-100';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -39,6 +41,8 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
         return <Play className="w-4 h-4" />;
       case 'paused':
         return <Pause className="w-4 h-4" />;
+      case 'draft':
+        return <BarChart3 className="w-4 h-4" />;
       default:
         return <BarChart3 className="w-4 h-4" />;
     }
