@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -181,11 +182,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - Always visible, non-scrollable */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
-        {/* Logo */}
-        <div className="p-6 flex-shrink-0">
+    <div className="min-h-screen bg-gray-50 flex w-full">
+      {/* Sidebar - Fixed height and proper overflow handling */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0 z-10">
+        {/* Logo - Fixed at top */}
+        <div className="p-6 flex-shrink-0 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900">Dhwani</span>
@@ -194,40 +195,42 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Navigation - scrollable area */}
-        <nav className="flex-1 px-4 overflow-y-auto">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                if (item.id === 'contacts') {
-                  setContactsView('list');
-                }
-                if (item.id === 'files') {
-                  setKbsView('list');
-                }
-                if (item.id === 'agents') {
-                  setShowCreateAgent(false);
-                  setSelectedAgent(null);
-                }
-                if (item.id === 'campaigns') {
-                  setCampaignsView('overview');
-                }
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
-                activeTab === item.id
-                  ? 'bg-purple-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
+        {/* Navigation - Scrollable middle section */}
+        <div className="flex-1 overflow-y-auto">
+          <nav className="px-4 py-4">
+            {sidebarItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  if (item.id === 'contacts') {
+                    setContactsView('list');
+                  }
+                  if (item.id === 'files') {
+                    setKbsView('list');
+                  }
+                  if (item.id === 'agents') {
+                    setShowCreateAgent(false);
+                    setSelectedAgent(null);
+                  }
+                  if (item.id === 'campaigns') {
+                    setCampaignsView('overview');
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
+                  activeTab === item.id
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-        {/* User Menu */}
+        {/* User Menu - Fixed at bottom */}
         <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -257,7 +260,7 @@ const Index = () => {
           </DropdownMenu>
         </div>
 
-        {/* Footer in Sidebar - Single Line */}
+        {/* Footer in Sidebar - Fixed at very bottom */}
         <div className="bg-gray-50 border-t border-gray-200 py-3 px-6 flex-shrink-0">
           <div className="flex items-center justify-center text-xs text-gray-500">
             <span>Made with</span>
@@ -267,111 +270,129 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {activeTab === 'home' && (
-          <HomeDashboard />
-        )}
+      {/* Main Content - With proper margin for fixed sidebar */}
+      <div className="flex-1 ml-64 h-screen overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          {activeTab === 'home' && (
+            <HomeDashboard />
+          )}
 
-        {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
-          <div className="flex-1 bg-slate-900 p-6">
-            <AgentList 
-              onSelectAgent={handleSelectAgent}
-              onCreateAgent={handleCreateNewAgent}
-            />
-          </div>
-        )}
-
-        {activeTab === 'agents' && showCreateAgent && (
-          <CreateAgentFlow 
-            onAgentCreated={handleAgentCreated}
-            onBack={handleBackToAgentsList}
-          />
-        )}
-
-        {activeTab === 'agents' && selectedAgent && !showCreateAgent && (
-          <AgentConfiguration 
-            selectedAgent={selectedAgent} 
-            onBack={handleBackToAgentsList}
-            onUpdate={handleAgentUpdated}
-          />
-        )}
-
-        {activeTab === 'contacts' && contactsView === 'list' && (
-          <ContactsList 
-            onCreateContact={handleCreateContact}
-            onEditContact={handleEditContact}
-          />
-        )}
-
-        {activeTab === 'contacts' && contactsView === 'create' && (
-          <CreateContactForm 
-            onBack={() => {
-              setContactsView('list');
-              setEditingContact(null);
-            }}
-            onSave={handleContactSaved}
-            editingContact={editingContact}
-          />
-        )}
-
-        {activeTab === 'files' && kbsView === 'list' && (
-          <KbsList 
-            onCreateItem={handleCreateKbsItem}
-            onEditItem={handleEditKbsItem}
-          />
-        )}
-
-        {activeTab === 'files' && kbsView === 'create' && (
-          <CreateKbsForm 
-            onBack={() => setKbsView('list')}
-            onSave={handleKbsItemSaved}
-          />
-        )}
-
-        {activeTab === 'campaigns' && campaignsView === 'overview' && (
-          <CampaignsList 
-            onCreateCampaign={handleCreateCampaign}
-            onViewCallLogs={() => setCampaignsView('call-logs')}
-          />
-        )}
-
-        {activeTab === 'campaigns' && campaignsView === 'create' && (
-          <CreateCampaignForm 
-            onBack={() => setCampaignsView('overview')}
-            onSave={handleCampaignSaved}
-          />
-        )}
-
-        {activeTab === 'campaigns' && campaignsView === 'call-logs' && (
-          <div className="flex-1">
-            <div className="p-6">
-              <Button 
-                onClick={() => setCampaignsView('overview')}
-                variant="outline" 
-                className="mb-4"
-              >
-                ← Back to Campaigns
-              </Button>
+          {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
+            <div className="h-full bg-slate-900 p-6 overflow-y-auto">
+              <AgentList 
+                onSelectAgent={handleSelectAgent}
+                onCreateAgent={handleCreateNewAgent}
+              />
             </div>
-            <ConversationInterface />
-          </div>
-        )}
+          )}
 
-        {/* Default content for other tabs */}
-        {!['agents', 'home', 'campaigns', 'contacts', 'files'].includes(activeTab) && (
-          <div className="flex-1 p-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="capitalize">{activeTab.replace('-', ' ')}</CardTitle>
-                <CardDescription>This section is coming soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Feature under development</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+          {activeTab === 'agents' && showCreateAgent && (
+            <div className="h-full overflow-y-auto">
+              <CreateAgentFlow 
+                onAgentCreated={handleAgentCreated}
+                onBack={handleBackToAgentsList}
+              />
+            </div>
+          )}
+
+          {activeTab === 'agents' && selectedAgent && !showCreateAgent && (
+            <div className="h-full overflow-y-auto">
+              <AgentConfiguration 
+                selectedAgent={selectedAgent} 
+                onBack={handleBackToAgentsList}
+                onUpdate={handleAgentUpdated}
+              />
+            </div>
+          )}
+
+          {activeTab === 'contacts' && contactsView === 'list' && (
+            <div className="h-full overflow-y-auto">
+              <ContactsList 
+                onCreateContact={handleCreateContact}
+                onEditContact={handleEditContact}
+              />
+            </div>
+          )}
+
+          {activeTab === 'contacts' && contactsView === 'create' && (
+            <div className="h-full overflow-y-auto">
+              <CreateContactForm 
+                onBack={() => {
+                  setContactsView('list');
+                  setEditingContact(null);
+                }}
+                onSave={handleContactSaved}
+                editingContact={editingContact}
+              />
+            </div>
+          )}
+
+          {activeTab === 'files' && kbsView === 'list' && (
+            <div className="h-full overflow-y-auto">
+              <KbsList 
+                onCreateItem={handleCreateKbsItem}
+                onEditItem={handleEditKbsItem}
+              />
+            </div>
+          )}
+
+          {activeTab === 'files' && kbsView === 'create' && (
+            <div className="h-full overflow-y-auto">
+              <CreateKbsForm 
+                onBack={() => setKbsView('list')}
+                onSave={handleKbsItemSaved}
+              />
+            </div>
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'overview' && (
+            <div className="h-full overflow-y-auto">
+              <CampaignsList 
+                onCreateCampaign={handleCreateCampaign}
+                onViewCallLogs={() => setCampaignsView('call-logs')}
+              />
+            </div>
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'create' && (
+            <div className="h-full overflow-y-auto">
+              <CreateCampaignForm 
+                onBack={() => setCampaignsView('overview')}
+                onSave={handleCampaignSaved}
+              />
+            </div>
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'call-logs' && (
+            <div className="h-full overflow-y-auto">
+              <div className="p-6">
+                <Button 
+                  onClick={() => setCampaignsView('overview')}
+                  variant="outline" 
+                  className="mb-4"
+                >
+                  ← Back to Campaigns
+                </Button>
+              </div>
+              <ConversationInterface />
+            </div>
+          )}
+
+          {/* Default content for other tabs */}
+          {!['agents', 'home', 'campaigns', 'contacts', 'files'].includes(activeTab) && (
+            <div className="h-full overflow-y-auto p-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="capitalize">{activeTab.replace('-', ' ')}</CardTitle>
+                  <CardDescription>This section is coming soon</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">Feature under development</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
