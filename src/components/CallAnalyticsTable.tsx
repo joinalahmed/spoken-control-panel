@@ -33,6 +33,9 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
     const fetchCalls = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
+        console.log('Fetching calls for campaign:', campaignId);
         
         // Get calls for this campaign with contact information
         const { data: callsData, error: callsError } = await supabase
@@ -48,6 +51,7 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
             transcript,
             started_at,
             ended_at,
+            contact_id,
             contacts!inner(
               name,
               phone
@@ -62,20 +66,27 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
           return;
         }
 
-        // Transform the data to match the expected format
-        const transformedCalls: Call[] = callsData?.map((call) => ({
-          id: call.id,
-          contactName: call.contacts.name,
-          contactPhone: call.contacts.phone || call.phone,
-          timestamp: new Date(call.started_at),
-          duration: call.duration ? formatDuration(call.duration) : 'N/A',
-          status: call.status as any,
-          outcome: call.outcome as any,
-          sentiment: call.sentiment,
-          hasRecording: !!call.recording_url,
-          hasTranscript: !!call.transcript
-        })) || [];
+        console.log('Raw calls data:', callsData);
 
+        // Transform the data to match the expected format - only use real data
+        const transformedCalls: Call[] = (callsData || []).map((call) => {
+          console.log('Processing call:', call);
+          
+          return {
+            id: call.id,
+            contactName: call.contacts?.name || 'Unknown Contact',
+            contactPhone: call.contacts?.phone || call.phone || 'Unknown',
+            timestamp: new Date(call.started_at),
+            duration: call.duration ? formatDuration(call.duration) : 'N/A',
+            status: call.status as any,
+            outcome: call.outcome as any,
+            sentiment: call.sentiment,
+            hasRecording: !!call.recording_url,
+            hasTranscript: !!call.transcript
+          };
+        });
+
+        console.log('Transformed calls:', transformedCalls);
         setCalls(transformedCalls);
       } catch (err) {
         console.error('Error in fetchCalls:', err);
@@ -85,7 +96,9 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
       }
     };
 
-    fetchCalls();
+    if (campaignId) {
+      fetchCalls();
+    }
   }, [campaignId]);
 
   const formatDuration = (seconds: number): string => {
@@ -156,14 +169,16 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
         <p className="text-gray-600 text-sm">
           {calls.length === 0 
             ? 'No calls have been made for this campaign yet' 
-            : 'Click on any call to view detailed analytics'
+            : `${calls.length} call${calls.length !== 1 ? 's' : ''} found. Click on any call to view detailed analytics.`
           }
         </p>
       </div>
       
       {calls.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
-          No call data available for this campaign
+          <Phone className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <h4 className="text-lg font-medium text-gray-900 mb-2">No calls yet</h4>
+          <p>No call data available for this campaign. Calls will appear here once they are made.</p>
         </div>
       ) : (
         <Table>
