@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Phone, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -104,8 +105,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - hide when on agents page */}
-      <div className={`w-64 bg-white border-r border-gray-200 flex flex-col ${activeTab === 'agents' ? 'hidden' : ''}`}>
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         {/* Logo */}
         <div className="p-6">
           <div className="flex items-center gap-2">
@@ -148,7 +149,7 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 flex ${activeTab === 'agents' ? 'w-full' : ''}`}>
+      <div className="flex-1 flex">
         {activeTab === 'agents' && !selectedAgent && (
           <div className="w-full">
             <CreateAgentFlow onAgentCreated={handleAgentCreated} />
