@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     firstMessage: selectedAgent?.first_message || 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
     language: 'en',
-    agentType: selectedAgent?.agent_type || 'outbound',
+    agentType: selectedAgent?.agent_type || 'outbound' as 'inbound' | 'outbound',
     knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none'
   });
 
@@ -85,13 +84,13 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
-                  {selectedAgent.name.split(' ').map(n => n[0]).join('')}
+                  {selectedAgent?.name.split(' ').map(n => n[0]).join('')}
                 </span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{selectedAgent?.name}</h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>ID: {selectedAgent.id.slice(0, 8)}...</span>
+                  <span>ID: {selectedAgent?.id.slice(0, 8)}...</span>
                   <Button size="sm" variant="ghost" className="p-1 h-auto">
                     <Copy className="w-3 h-3" />
                   </Button>
@@ -159,7 +158,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                         <Label htmlFor="agentType" className="text-sm font-medium text-gray-700">
                           Agent Type
                         </Label>
-                        <Select value={config.agentType} onValueChange={(value) => setConfig({...config, agentType: value})}>
+                        <Select value={config.agentType} onValueChange={(value: 'inbound' | 'outbound') => setConfig({...config, agentType: value})}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select agent type" />
                           </SelectTrigger>

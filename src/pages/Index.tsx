@@ -63,7 +63,8 @@ const Index = () => {
         system_prompt: agentData.systemPrompt || null,
         first_message: agentData.firstMessage || null,
         knowledge_base_id: null,
-        company: agentData.company || null
+        company: agentData.company || null,
+        agent_type: agentData.agentType || 'outbound' as 'inbound' | 'outbound'
       };
 
       console.log('Mapped agent data:', mappedAgentData);
