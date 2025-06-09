@@ -2,15 +2,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Loader2, Phone, Users, Calendar } from 'lucide-react';
+import { Loader2, Phone, Users, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+import ConversationInterface from './ConversationInterface';
 
 interface CampaignsListProps {
   onCreateCampaign: () => void;
   onViewCallLogs: (campaignId: string) => void;
 }
 
-const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps) => {
+const CampaignsList = ({ onCreateCampaign }: CampaignsListProps) => {
   const { campaigns, isLoading } = useCampaigns();
+  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -19,6 +22,10 @@ const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps)
       </div>
     );
   }
+
+  const toggleCallLogs = (campaignId: string) => {
+    setExpandedCampaign(expandedCampaign === campaignId ? null : campaignId);
+  };
 
   return (
     <div className="flex-1 p-6">
@@ -70,7 +77,7 @@ const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps)
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {campaigns.map((campaign) => (
               <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -103,15 +110,34 @@ const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps)
 
                   <div className="pt-2 border-t border-gray-100">
                     <Button 
-                      onClick={() => onViewCallLogs(campaign.id)}
+                      onClick={() => toggleCallLogs(campaign.id)}
                       variant="outline"
                       size="sm"
                       className="w-full border-purple-600 text-purple-600 hover:bg-purple-50"
                     >
                       <Phone className="w-4 h-4 mr-2" />
-                      View Call Logs
+                      {expandedCampaign === campaign.id ? (
+                        <>
+                          Hide Call Logs
+                          <ChevronUp className="w-4 h-4 ml-2" />
+                        </>
+                      ) : (
+                        <>
+                          View Call Logs
+                          <ChevronDown className="w-4 h-4 ml-2" />
+                        </>
+                      )}
                     </Button>
                   </div>
+
+                  {expandedCampaign === campaign.id && (
+                    <div className="mt-4 border-t border-gray-100 pt-4">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3">Call Logs</h4>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <ConversationInterface />
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}

@@ -34,8 +34,7 @@ const Index = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [viewingContact, setViewingContact] = useState<Contact | null>(null);
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
-  const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'call-logs'>('overview');
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [campaignsView, setCampaignsView] = useState<'overview' | 'create'>('overview');
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -200,11 +199,6 @@ const Index = () => {
     } catch (error) {
       console.error('Error saving campaign:', error);
     }
-  };
-
-  const handleViewCampaignCallLogs = (campaignId: string) => {
-    setSelectedCampaignId(campaignId);
-    setCampaignsView('call-logs');
   };
 
   const handleLogout = async () => {
@@ -385,7 +379,7 @@ const Index = () => {
             <div className="h-full overflow-y-auto">
               <CampaignsList 
                 onCreateCampaign={handleCreateCampaign}
-                onViewCallLogs={handleViewCampaignCallLogs}
+                onViewCallLogs={() => {}} // This prop is no longer used but keeping for compatibility
               />
             </div>
           )}
