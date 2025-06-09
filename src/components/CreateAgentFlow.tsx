@@ -92,7 +92,16 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
   ];
 
   const createAgentFromTemplate = (template: typeof templates[0]) => {
-    const name = agentName.trim() || template.title;
+    const name = agentName.trim();
+    
+    if (!name) {
+      toast({
+        title: "Name Required",
+        description: "Please enter a name for your agent before selecting a template.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const agentData = {
       name,
@@ -138,6 +147,8 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
     });
   };
 
+  const isAgentNameValid = agentName.trim().length > 0;
+
   return (
     <div className="flex-1 p-8">
       {onBack && (
@@ -159,18 +170,19 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="agentName" className="text-sm font-medium text-gray-700">
-                Agent Name (Optional)
+                Agent Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="agentName"
-                placeholder="Enter custom name or use template name"
+                placeholder="Enter agent name (required)"
                 className="w-full"
                 value={agentName}
                 onChange={(e) => setAgentName(e.target.value)}
+                required
               />
               <p className="text-xs text-gray-500 flex items-center gap-1">
-                <span className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center text-[10px] text-gray-600">i</span>
-                If empty, template name will be used. Can be adjusted after creation.
+                <span className="w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center text-[10px] text-gray-600">!</span>
+                Agent name is required to create an agent.
               </p>
             </div>
 
@@ -178,7 +190,7 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
               <span className="text-gray-400 text-sm">Or</span>
             </div>
 
-            <Card className="border border-gray-200">
+            <Card className={`border border-gray-200 ${!isAgentNameValid ? 'opacity-50' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
@@ -190,7 +202,12 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
                       A minimalist starting point with placeholder slots, designed for crafting your unique assistant.
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={createCustomAgent}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={createCustomAgent}
+                    disabled={!isAgentNameValid}
+                  >
                     →
                   </Button>
                 </div>
@@ -204,9 +221,12 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Templates</h2>
             <p className="text-sm text-gray-600">Templates include placeholder slots for easy customization</p>
+            {!isAgentNameValid && (
+              <p className="text-sm text-red-500 mt-2">Please enter an agent name first to select templates</p>
+            )}
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid grid-cols-2 gap-4 ${!isAgentNameValid ? 'opacity-50 pointer-events-none' : ''}`}>
             {templates.map((template) => (
               <Card key={template.id} className="border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer">
                 <CardContent className="p-4">
@@ -225,6 +245,7 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
                       size="sm" 
                       className="text-purple-600 hover:text-purple-700 p-0 h-auto font-medium"
                       onClick={() => createAgentFromTemplate(template)}
+                      disabled={!isAgentNameValid}
                     >
                       Try Now →
                     </Button>
