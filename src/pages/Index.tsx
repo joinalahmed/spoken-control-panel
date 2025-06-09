@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, FileText, Settings, BarChart3, Plus, LogOut } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, Plus, LogOut, Heart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,6 @@ import CreateContactForm from '@/components/CreateContactForm';
 import KnowledgeBaseList from '@/components/KnowledgeBaseList';
 import CreateKnowledgeBaseForm from '@/components/CreateKnowledgeBaseForm';
 import HomeDashboard from '@/components/HomeDashboard';
-import Footer from '@/components/Footer';
 
 interface Agent {
   id: string;
@@ -319,8 +318,14 @@ const Index = ({ onLogout }: IndexProps) => {
         </div>
       </div>
       
-      {/* Footer */}
-      <Footer />
+      {/* Footer - Merged directly */}
+      <footer className="bg-white border-t border-gray-200 py-4 px-6">
+        <div className="flex items-center justify-center text-sm text-gray-600">
+          <span>Made with</span>
+          <Heart className="w-4 h-4 mx-1 text-red-500 fill-current" />
+          <span>by Aivar Innovations</span>
+        </div>
+      </footer>
     </div>
   );
 };
