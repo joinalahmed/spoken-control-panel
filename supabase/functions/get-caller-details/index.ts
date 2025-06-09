@@ -6,6 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Function to normalize phone numbers for comparison
+const normalizePhoneNumber = (phone: string): string => {
+  // Remove all spaces, dashes, parentheses, and other non-digit characters except +
+  return phone.replace(/[\s\-\(\)\.]/g, '');
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -40,16 +46,35 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Looking up caller with phone: ${phoneNumber}`);
+    
+    // Normalize the input phone number
+    const normalizedInputPhone = normalizePhoneNumber(phoneNumber);
+    console.log(`Normalized input phone: ${normalizedInputPhone}`);
 
-    // First, find the contact by phone number
-    const { data: contact, error: contactError } = await supabase
+    // Get all contacts and find by normalized phone number
+    const { data: contacts, error: contactsError } = await supabase
       .from('contacts')
-      .select('*')
-      .eq('phone', phoneNumber)
-      .single();
+      .select('*');
 
-    if (contactError || !contact) {
-      console.log('Contact not found:', contactError);
+    if (contactsError) {
+      console.log('Error fetching contacts:', contactsError);
+      return new Response(
+        JSON.stringify({ error: 'Error fetching contacts' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Find contact by normalized phone number
+    const contact = contacts?.find(c => 
+      c.phone && normalizePhoneNumber(c.phone) === normalizedInputPhone
+    );
+
+    if (!contact) {
+      console.log('Contact not found for normalized phone:', normalizedInputPhone);
+      console.log('Available contacts:', contacts?.map(c => ({ id: c.id, phone: c.phone, normalized: c.phone ? normalizePhoneNumber(c.phone) : null })));
       return new Response(
         JSON.stringify({ error: 'Contact not found' }),
         { 
