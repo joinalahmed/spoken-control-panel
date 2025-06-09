@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-export interface KnowledgeBaseItem {
+export interface KbsItem {
   id: string;
   title: string;
   type: 'document' | 'faq' | 'guide' | 'other';
@@ -18,11 +18,11 @@ export interface KnowledgeBaseItem {
   updated_at: string;
 }
 
-export const useKnowledgeBase = () => {
+export const useKbs = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: knowledgeBase = [], isLoading, error } = useQuery({
+  const { data: kbs = [], isLoading, error } = useQuery({
     queryKey: ['knowledge_base'],
     queryFn: async () => {
       if (!user) return [];
@@ -34,13 +34,13 @@ export const useKnowledgeBase = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as KnowledgeBaseItem[];
+      return data as KbsItem[];
     },
     enabled: !!user,
   });
 
-  const createKnowledgeBaseItem = useMutation({
-    mutationFn: async (itemData: Omit<KnowledgeBaseItem, 'id' | 'created_at' | 'updated_at'>) => {
+  const createKbsItem = useMutation({
+    mutationFn: async (itemData: Omit<KbsItem, 'id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
@@ -50,19 +50,19 @@ export const useKnowledgeBase = () => {
         .single();
 
       if (error) throw error;
-      return data as KnowledgeBaseItem;
+      return data as KbsItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge_base'] });
-      toast.success('Knowledge base item created successfully!');
+      toast.success('KBS item created successfully!');
     },
     onError: (error) => {
-      toast.error('Failed to create knowledge base item: ' + error.message);
+      toast.error('Failed to create KBS item: ' + error.message);
     },
   });
 
-  const updateKnowledgeBaseItem = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<KnowledgeBaseItem> & { id: string }) => {
+  const updateKbsItem = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<KbsItem> & { id: string }) => {
       const { data, error } = await supabase
         .from('knowledge_base')
         .update({ ...updates, updated_at: new Date().toISOString() })
@@ -71,18 +71,18 @@ export const useKnowledgeBase = () => {
         .single();
 
       if (error) throw error;
-      return data as KnowledgeBaseItem;
+      return data as KbsItem;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge_base'] });
-      toast.success('Knowledge base item updated successfully!');
+      toast.success('KBS item updated successfully!');
     },
     onError: (error) => {
-      toast.error('Failed to update knowledge base item: ' + error.message);
+      toast.error('Failed to update KBS item: ' + error.message);
     },
   });
 
-  const deleteKnowledgeBaseItem = useMutation({
+  const deleteKbsItem = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('knowledge_base')
@@ -93,19 +93,19 @@ export const useKnowledgeBase = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge_base'] });
-      toast.success('Knowledge base item deleted successfully!');
+      toast.success('KBS item deleted successfully!');
     },
     onError: (error) => {
-      toast.error('Failed to delete knowledge base item: ' + error.message);
+      toast.error('Failed to delete KBS item: ' + error.message);
     },
   });
 
   return {
-    knowledgeBase,
+    kbs,
     isLoading,
     error,
-    createKnowledgeBaseItem,
-    updateKnowledgeBaseItem,
-    deleteKnowledgeBaseItem,
+    createKbsItem,
+    updateKbsItem,
+    deleteKbsItem,
   };
 };

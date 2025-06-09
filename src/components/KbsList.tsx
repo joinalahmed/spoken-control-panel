@@ -19,62 +19,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useKbs, KbsItem } from '@/hooks/useKbs';
 
-interface KnowledgeBaseItem {
-  id: string;
-  title: string;
-  type: 'document' | 'faq' | 'guide' | 'other';
-  description: string;
-  dateAdded: string;
-  lastModified: string;
-  status: 'published' | 'draft';
-  tags: string[];
-}
-
-interface KnowledgeBaseListProps {
+interface KbsListProps {
   onCreateItem: () => void;
-  onEditItem: (item: KnowledgeBaseItem) => void;
+  onEditItem: (item: KbsItem) => void;
 }
 
-const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps) => {
+const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [items] = useState<KnowledgeBaseItem[]>([
-    {
-      id: '1',
-      title: 'Getting Started Guide',
-      type: 'guide',
-      description: 'Complete guide for new users to get started with the platform',
-      dateAdded: '2/1/2025',
-      lastModified: '2/3/2025',
-      status: 'published',
-      tags: ['onboarding', 'guide']
-    },
-    {
-      id: '2',
-      title: 'Voice Agent Configuration',
-      type: 'document',
-      description: 'How to configure and customize voice agents',
-      dateAdded: '1/28/2025',
-      lastModified: '2/2/2025',
-      status: 'published',
-      tags: ['agents', 'configuration']
-    },
-    {
-      id: '3',
-      title: 'Troubleshooting FAQ',
-      type: 'faq',
-      description: 'Common issues and solutions',
-      dateAdded: '1/25/2025',
-      lastModified: '1/30/2025',
-      status: 'draft',
-      tags: ['support', 'faq']
-    }
-  ]);
+  const { kbs, isLoading, deleteKbsItem } = useKbs();
 
-  const filteredItems = items.filter(item =>
+  const filteredItems = kbs.filter(item =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
   );
 
   const getTypeColor = (type: string) => {
@@ -86,13 +45,25 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
     }
   };
 
+  const handleDelete = (id: string) => {
+    deleteKbsItem.mutate(id);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 p-6">
+        <div className="text-center">Loading KBS items...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Knowledge Base</h1>
-          <p className="text-gray-600">Manage your knowledge base content</p>
+          <h1 className="text-2xl font-semibold text-gray-900">KBS</h1>
+          <p className="text-gray-600">Manage your KBS content</p>
         </div>
         <Button onClick={onCreateItem} className="bg-purple-600 hover:bg-purple-700">
           <Plus className="w-4 h-4 mr-2" />
@@ -105,7 +76,7 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search knowledge base..."
+            placeholder="Search KBS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -121,7 +92,7 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
         </Button>
       </div>
 
-      {/* Knowledge Base Table */}
+      {/* KBS Table */}
       <Card>
         <Table>
           <TableHeader>
@@ -145,7 +116,7 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
                     <div>
                       <div className="font-medium text-gray-900">{item.title}</div>
                       <div className="text-sm text-gray-500">
-                        {item.tags.map(tag => (
+                        {item.tags && item.tags.map(tag => (
                           <span key={tag} className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs mr-1">
                             {tag}
                           </span>
@@ -159,8 +130,10 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
                     {item.type}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-gray-600 max-w-xs truncate">{item.description}</TableCell>
-                <TableCell className="text-gray-600">{item.lastModified}</TableCell>
+                <TableCell className="text-gray-600 max-w-xs truncate">{item.description || 'No description'}</TableCell>
+                <TableCell className="text-gray-600">
+                  {item.last_modified ? new Date(item.last_modified).toLocaleDateString() : 'Never'}
+                </TableCell>
                 <TableCell>
                   <Badge 
                     variant={item.status === 'published' ? 'default' : 'secondary'}
@@ -185,7 +158,10 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem 
+                        className="text-red-600"
+                        onClick={() => handleDelete(item.id)}
+                      >
                         <Trash className="w-4 h-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
@@ -201,11 +177,11 @@ const KnowledgeBaseList = ({ onCreateItem, onEditItem }: KnowledgeBaseListProps)
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-gray-600">
-          Showing {filteredItems.length} of {items.length} items
+          Showing {filteredItems.length} of {kbs.length} items
         </div>
       </div>
     </div>
   );
 };
 
-export default KnowledgeBaseList;
+export default KbsList;

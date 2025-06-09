@@ -8,20 +8,22 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { useKbs } from '@/hooks/useKbs';
 
-interface CreateKnowledgeBaseFormProps {
+interface CreateKbsFormProps {
   onBack: () => void;
   onSave: (data: any) => void;
 }
 
-const CreateKnowledgeBaseForm = ({ onBack, onSave }: CreateKnowledgeBaseFormProps) => {
+const CreateKbsForm = ({ onBack, onSave }: CreateKbsFormProps) => {
+  const { createKbsItem } = useKbs();
   const [formData, setFormData] = useState({
     title: '',
     type: '',
     description: '',
     content: '',
     tags: [] as string[],
-    status: 'draft'
+    status: 'draft' as 'draft' | 'published'
   });
   const [newTag, setNewTag] = useState('');
 
@@ -49,17 +51,27 @@ const CreateKnowledgeBaseForm = ({ onBack, onSave }: CreateKnowledgeBaseFormProp
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-  };
+    
+    if (!formData.title || !formData.type || !formData.content) {
+      return;
+    }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'document': return <FileText className="w-4 h-4" />;
-      case 'faq': return <HelpCircle className="w-4 h-4" />;
-      case 'guide': return <BookOpen className="w-4 h-4" />;
-      default: return <File className="w-4 h-4" />;
+    try {
+      await createKbsItem.mutateAsync({
+        title: formData.title,
+        type: formData.type as 'document' | 'faq' | 'guide' | 'other',
+        description: formData.description || null,
+        content: formData.content,
+        tags: formData.tags.length > 0 ? formData.tags : null,
+        status: formData.status,
+        date_added: new Date().toISOString(),
+        last_modified: new Date().toISOString()
+      });
+      onSave(formData);
+    } catch (error) {
+      console.error('Error creating KBS item:', error);
     }
   };
 
@@ -71,8 +83,8 @@ const CreateKnowledgeBaseForm = ({ onBack, onSave }: CreateKnowledgeBaseFormProp
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Add Knowledge Base Item</h1>
-          <p className="text-gray-600">Create a new knowledge base entry</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Add KBS Item</h1>
+          <p className="text-gray-600">Create a new KBS entry</p>
         </div>
       </div>
 
@@ -202,9 +214,13 @@ const CreateKnowledgeBaseForm = ({ onBack, onSave }: CreateKnowledgeBaseFormProp
 
             {/* Action Buttons */}
             <div className="flex gap-2 pt-4">
-              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+              <Button 
+                type="submit" 
+                className="bg-purple-600 hover:bg-purple-700"
+                disabled={createKbsItem.isPending}
+              >
                 <Save className="w-4 h-4 mr-2" />
-                Save Item
+                {createKbsItem.isPending ? 'Saving...' : 'Save Item'}
               </Button>
               <Button type="button" variant="outline" onClick={onBack}>
                 Cancel
@@ -217,4 +233,4 @@ const CreateKnowledgeBaseForm = ({ onBack, onSave }: CreateKnowledgeBaseFormProp
   );
 };
 
-export default CreateKnowledgeBaseForm;
+export default CreateKbsForm;

@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAgents, Agent } from '@/hooks/useAgents';
 import { Contact } from '@/hooks/useContacts';
-import { useKnowledgeBase, KnowledgeBaseItem } from '@/hooks/useKnowledgeBase';
+import { useKbs, KbsItem } from '@/hooks/useKbs';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
 import CreateAgentFlow from '@/components/CreateAgentFlow';
 import ContactsList from '@/components/ContactsList';
 import CreateContactForm from '@/components/CreateContactForm';
-import KnowledgeBaseList from '@/components/KnowledgeBaseList';
-import CreateKnowledgeBaseForm from '@/components/CreateKnowledgeBaseForm';
+import KbsList from '@/components/KbsList';
+import CreateKbsForm from '@/components/CreateKbsForm';
 import HomeDashboard from '@/components/HomeDashboard';
 
 const Index = () => {
@@ -25,7 +25,7 @@ const Index = () => {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
-  const [knowledgeBaseView, setKnowledgeBaseView] = useState<'list' | 'create'>('list');
+  const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -71,18 +71,18 @@ const Index = () => {
     setContactsView('create');
   };
 
-  const handleCreateKnowledgeBaseItem = () => {
-    setKnowledgeBaseView('create');
+  const handleCreateKbsItem = () => {
+    setKbsView('create');
   };
 
-  const handleKnowledgeBaseItemSaved = (itemData: any) => {
-    console.log('Knowledge base item saved:', itemData);
-    setKnowledgeBaseView('list');
+  const handleKbsItemSaved = (itemData: any) => {
+    console.log('KBS item saved:', itemData);
+    setKbsView('list');
   };
 
-  const handleEditKnowledgeBaseItem = (item: KnowledgeBaseItem) => {
-    console.log('Edit knowledge base item:', item);
-    setKnowledgeBaseView('create');
+  const handleEditKbsItem = (item: KbsItem) => {
+    console.log('Edit KBS item:', item);
+    setKbsView('create');
   };
 
   const handleLogout = async () => {
@@ -115,7 +115,7 @@ const Index = () => {
                     setContactsView('list');
                   }
                   if (item.id === 'files') {
-                    setKnowledgeBaseView('list');
+                    setKbsView('list');
                   }
                   if (item.id === 'agents') {
                     setShowCreateAgent(false);
@@ -208,17 +208,17 @@ const Index = () => {
             />
           )}
 
-          {activeTab === 'files' && knowledgeBaseView === 'list' && (
-            <KnowledgeBaseList 
-              onCreateItem={handleCreateKnowledgeBaseItem}
-              onEditItem={handleEditKnowledgeBaseItem}
+          {activeTab === 'files' && kbsView === 'list' && (
+            <KbsList 
+              onCreateItem={handleCreateKbsItem}
+              onEditItem={handleEditKbsItem}
             />
           )}
 
-          {activeTab === 'files' && knowledgeBaseView === 'create' && (
-            <CreateKnowledgeBaseForm 
-              onBack={() => setKnowledgeBaseView('list')}
-              onSave={handleKnowledgeBaseItemSaved}
+          {activeTab === 'files' && kbsView === 'create' && (
+            <CreateKbsForm 
+              onBack={() => setKbsView('list')}
+              onSave={handleKbsItemSaved}
             />
           )}
 
