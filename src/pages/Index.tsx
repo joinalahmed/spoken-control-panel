@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Phone, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,17 +10,78 @@ import DashboardStats from '@/components/DashboardStats';
 import AgentList from '@/components/AgentList';
 import CreateAgentFlow from '@/components/CreateAgentFlow';
 
+interface Agent {
+  id: string;
+  name: string;
+  voice: string;
+  status: 'active' | 'inactive';
+  conversations: number;
+  lastActive: string;
+  description: string;
+  systemPrompt?: string;
+  firstMessage?: string;
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState('agents');
-  const [selectedAgent, setSelectedAgent] = useState({
-    id: '1',
-    name: 'Agent Name 01',
-    voice: 'Sarah',
-    status: 'active',
-    conversations: 247,
-    lastActive: '2 hours ago',
-    description: 'Voice assistant for Mary\'s Dental office'
-  });
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [agents, setAgents] = useState<Agent[]>([
+    { 
+      id: '1', 
+      name: 'Agent Name 01', 
+      voice: 'Sarah', 
+      status: 'active', 
+      conversations: 247, 
+      lastActive: '2 hours ago',
+      description: 'Voice assistant for Mary\'s Dental office',
+      systemPrompt: 'You are a helpful dental office assistant.',
+      firstMessage: 'Hello! How can I help you with your dental needs today?'
+    },
+    { 
+      id: '2', 
+      name: 'Agent Name 02', 
+      voice: 'Alex', 
+      status: 'inactive', 
+      conversations: 156, 
+      lastActive: '1 day ago',
+      description: 'Customer support agent',
+      systemPrompt: 'You are a customer support specialist.',
+      firstMessage: 'Hi! I\'m here to help with any questions you have.'
+    },
+    { 
+      id: '3', 
+      name: 'Agent Name 03', 
+      voice: 'Charlotte', 
+      status: 'inactive', 
+      conversations: 89, 
+      lastActive: '3 days ago',
+      description: 'Sales assistant',
+      systemPrompt: 'You are a sales assistant focused on helping customers.',
+      firstMessage: 'Welcome! I\'m here to help you find what you\'re looking for.'
+    },
+    { 
+      id: '4', 
+      name: 'Agent Name 04', 
+      voice: 'Brian', 
+      status: 'inactive', 
+      conversations: 34, 
+      lastActive: '1 week ago',
+      description: 'Technical support agent',
+      systemPrompt: 'You are a technical support specialist.',
+      firstMessage: 'Hello! I can help you with any technical issues you\'re experiencing.'
+    },
+    { 
+      id: '5', 
+      name: 'Agent Name 05', 
+      voice: 'Sarah', 
+      status: 'inactive', 
+      conversations: 12, 
+      lastActive: '2 weeks ago',
+      description: 'General purpose assistant',
+      systemPrompt: 'You are a helpful general purpose assistant.',
+      firstMessage: 'Hi there! I\'m your assistant. How can I help you today?'
+    },
+  ]);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -32,13 +94,14 @@ const Index = () => {
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
   ];
 
-  const agents = [
-    { id: '1', name: 'Agent Name 01', isActive: true },
-    { id: '2', name: 'Agent Name 02', isActive: false },
-    { id: '3', name: 'Agent Name 03', isActive: false },
-    { id: '4', name: 'Agent Name 04', isActive: false },
-    { id: '5', name: 'Agent Name 05', isActive: false },
-  ];
+  const handleAgentCreated = (newAgent: Agent) => {
+    setAgents(prev => [...prev, newAgent]);
+    setSelectedAgent(newAgent);
+  };
+
+  const handleSelectAgent = (agent: Agent) => {
+    setSelectedAgent(agent);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -88,7 +151,7 @@ const Index = () => {
       {/* Main Content */}
       <div className="flex-1 flex">
         {activeTab === 'agents' && !selectedAgent && (
-          <CreateAgentFlow />
+          <CreateAgentFlow onAgentCreated={handleAgentCreated} />
         )}
 
         {activeTab === 'agents' && selectedAgent && (
@@ -113,15 +176,7 @@ const Index = () => {
                 {agents.map((agent) => (
                   <button
                     key={agent.id}
-                    onClick={() => setSelectedAgent({
-                      id: agent.id,
-                      name: agent.name,
-                      voice: 'Sarah',
-                      status: 'active',
-                      conversations: 247,
-                      lastActive: '2 hours ago',
-                      description: 'Voice assistant for Mary\'s Dental office'
-                    })}
+                    onClick={() => handleSelectAgent(agent)}
                     className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
                       selectedAgent?.id === agent.id
                         ? 'bg-purple-50 border border-purple-200'
