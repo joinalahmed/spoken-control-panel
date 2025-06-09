@@ -189,11 +189,8 @@ const Index = ({ onLogout }: IndexProps) => {
           {/* Logo */}
           <div className="p-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
-              </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-900">hwani</span>
+                <span className="text-xl font-bold text-gray-900">Dhwani</span>
                 <span className="text-xs text-gray-500">Voice AI Agents Playground</span>
               </div>
             </div>
