@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAgents, Agent } from '@/hooks/useAgents';
 import { Contact, useContacts } from '@/hooks/useContacts';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
+import { useCampaigns } from '@/hooks/useCampaigns';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
@@ -25,6 +25,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { createAgent, updateAgent } = useAgents();
   const { createContact } = useContacts();
+  const { createCampaign } = useCampaigns();
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
@@ -172,9 +173,26 @@ const Index = () => {
     setCampaignsView('create');
   };
 
-  const handleCampaignSaved = (campaignData: any) => {
-    console.log('Campaign saved:', campaignData);
-    setCampaignsView('overview');
+  const handleCampaignSaved = async (campaignData: any) => {
+    try {
+      console.log('Saving campaign:', campaignData);
+      
+      // Map the campaign data to match the database schema
+      const mappedCampaignData = {
+        name: campaignData.name,
+        description: campaignData.description || undefined,
+        agentId: campaignData.agentId || undefined,
+        contactIds: campaignData.contactIds || [],
+        status: campaignData.status || 'draft'
+      };
+
+      console.log('Mapped campaign data:', mappedCampaignData);
+      
+      await createCampaign.mutateAsync(mappedCampaignData);
+      setCampaignsView('overview');
+    } catch (error) {
+      console.error('Error saving campaign:', error);
+    }
   };
 
   const handleLogout = async () => {
