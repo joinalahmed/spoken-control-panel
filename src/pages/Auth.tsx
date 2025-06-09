@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Eye, EyeOff, Heart } from 'lucide-react';
+import { Eye, EyeOff, Heart, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -66,6 +67,99 @@ const Auth = () => {
     
     setLoading(false);
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    setLoading(true);
+
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+      redirectTo: `${window.location.origin}/auth?mode=recovery`
+    });
+    
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Password reset email sent! Please check your inbox.');
+      setShowForgotPassword(false);
+    }
+    
+    setLoading(false);
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-3xl font-bold text-white">Dhwani</span>
+            </div>
+            <p className="text-white/80 text-sm">Voice AI Agents Playground</p>
+          </div>
+
+          {/* Forgot Password Card */}
+          <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="space-y-1 pb-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="p-0 h-auto hover:bg-transparent"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <CardTitle className="text-2xl font-bold text-gray-900">Reset Password</CardTitle>
+              </div>
+              <CardDescription>Enter your email address and we'll send you a link to reset your password</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email"
+                    required
+                    className="h-12"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 bg-purple-600 hover:bg-purple-700"
+                  disabled={loading}
+                >
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Footer */}
+          <footer className="mt-8 text-center">
+            <div className="flex items-center justify-center text-sm text-white/80">
+              <span>Made with</span>
+              <Heart className="w-4 h-4 mx-1 text-red-500 fill-current" />
+              <span>by Aivar Innovations</span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 flex items-center justify-center p-4">
@@ -128,6 +222,16 @@ const Auth = () => {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-sm text-purple-600 hover:text-purple-500"
+                    >
+                      Forgot Password?
+                    </button>
                   </div>
 
                   <Button 
