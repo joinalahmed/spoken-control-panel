@@ -24,6 +24,7 @@ interface Agent {
   description: string;
   systemPrompt?: string;
   firstMessage?: string;
+  knowledgeBaseId?: string;
 }
 
 interface Contact {
@@ -66,7 +67,8 @@ const Index = () => {
       lastActive: '2 hours ago',
       description: 'Voice assistant for Mary\'s Dental office',
       systemPrompt: 'You are a helpful dental office assistant.',
-      firstMessage: 'Hello! How can I help you with your dental needs today?'
+      firstMessage: 'Hello! How can I help you with your dental needs today?',
+      knowledgeBaseId: '1'
     },
     { 
       id: '2', 
@@ -77,7 +79,8 @@ const Index = () => {
       lastActive: '1 day ago',
       description: 'Customer support agent',
       systemPrompt: 'You are a customer support specialist.',
-      firstMessage: 'Hi! I\'m here to help with any questions you have.'
+      firstMessage: 'Hi! I\'m here to help with any questions you have.',
+      knowledgeBaseId: '2'
     },
     { 
       id: '3', 

@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Phone, Copy, Volume2, Brain, Zap, Settings, ArrowLeft } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Phone, Copy, Volume2, Brain, Zap, Settings, ArrowLeft, BookOpen } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -16,6 +17,7 @@ interface Agent {
   conversations: number;
   lastActive: string;
   description: string;
+  knowledgeBaseId?: string;
 }
 
 interface AgentConfigurationProps {
@@ -30,8 +32,18 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
     prompt: 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
     firstMessage: 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
-    language: 'en'
+    language: 'en',
+    knowledgeBaseId: selectedAgent?.knowledgeBaseId || ''
   });
+
+  // Mock knowledge base items
+  const knowledgeBaseItems = [
+    { id: '1', title: 'Getting Started Guide' },
+    { id: '2', title: 'Voice Agent Configuration' },
+    { id: '3', title: 'Troubleshooting FAQ' },
+    { id: '4', title: 'Dental Office Procedures' },
+    { id: '5', title: 'Appointment Booking Guidelines' }
+  ];
 
   if (!selectedAgent) {
     return (
@@ -116,19 +128,50 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
 
           <TabsContent value="model" className="bg-gray-50 flex-1 p-6 space-y-6">
             <div className="grid grid-cols-2 gap-6">
-              {/* Left Column - First Message */}
-              <div className="space-y-2">
-                <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
-                <Input
-                  id="firstMessage"
-                  value={config.firstMessage}
-                  onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
-                  className="w-full bg-white"
-                  placeholder="Type Name"
-                />
-                <p className="text-xs text-gray-500">
-                  The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
-                </p>
+              {/* Left Column */}
+              <div className="space-y-6">
+                {/* First Message */}
+                <div className="space-y-2">
+                  <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
+                  <Input
+                    id="firstMessage"
+                    value={config.firstMessage}
+                    onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
+                    className="w-full bg-white"
+                    placeholder="Type Name"
+                  />
+                  <p className="text-xs text-gray-500">
+                    The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
+                  </p>
+                </div>
+
+                {/* Knowledge Base */}
+                <div className="space-y-2">
+                  <Label htmlFor="knowledgeBase" className="text-sm font-medium text-gray-700">Knowledge Base (Optional)</Label>
+                  <Select value={config.knowledgeBaseId} onValueChange={(value) => setConfig({...config, knowledgeBaseId: value})}>
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Select knowledge base" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">
+                        <div className="flex items-center gap-2">
+                          <span>None</span>
+                        </div>
+                      </SelectItem>
+                      {knowledgeBaseItems.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" />
+                            <span>{item.title}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    Link a knowledge base to provide the agent with additional context and information.
+                  </p>
+                </div>
               </div>
 
               {/* Right Column - System Prompt */}
