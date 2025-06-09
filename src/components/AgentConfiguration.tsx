@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -98,7 +97,7 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 flex-1 flex flex-col">
         <Tabs defaultValue="model" className="w-full h-full flex flex-col">
           <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0 flex-shrink-0">
             <TabsTrigger 
@@ -114,13 +113,6 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             >
               <Zap className="w-4 h-4 mr-2" />
               Functions
-            </TabsTrigger>
-            <TabsTrigger 
-              value="advanced" 
-              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Advanced
             </TabsTrigger>
           </TabsList>
 
@@ -233,14 +225,6 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
               <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Functions</h3>
               <p className="text-gray-500">Function configuration will be available here</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="advanced" className="bg-gray-50 flex-1 p-6 m-0">
-            <div className="text-center py-12">
-              <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Settings</h3>
-              <p className="text-gray-500">Advanced configuration will be available here</p>
             </div>
           </TabsContent>
         </Tabs>
