@@ -23,6 +23,7 @@ import CreateCampaignForm from '@/components/CreateCampaignForm';
 
 const Index = () => {
   const { user, signOut } = useAuth();
+  const { createAgent } = useAgents();
   const { createContact } = useContacts();
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -40,9 +41,31 @@ const Index = () => {
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
   ];
 
-  const handleAgentCreated = (agent: Agent) => {
-    setShowCreateAgent(false);
-    setSelectedAgent(agent);
+  const handleAgentCreated = async (agentData: any) => {
+    try {
+      console.log('Creating agent with data:', agentData);
+      
+      // Map the agent data to match the database schema
+      const mappedAgentData = {
+        name: agentData.name,
+        voice: agentData.voice || 'Sarah',
+        status: 'inactive' as const,
+        conversations: 0,
+        last_active: null,
+        description: agentData.description || null,
+        system_prompt: agentData.systemPrompt || null,
+        first_message: agentData.firstMessage || null,
+        knowledge_base_id: null
+      };
+
+      console.log('Mapped agent data:', mappedAgentData);
+      
+      const createdAgent = await createAgent.mutateAsync(mappedAgentData);
+      setShowCreateAgent(false);
+      setSelectedAgent(createdAgent);
+    } catch (error) {
+      console.error('Error creating agent:', error);
+    }
   };
 
   const handleSelectAgent = (agent: Agent) => {

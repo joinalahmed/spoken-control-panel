@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,20 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface Agent {
-  id: string;
-  name: string;
-  voice: string;
-  status: 'active' | 'inactive';
-  conversations: number;
-  lastActive: string;
-  description: string;
-  systemPrompt?: string;
-  firstMessage?: string;
-}
-
 interface CreateAgentFlowProps {
-  onAgentCreated: (agent: Agent) => void;
+  onAgentCreated: (agentData: any) => void;
   onBack?: () => void;
 }
 
@@ -105,19 +94,15 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
   const createAgentFromTemplate = (template: typeof templates[0]) => {
     const name = agentName.trim() || template.title;
     
-    const newAgent: Agent = {
-      id: Date.now().toString(),
+    const agentData = {
       name,
       voice: 'Sarah',
-      status: 'inactive',
-      conversations: 0,
-      lastActive: 'Never',
       description: template.description,
       systemPrompt: template.systemPrompt,
       firstMessage: template.firstMessage
     };
 
-    onAgentCreated(newAgent);
+    onAgentCreated(agentData);
     
     toast({
       title: "Agent Created",
@@ -137,19 +122,15 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
       return;
     }
 
-    const newAgent: Agent = {
-      id: Date.now().toString(),
+    const agentData = {
       name,
       voice: 'Sarah',
-      status: 'inactive',
-      conversations: 0,
-      lastActive: 'Never',
       description: 'A minimalist starting point with basic configuration, designed for crafting your unique assistant.',
       systemPrompt: 'You are a helpful AI assistant. Be friendly, professional, and helpful in all your interactions.',
       firstMessage: 'Hello! I\'m your AI assistant. How can I help you today?'
     };
 
-    onAgentCreated(newAgent);
+    onAgentCreated(agentData);
     
     toast({
       title: "Agent Created",
