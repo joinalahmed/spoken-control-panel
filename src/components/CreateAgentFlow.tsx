@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase } from 'lucide-react';
+import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Agent {
@@ -21,9 +20,10 @@ interface Agent {
 
 interface CreateAgentFlowProps {
   onAgentCreated: (agent: Agent) => void;
+  onBack?: () => void;
 }
 
-const CreateAgentFlow = ({ onAgentCreated }: CreateAgentFlowProps) => {
+const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
   const [agentName, setAgentName] = useState('');
   const { toast } = useToast();
 
@@ -159,6 +159,15 @@ const CreateAgentFlow = ({ onAgentCreated }: CreateAgentFlowProps) => {
 
   return (
     <div className="flex-1 p-8">
+      {onBack && (
+        <div className="mb-6">
+          <Button variant="ghost" onClick={onBack} className="flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Agents
+          </Button>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
         {/* Left Column - Create Agent */}
         <div className="space-y-6">

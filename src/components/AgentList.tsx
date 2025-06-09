@@ -24,9 +24,10 @@ interface Agent {
 
 interface AgentListProps {
   onSelectAgent: (agent: Agent) => void;
+  onCreateAgent: () => void;
 }
 
-const AgentList = ({ onSelectAgent }: AgentListProps) => {
+const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
   const [agents] = useState<Agent[]>([
     {
       id: '1',
@@ -86,7 +87,7 @@ const AgentList = ({ onSelectAgent }: AgentListProps) => {
           <h2 className="text-2xl font-bold text-white">Voice Agents</h2>
           <p className="text-slate-400">Manage your AI voice agents</p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+        <Button onClick={onCreateAgent} className="bg-purple-600 hover:bg-purple-700 text-white">
           Create New Agent
         </Button>
       </div>

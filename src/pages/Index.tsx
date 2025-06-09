@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +54,7 @@ interface KnowledgeBaseItem {
 const Index = () => {
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
   const [knowledgeBaseView, setKnowledgeBaseView] = useState<'list' | 'create'>('list');
   const [agents, setAgents] = useState<Agent[]>([
@@ -125,11 +127,23 @@ const Index = () => {
 
   const handleAgentCreated = (newAgent: Agent) => {
     setAgents(prev => [...prev, newAgent]);
+    setShowCreateAgent(false);
     setSelectedAgent(newAgent);
   };
 
   const handleSelectAgent = (agent: Agent) => {
     setSelectedAgent(agent);
+    setShowCreateAgent(false);
+  };
+
+  const handleCreateNewAgent = () => {
+    setShowCreateAgent(true);
+    setSelectedAgent(null);
+  };
+
+  const handleBackToAgentsList = () => {
+    setShowCreateAgent(false);
+    setSelectedAgent(null);
   };
 
   const handleCreateContact = () => {
@@ -187,6 +201,10 @@ const Index = () => {
                 if (item.id === 'files') {
                   setKnowledgeBaseView('list');
                 }
+                if (item.id === 'agents') {
+                  setShowCreateAgent(false);
+                  setSelectedAgent(null);
+                }
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
                 activeTab === item.id
@@ -219,11 +237,23 @@ const Index = () => {
           <HomeDashboard />
         )}
 
-        {activeTab === 'agents' && !selectedAgent && (
-          <CreateAgentFlow onAgentCreated={handleAgentCreated} />
+        {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
+          <div className="flex-1 bg-slate-900 p-6">
+            <AgentList 
+              onSelectAgent={handleSelectAgent}
+              onCreateAgent={handleCreateNewAgent}
+            />
+          </div>
         )}
 
-        {activeTab === 'agents' && selectedAgent && (
+        {activeTab === 'agents' && showCreateAgent && (
+          <CreateAgentFlow 
+            onAgentCreated={handleAgentCreated}
+            onBack={handleBackToAgentsList}
+          />
+        )}
+
+        {activeTab === 'agents' && selectedAgent && !showCreateAgent && (
           <>
             {/* Agent List */}
             <div className="w-80 bg-white border-r border-gray-200">
@@ -231,10 +261,10 @@ const Index = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">All Agents</h2>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setSelectedAgent(null)}>
+                    <Button size="sm" variant="outline" onClick={handleCreateNewAgent}>
                       <Plus className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={handleBackToAgentsList}>
                       <Settings className="w-4 h-4" />
                     </Button>
                   </div>
