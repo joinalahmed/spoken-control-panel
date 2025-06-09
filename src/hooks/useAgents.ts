@@ -31,15 +31,12 @@ export const useAgents = () => {
       
       const { data, error } = await supabase
         .from('agents')
-        .select('*, company')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data.map(agent => ({
-        ...agent,
-        company: agent.company || null
-      })) as Agent[];
+      return data as Agent[];
     },
     enabled: !!user,
   });
@@ -51,14 +48,11 @@ export const useAgents = () => {
       const { data, error } = await supabase
         .from('agents')
         .insert([{ ...agentData, user_id: user.id }])
-        .select('*, company')
+        .select('*')
         .single();
 
       if (error) throw error;
-      return {
-        ...data,
-        company: data.company || null
-      } as Agent;
+      return data as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
@@ -75,14 +69,11 @@ export const useAgents = () => {
         .from('agents')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
-        .select('*, company')
+        .select('*')
         .single();
 
       if (error) throw error;
-      return {
-        ...data,
-        company: data.company || null
-      } as Agent;
+      return data as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });

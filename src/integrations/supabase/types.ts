@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       agents: {
         Row: {
+          company: string | null
           conversations: number
           created_at: string | null
           description: string | null
@@ -26,6 +27,7 @@ export type Database = {
           voice: string
         }
         Insert: {
+          company?: string | null
           conversations?: number
           created_at?: string | null
           description?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           voice: string
         }
         Update: {
+          company?: string | null
           conversations?: number
           created_at?: string | null
           description?: string | null
