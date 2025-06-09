@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -17,24 +19,34 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Hardcoded credentials
-  const VALID_EMAIL = 'thomas@gmail.com';
-  const VALID_PASSWORD = 'password123';
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-        onLogin();
-      } else {
-        setError('Invalid email or password');
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setError(error.message);
+        toast.error('Login failed: ' + error.message);
+        return;
       }
+
+      if (data.user) {
+        toast.success('Successfully logged in!');
+        onLogin();
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      toast.error('Login failed: ' + errorMessage);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -65,7 +77,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="thomas@gmail.com"
+                  placeholder="Enter your email"
                   required
                   className="h-12"
                 />
@@ -81,7 +93,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     required
                     className="h-12 pr-10"
                   />
@@ -142,15 +154,6 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Demo Credentials */}
-        <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg">
-          <div className="text-gray-700 text-sm">
-            <div className="font-medium mb-2">Demo Credentials:</div>
-            <div>Email: thomas@gmail.com</div>
-            <div>Password: password123</div>
-          </div>
-        </div>
       </div>
     </div>
   );
