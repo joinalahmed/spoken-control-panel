@@ -29,7 +29,7 @@ const Index = () => {
   const { createAgent, updateAgent } = useAgents();
   const { createContact } = useContacts();
   const { createCampaign, campaigns } = useCampaigns();
-  const [activeTab, setActiveTab] = useState('agents');
+  const [activeTab, setActiveTab] = useState('home');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
