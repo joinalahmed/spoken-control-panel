@@ -81,6 +81,58 @@ console.log(data);`;
   }
 }`;
 
+  // New endpoint examples
+  const callDataPostExample = `curl -X POST "${baseUrl}/receive-call-data" \\
+  -H "Authorization: Bearer ${authToken}" \\
+  -H "apikey: ${authToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "phone": "+1234567890",
+    "duration": 180,
+    "status": "completed",
+    "direction": "outbound",
+    "recording_url": "https://example.com/recording.mp3",
+    "transcript": "Hello, this is a call transcript...",
+    "call_id": "ext_call_123456",
+    "started_at": "2024-01-15T10:30:00Z",
+    "ended_at": "2024-01-15T10:33:00Z",
+    "notes": "Customer was interested in our services"
+  }'`;
+
+  const callDataJsExample = `const response = await fetch('${baseUrl}/receive-call-data', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ${authToken}',
+    'apikey': '${authToken}',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    phone: '+1234567890',
+    duration: 180,
+    status: 'completed',
+    direction: 'outbound',
+    recording_url: 'https://example.com/recording.mp3',
+    transcript: 'Hello, this is a call transcript...',
+    call_id: 'ext_call_123456',
+    started_at: '2024-01-15T10:30:00Z',
+    ended_at: '2024-01-15T10:33:00Z',
+    notes: 'Customer was interested in our services'
+  })
+});
+
+const data = await response.json();
+console.log(data);`;
+
+  const callDataResponseExample = `{
+  "success": true,
+  "message": "Call data received successfully",
+  "contact": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "John Doe",
+    "phone": "+1234567890"
+  }
+}`;
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="mb-8">
@@ -271,6 +323,240 @@ console.log(data);`;
             <p className="text-sm text-blue-700">
               This API is subject to rate limiting. Please ensure you don't exceed reasonable request rates to maintain service availability.
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* New: Receive Call Data Endpoint */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl">Receive Call Data</CardTitle>
+            <Badge variant="secondary">POST</Badge>
+          </div>
+          <p className="text-gray-600">
+            Endpoint for external systems to submit call-related data and update contact records.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Endpoint URL */}
+          <div>
+            <h3 className="font-semibold mb-2">Endpoint URL</h3>
+            <div className="bg-gray-100 p-3 rounded-lg font-mono text-sm">
+              {baseUrl}/receive-call-data
+            </div>
+          </div>
+
+          {/* Authentication */}
+          <div>
+            <h3 className="font-semibold mb-2">Authentication</h3>
+            <p className="text-gray-600 mb-3">
+              This API requires authentication using a Bearer token in the Authorization header and API key.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Required Headers:</strong>
+              </p>
+              <ul className="text-sm text-yellow-800 mt-1 list-disc list-inside">
+                <li><code>Authorization: Bearer YOUR_TOKEN</code></li>
+                <li><code>apikey: YOUR_API_KEY</code></li>
+                <li><code>Content-Type: application/json</code></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Parameters */}
+          <div>
+            <h3 className="font-semibold mb-2">Parameters</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border border-gray-200 rounded-lg">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left border-b">Parameter</th>
+                    <th className="px-4 py-2 text-left border-b">Type</th>
+                    <th className="px-4 py-2 text-left border-b">Required</th>
+                    <th className="px-4 py-2 text-left border-b">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">phone</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="destructive">Yes</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Phone number of the caller</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">duration</td>
+                    <td className="px-4 py-2 border-b">number</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Call duration in seconds</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">status</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Call status (completed, missed, busy, failed)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">direction</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Call direction (inbound, outbound)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">recording_url</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">URL to the call recording</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">transcript</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Call transcript</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">call_id</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">External call ID</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">started_at</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Call start time (ISO 8601)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">ended_at</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Call end time (ISO 8601)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">notes</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Additional notes about the call</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Examples */}
+          <div>
+            <h3 className="font-semibold mb-4">Examples</h3>
+            
+            {/* cURL Example */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">cURL Example</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(callDataPostExample, 'call-curl')}
+                >
+                  {copiedCode === 'call-curl' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {callDataPostExample}
+              </pre>
+            </div>
+
+            {/* JavaScript Example */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">JavaScript Example</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(callDataJsExample, 'call-js')}
+                >
+                  {copiedCode === 'call-js' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {callDataJsExample}
+              </pre>
+            </div>
+          </div>
+
+          {/* Response */}
+          <div>
+            <h3 className="font-semibold mb-2">Response</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium">Success Response (200)</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(callDataResponseExample, 'call-response')}
+              >
+                {copiedCode === 'call-response' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+            </div>
+            <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
+              {callDataResponseExample}
+            </pre>
+          </div>
+
+          {/* Error Responses */}
+          <div>
+            <h3 className="font-semibold mb-2">Error Responses</h3>
+            <div className="space-y-3">
+              <div className="border border-red-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="destructive">400</Badge>
+                  <span className="font-medium">Bad Request</span>
+                </div>
+                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Phone number is required\" }"}</pre>
+              </div>
+              
+              <div className="border border-yellow-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="outline">404</Badge>
+                  <span className="font-medium">Not Found</span>
+                </div>
+                <pre className="text-sm bg-yellow-50 p-2 rounded">{"{ \"error\": \"Contact not found\" }"}</pre>
+              </div>
+              
+              <div className="border border-red-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="outline">405</Badge>
+                  <span className="font-medium">Method Not Allowed</span>
+                </div>
+                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Method not allowed\" }"}</pre>
+              </div>
+              
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="secondary">500</Badge>
+                  <span className="font-medium">Internal Server Error</span>
+                </div>
+                <pre className="text-sm bg-gray-50 p-2 rounded">{"{ \"error\": \"Internal server error\" }"}</pre>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
