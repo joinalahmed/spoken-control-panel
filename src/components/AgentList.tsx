@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2 } from 'lucide-react';
+import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2, Phone, Clock, MessageSquare, Calendar } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,14 +84,21 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 bg-purple-600">
+                    <Avatar className="h-12 w-12 bg-purple-600">
                       <AvatarFallback className="text-white font-medium">
                         {agent.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <CardTitle className="text-white text-sm">{agent.name}</CardTitle>
-                      <p className="text-xs text-slate-400">Voice: {agent.voice}</p>
+                    <div className="flex-1">
+                      <CardTitle className="text-white text-lg mb-1">{agent.name}</CardTitle>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className={getStatusColor(agent.status)}>
+                          {agent.status}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-slate-400 text-sm line-clamp-2">
+                        {agent.description || 'No description provided'}
+                      </CardDescription>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -134,21 +141,61 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                   </DropdownMenu>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <CardDescription className="text-slate-400 text-sm">
-                  {agent.description || 'No description provided'}
-                </CardDescription>
-                
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className={getStatusColor(agent.status)}>
-                    {agent.status}
-                  </Badge>
-                  <span className="text-xs text-slate-500">{formatLastActive(agent.last_active)}</span>
+              <CardContent className="space-y-4">
+                {/* Agent Details Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <MessageSquare className="w-4 h-4 text-slate-400" />
+                    <div>
+                      <span className="text-slate-400">Voice:</span>
+                      <p className="text-white font-medium">{agent.voice}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4 text-slate-400" />
+                    <div>
+                      <span className="text-slate-400">Calls:</span>
+                      <p className="text-white font-medium">{agent.conversations}</p>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center justify-between pt-2 border-t border-slate-700">
-                  <span className="text-sm text-slate-400">Conversations</span>
-                  <span className="text-sm font-medium text-white">{agent.conversations}</span>
+
+                {/* System Prompt Preview */}
+                {agent.system_prompt && (
+                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-600">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Settings className="w-4 h-4 text-slate-400" />
+                      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">System Prompt</span>
+                    </div>
+                    <p className="text-slate-300 text-sm line-clamp-3">
+                      {agent.system_prompt}
+                    </p>
+                  </div>
+                )}
+
+                {/* First Message Preview */}
+                {agent.first_message && (
+                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-600">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MessageSquare className="w-4 h-4 text-slate-400" />
+                      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">First Message</span>
+                    </div>
+                    <p className="text-slate-300 text-sm line-clamp-2">
+                      "{agent.first_message}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Footer Info */}
+                <div className="flex items-center justify-between pt-3 border-t border-slate-700">
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Calendar className="w-3 h-3" />
+                    <span>Last active: {formatLastActive(agent.last_active)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Clock className="w-3 h-3" />
+                    <span>Created {formatDistanceToNow(new Date(agent.created_at), { addSuffix: true })}</span>
+                  </div>
                 </div>
                 
                 <Button 
