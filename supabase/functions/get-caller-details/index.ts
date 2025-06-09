@@ -89,19 +89,7 @@ Deno.serve(async (req) => {
     // Find campaigns where this contact is assigned
     const { data: campaigns, error: campaignError } = await supabase
       .from('campaigns')
-      .select(`
-        *,
-        agents (
-          id,
-          name,
-          voice,
-          status,
-          description,
-          system_prompt,
-          first_message,
-          company
-        )
-      `)
+      .select('*')
       .contains('contact_ids', [contact.id])
       .eq('status', 'active')
       .limit(1);
@@ -119,6 +107,29 @@ Deno.serve(async (req) => {
 
     const campaign = campaigns[0];
     console.log(`Found campaign: ${campaign.name}`);
+
+    // Get agent details if campaign has an agent
+    let agent = null;
+    if (campaign.agent_id) {
+      const { data: agentData, error: agentError } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('id', campaign.agent_id)
+        .single();
+
+      if (!agentError && agentData) {
+        agent = {
+          id: agentData.id,
+          name: agentData.name,
+          voice: agentData.voice,
+          status: agentData.status,
+          description: agentData.description,
+          system_prompt: agentData.system_prompt,
+          first_message: agentData.first_message,
+          company: agentData.company
+        };
+      }
+    }
 
     // Get user details (campaign owner)
     const { data: userProfile, error: userError } = await supabase
@@ -153,16 +164,7 @@ Deno.serve(async (req) => {
             description: campaign.description,
             status: campaign.status
           },
-          agent: campaign.agents ? {
-            id: campaign.agents.id,
-            name: campaign.agents.name,
-            voice: campaign.agents.voice,
-            status: campaign.agents.status,
-            description: campaign.agents.description,
-            system_prompt: campaign.agents.system_prompt,
-            first_message: campaign.agents.first_message,
-            company: campaign.agents.company
-          } : null,
+          agent: agent,
           user: userProfile ? {
             id: userProfile.id,
             full_name: userProfile.full_name,
