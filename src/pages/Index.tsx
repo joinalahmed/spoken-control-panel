@@ -321,7 +321,7 @@ const Index = () => {
           )}
 
           {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
-            <div className="h-full bg-slate-900 p-6 overflow-y-auto">
+            <div className="h-full p-6 overflow-y-auto">
               <AgentList 
                 onSelectAgent={handleSelectAgent}
                 onCreateAgent={handleCreateNewAgent}
