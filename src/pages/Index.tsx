@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Phone, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import DashboardStats from '@/components/DashboardStats';
 import AgentList from '@/components/AgentList';
+import CreateAgentFlow from '@/components/CreateAgentFlow';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('agents');
@@ -87,7 +87,11 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex">
-        {activeTab === 'agents' && (
+        {activeTab === 'agents' && !selectedAgent && (
+          <CreateAgentFlow />
+        )}
+
+        {activeTab === 'agents' && selectedAgent && (
           <>
             {/* Agent List */}
             <div className="w-80 bg-white border-r border-gray-200">
@@ -95,7 +99,7 @@ const Index = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-900">All Agents</h2>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => setSelectedAgent(null)}>
                       <Plus className="w-4 h-4" />
                     </Button>
                     <Button size="sm" variant="outline">
