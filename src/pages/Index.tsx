@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, FileText, Phone, Settings, BarChart3, Plus } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,7 +117,6 @@ const Index = () => {
     { id: 'agents', label: 'Agents', icon: Users },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'files', label: 'Files', icon: FileText },
-    { id: 'phone', label: 'Phone Number', icon: Phone },
     { id: 'integrations', label: 'Integrations', icon: Settings },
     { id: 'call-logs', label: 'Call Logs', icon: BarChart3 },
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
