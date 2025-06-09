@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Search, Filter, SortAsc, Plus, Phone, Mail, MapPin, MoreHorizontal, Eye, Edit, Trash } from 'lucide-react';
+import { Search, Filter, SortAsc, Plus, MoreHorizontal, Eye, Edit, Trash, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -19,20 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-interface Contact {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  status: 'active' | 'inactive';
-  lastCalled: string;
-  avatar?: string;
-}
+import { useContacts, Contact } from '@/hooks/useContacts';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ContactsListProps {
   onCreateContact: () => void;
@@ -41,50 +29,26 @@ interface ContactsListProps {
 
 const ContactsList = ({ onCreateContact, onEditContact }: ContactsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [contacts] = useState<Contact[]>([
-    {
-      id: '1',
-      name: 'James Brown',
-      email: 'james@gmail.com',
-      phone: '+85095677468',
-      address: '3405 Parker Rd.',
-      city: 'London',
-      state: 'New York',
-      zipCode: '2000',
-      status: 'active',
-      lastCalled: '2/3/2025 at 5:40pm'
-    },
-    {
-      id: '2',
-      name: 'James Brown',
-      email: 'james@gmail.com',
-      phone: '+85095677468',
-      address: '6558 Green Rd.',
-      city: 'London',
-      state: 'New York',
-      zipCode: '2000',
-      status: 'active',
-      lastCalled: '2/3/2025 at 5:40pm'
-    },
-    {
-      id: '3',
-      name: 'James Brown',
-      email: 'james@gmail.com',
-      phone: '775 Rolling',
-      address: '3689 Poplar',
-      city: 'London',
-      state: 'New York',
-      zipCode: '2000',
-      status: 'inactive',
-      lastCalled: '2/3/2025 at 5:40pm'
-    }
-  ]);
+  const { contacts, isLoading, deleteContact } = useContacts();
 
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.phone.includes(searchTerm)
+    (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (contact.phone && contact.phone.includes(searchTerm))
   );
+
+  const formatLastCalled = (lastCalled: string | null) => {
+    if (!lastCalled) return 'Never';
+    return formatDistanceToNow(new Date(lastCalled), { addSuffix: true });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6">
@@ -123,79 +87,100 @@ const ContactsList = ({ onCreateContact, onEditContact }: ContactsListProps) => 
 
       {/* Contacts Table */}
       <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Phone Number</TableHead>
-              <TableHead>Last Called</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredContacts.map((contact) => (
-              <TableRow key={contact.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600">
-                        {contact.name.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{contact.name}</div>
-                      <div className="text-sm text-gray-500">{contact.email}</div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-gray-600">{contact.address}</TableCell>
-                <TableCell className="text-gray-600">{contact.phone}</TableCell>
-                <TableCell className="text-gray-600">{contact.lastCalled}</TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={contact.status === 'active' ? 'default' : 'secondary'}
-                    className={contact.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}
-                  >
-                    {contact.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="w-4 h-4 mr-2" />
-                        View
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEditContact(contact)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        <Trash className="w-4 h-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {filteredContacts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <p className="text-gray-500 mb-4">
+              {contacts.length === 0 ? 'No contacts found' : 'No contacts match your search'}
+            </p>
+            {contacts.length === 0 && (
+              <Button onClick={onCreateContact} className="bg-purple-600 hover:bg-purple-700">
+                Create Your First Contact
+              </Button>
+            )}
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Phone Number</TableHead>
+                <TableHead>Last Called</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredContacts.map((contact) => (
+                <TableRow key={contact.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-600">
+                          {contact.name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">{contact.name}</div>
+                        <div className="text-sm text-gray-500">{contact.email || 'No email'}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-gray-600">
+                    {contact.address ? `${contact.address}, ${contact.city || ''}, ${contact.state || ''}`.replace(/,\s*,/g, ',').replace(/,$/, '') : 'No address'}
+                  </TableCell>
+                  <TableCell className="text-gray-600">{contact.phone || 'No phone'}</TableCell>
+                  <TableCell className="text-gray-600">{formatLastCalled(contact.last_called)}</TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={contact.status === 'active' ? 'default' : 'secondary'}
+                      className={contact.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}
+                    >
+                      {contact.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Eye className="w-4 h-4 mr-2" />
+                          View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEditContact(contact)}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => deleteContact.mutate(contact.id)}
+                          className="text-red-600"
+                          disabled={deleteContact.isPending}
+                        >
+                          <Trash className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </Card>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-sm text-gray-600">
-          Page 1 of 10
+      {filteredContacts.length > 0 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-gray-600">
+            Showing {filteredContacts.length} of {contacts.length} contacts
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

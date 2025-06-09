@@ -9,6 +9,155 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agents: {
+        Row: {
+          conversations: number
+          created_at: string | null
+          description: string | null
+          first_message: string | null
+          id: string
+          knowledge_base_id: string | null
+          last_active: string | null
+          name: string
+          status: string
+          system_prompt: string | null
+          updated_at: string | null
+          user_id: string
+          voice: string
+        }
+        Insert: {
+          conversations?: number
+          created_at?: string | null
+          description?: string | null
+          first_message?: string | null
+          id?: string
+          knowledge_base_id?: string | null
+          last_active?: string | null
+          name: string
+          status?: string
+          system_prompt?: string | null
+          updated_at?: string | null
+          user_id: string
+          voice: string
+        }
+        Update: {
+          conversations?: number
+          created_at?: string | null
+          description?: string | null
+          first_message?: string | null
+          id?: string
+          knowledge_base_id?: string | null
+          last_active?: string | null
+          name?: string
+          status?: string
+          system_prompt?: string | null
+          updated_at?: string | null
+          user_id?: string
+          voice?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_agents_knowledge_base"
+            columns: ["knowledge_base_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_base"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          last_called: string | null
+          name: string
+          phone: string | null
+          state: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_called?: string | null
+          name: string
+          phone?: string | null
+          state?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_called?: string | null
+          name?: string
+          phone?: string | null
+          state?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      knowledge_base: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          date_added: string | null
+          description: string | null
+          id: string
+          last_modified: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          date_added?: string | null
+          description?: string | null
+          id?: string
+          last_modified?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          date_added?: string | null
+          description?: string | null
+          id?: string
+          last_modified?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

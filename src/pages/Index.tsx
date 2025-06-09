@@ -1,14 +1,16 @@
+
 import { useState } from 'react';
-import { Home, Users, FileText, Settings, BarChart3, Plus, LogOut, Heart, User } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { Agent } from '@/hooks/useAgents';
+import { Contact } from '@/hooks/useContacts';
+import { KnowledgeBaseItem } from '@/hooks/useKnowledgeBase';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
-import DashboardStats from '@/components/DashboardStats';
 import AgentList from '@/components/AgentList';
 import CreateAgentFlow from '@/components/CreateAgentFlow';
 import ContactsList from '@/components/ContactsList';
@@ -17,43 +19,6 @@ import KnowledgeBaseList from '@/components/KnowledgeBaseList';
 import CreateKnowledgeBaseForm from '@/components/CreateKnowledgeBaseForm';
 import HomeDashboard from '@/components/HomeDashboard';
 
-interface Agent {
-  id: string;
-  name: string;
-  voice: string;
-  status: 'active' | 'inactive';
-  conversations: number;
-  lastActive: string;
-  description: string;
-  systemPrompt?: string;
-  firstMessage?: string;
-  knowledgeBaseId?: string;
-}
-
-interface Contact {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  status: 'active' | 'inactive';
-  lastCalled: string;
-}
-
-interface KnowledgeBaseItem {
-  id: string;
-  title: string;
-  type: 'document' | 'faq' | 'guide' | 'other';
-  description: string;
-  dateAdded: string;
-  lastModified: string;
-  status: 'published' | 'draft';
-  tags: string[];
-}
-
 const Index = () => {
   const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('agents');
@@ -61,65 +26,6 @@ const Index = () => {
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
   const [knowledgeBaseView, setKnowledgeBaseView] = useState<'list' | 'create'>('list');
-  const [agents, setAgents] = useState<Agent[]>([
-    { 
-      id: '1', 
-      name: 'Agent Name 01', 
-      voice: 'Sarah', 
-      status: 'active', 
-      conversations: 247, 
-      lastActive: '2 hours ago',
-      description: 'Voice assistant for Mary\'s Dental office',
-      systemPrompt: 'You are a helpful dental office assistant.',
-      firstMessage: 'Hello! How can I help you with your dental needs today?',
-      knowledgeBaseId: '1'
-    },
-    { 
-      id: '2', 
-      name: 'Agent Name 02', 
-      voice: 'Alex', 
-      status: 'inactive', 
-      conversations: 156, 
-      lastActive: '1 day ago',
-      description: 'Customer support agent',
-      systemPrompt: 'You are a customer support specialist.',
-      firstMessage: 'Hi! I\'m here to help with any questions you have.',
-      knowledgeBaseId: '2'
-    },
-    { 
-      id: '3', 
-      name: 'Agent Name 03', 
-      voice: 'Charlotte', 
-      status: 'inactive', 
-      conversations: 89, 
-      lastActive: '3 days ago',
-      description: 'Sales assistant',
-      systemPrompt: 'You are a sales assistant focused on helping customers.',
-      firstMessage: 'Welcome! I\'m here to help you find what you\'re looking for.'
-    },
-    { 
-      id: '4', 
-      name: 'Agent Name 04', 
-      voice: 'Brian', 
-      status: 'inactive', 
-      conversations: 34, 
-      lastActive: '1 week ago',
-      description: 'Technical support agent',
-      systemPrompt: 'You are a technical support specialist.',
-      firstMessage: 'Hello! I can help you with any technical issues you\'re experiencing.'
-    },
-    { 
-      id: '5', 
-      name: 'Agent Name 05', 
-      voice: 'Sarah', 
-      status: 'inactive', 
-      conversations: 12, 
-      lastActive: '2 weeks ago',
-      description: 'General purpose assistant',
-      systemPrompt: 'You are a helpful general purpose assistant.',
-      firstMessage: 'Hi there! I\'m your assistant. How can I help you today?'
-    },
-  ]);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -132,7 +38,6 @@ const Index = () => {
   ];
 
   const handleAgentCreated = (newAgent: Agent) => {
-    setAgents(prev => [...prev, newAgent]);
     setShowCreateAgent(false);
     setSelectedAgent(newAgent);
   };
