@@ -233,7 +233,7 @@ const Index = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className={`flex-1 flex ${(activeTab === 'agents' && selectedAgent && !showCreateAgent) ? 'w-full' : ''}`}>
         {activeTab === 'home' && (
           <HomeDashboard />
         )}
