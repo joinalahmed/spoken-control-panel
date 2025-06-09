@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,7 +84,6 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
             </Button>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
