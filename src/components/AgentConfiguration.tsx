@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -94,8 +93,8 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
 
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200">
-        <Tabs defaultValue="model" className="w-full">
-          <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0">
+        <Tabs defaultValue="model" className="w-full h-full flex flex-col">
+          <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0 flex-shrink-0">
             <TabsTrigger 
               value="model" 
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
@@ -126,8 +125,8 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="model" className="bg-gray-50 flex-1 p-6 space-y-6">
-            <div className="grid grid-cols-2 gap-6">
+          <TabsContent value="model" className="bg-gray-50 flex-1 p-6 space-y-6 m-0 overflow-auto">
+            <div className="grid grid-cols-2 gap-6 h-full">
               {/* Left Column */}
               <div className="space-y-6">
                 {/* First Message */}
@@ -175,13 +174,13 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
               </div>
 
               {/* Right Column - System Prompt */}
-              <div className="space-y-2">
+              <div className="space-y-2 flex flex-col h-full">
                 <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">System Prompt</Label>
                 <Textarea
                   id="prompt"
                   value={config.prompt}
                   onChange={(e) => setConfig({...config, prompt: e.target.value})}
-                  className="w-full h-64 resize-none bg-white"
+                  className="w-full flex-1 resize-none bg-white min-h-0"
                 />
                 <p className="text-xs text-gray-500">
                   The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
@@ -190,7 +189,7 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             </div>
           </TabsContent>
 
-          <TabsContent value="voice" className="bg-gray-50 flex-1 p-6">
+          <TabsContent value="voice" className="bg-gray-50 flex-1 p-6 m-0">
             <div className="text-center py-12">
               <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Voice Configuration</h3>
@@ -198,7 +197,7 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             </div>
           </TabsContent>
 
-          <TabsContent value="functions" className="bg-gray-50 flex-1 p-6">
+          <TabsContent value="functions" className="bg-gray-50 flex-1 p-6 m-0">
             <div className="text-center py-12">
               <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Functions</h3>
@@ -206,7 +205,7 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             </div>
           </TabsContent>
 
-          <TabsContent value="advanced" className="bg-gray-50 flex-1 p-6">
+          <TabsContent value="advanced" className="bg-gray-50 flex-1 p-6 m-0">
             <div className="text-center py-12">
               <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Settings</h3>
