@@ -26,14 +26,13 @@ const Index = () => {
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
+  const [campaignsView, setCampaignsView] = useState<'overview' | 'call-logs'>('overview');
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'agents', label: 'Agents', icon: Users },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'files', label: 'Knowledge Bases', icon: FileText },
-    { id: 'integrations', label: 'Integrations', icon: Settings },
-    { id: 'call-logs', label: 'Call Logs', icon: BarChart3 },
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
   ];
 
@@ -120,6 +119,9 @@ const Index = () => {
                   if (item.id === 'agents') {
                     setShowCreateAgent(false);
                     setSelectedAgent(null);
+                  }
+                  if (item.id === 'campaigns') {
+                    setCampaignsView('overview');
                   }
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
@@ -222,14 +224,43 @@ const Index = () => {
             />
           )}
 
-          {activeTab === 'call-logs' && (
+          {activeTab === 'campaigns' && campaignsView === 'overview' && (
+            <div className="flex-1 p-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Campaigns</CardTitle>
+                  <CardDescription>Manage your voice campaigns and view call logs</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button 
+                    onClick={() => setCampaignsView('call-logs')}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    View Call Logs
+                  </Button>
+                  <p className="text-gray-600">Campaign management features coming soon</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'call-logs' && (
             <div className="flex-1">
+              <div className="p-6">
+                <Button 
+                  onClick={() => setCampaignsView('overview')}
+                  variant="outline" 
+                  className="mb-4"
+                >
+                  ← Back to Campaigns
+                </Button>
+              </div>
               <ConversationInterface />
             </div>
           )}
 
           {/* Default content for other tabs */}
-          {!['agents', 'home', 'call-logs', 'contacts', 'files'].includes(activeTab) && (
+          {!['agents', 'home', 'campaigns', 'contacts', 'files'].includes(activeTab) && (
             <div className="flex-1 p-6">
               <Card>
                 <CardHeader>
