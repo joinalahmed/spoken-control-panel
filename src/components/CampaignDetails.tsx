@@ -1,9 +1,16 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity } from 'lucide-react';
-import { Campaign } from '@/hooks/useCampaigns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X } from 'lucide-react';
+import { Campaign, useCampaigns } from '@/hooks/useCampaigns';
+import { useAgents } from '@/hooks/useAgents';
+import { useContacts } from '@/hooks/useContacts';
 import CallAnalyticsTable from './CallAnalyticsTable';
 
 interface CampaignDetailsProps {
@@ -13,6 +20,19 @@ interface CampaignDetailsProps {
 }
 
 const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: campaign.name,
+    description: campaign.description || '',
+    status: campaign.status,
+    agentId: campaign.agent_id || '',
+    contactIds: campaign.contact_ids || []
+  });
+
+  const { updateCampaign } = useCampaigns();
+  const { agents } = useAgents();
+  const { contacts } = useContacts();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -26,6 +46,46 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const handleInputChange = (field: string, value: string | string[]) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleContactToggle = (contactId: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      contactIds: prev.contactIds.includes(contactId)
+        ? prev.contactIds.filter(id => id !== contactId)
+        : [...prev.contactIds, contactId]
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        name: editForm.name,
+        description: editForm.description,
+        status: editForm.status as any,
+        agent_id: editForm.agentId || null,
+        contact_ids: editForm.contactIds
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating campaign:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditForm({
+      name: campaign.name,
+      description: campaign.description || '',
+      status: campaign.status,
+      agentId: campaign.agent_id || '',
+      contactIds: campaign.contact_ids || []
+    });
+    setIsEditing(false);
   };
 
   // Mock metrics data - in a real app, this would come from the database
@@ -50,88 +110,192 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
         </Button>
         
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{campaign.name}</h1>
-            <p className="text-gray-600 mb-4">{campaign.description || 'No description provided'}</p>
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className={getStatusColor(campaign.status)}>
-                {campaign.status}
-              </Badge>
-              <div className="flex items-center gap-2 text-gray-600 text-sm">
-                <Users className="w-4 h-4" />
-                <span>{campaign.contact_ids.length} contacts</span>
+          <div className="flex-1">
+            {isEditing ? (
+              <div className="space-y-4 max-w-2xl">
+                <div>
+                  <Label htmlFor="campaign-name">Campaign Name</Label>
+                  <Input
+                    id="campaign-name"
+                    value={editForm.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className="text-2xl font-bold"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="campaign-description">Description</Label>
+                  <Textarea
+                    id="campaign-description"
+                    value={editForm.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Enter campaign description"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="campaign-status">Status</Label>
+                    <Select value={editForm.status} onValueChange={(value) => handleInputChange('status', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="paused">Paused</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Label htmlFor="campaign-agent">Agent</Label>
+                    <Select value={editForm.agentId} onValueChange={(value) => handleInputChange('agentId', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an agent" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agents.map((agent) => (
+                          <SelectItem key={agent.id} value={agent.id}>
+                            {agent.name} - {agent.voice}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>Select Contacts</Label>
+                  <div className="mt-2 max-h-64 overflow-y-auto border rounded-md p-4 bg-white">
+                    {contacts.length === 0 ? (
+                      <p className="text-sm text-gray-500">No contacts available.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {contacts.map((contact) => (
+                          <label key={contact.id} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editForm.contactIds.includes(contact.id)}
+                              onChange={() => handleContactToggle(contact.id)}
+                              className="rounded border-gray-300"
+                            />
+                            <span className="text-sm">
+                              {contact.name} {contact.email && `(${contact.email})`}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Selected: {editForm.contactIds.length} contact(s)
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700">
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </Button>
+                  <Button onClick={handleCancel} variant="outline">
+                    <X className="w-4 h-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-gray-600 text-sm">
-                <Calendar className="w-4 h-4" />
-                <span>Created {new Date(campaign.created_at).toLocaleDateString()}</span>
-              </div>
-            </div>
+            ) : (
+              <>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{campaign.name}</h1>
+                <p className="text-gray-600 mb-4">{campaign.description || 'No description provided'}</p>
+                <div className="flex items-center gap-4">
+                  <Badge variant="outline" className={getStatusColor(campaign.status)}>
+                    {campaign.status}
+                  </Badge>
+                  <div className="flex items-center gap-2 text-gray-600 text-sm">
+                    <Users className="w-4 h-4" />
+                    <span>{campaign.contact_ids.length} contacts</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600 text-sm">
+                    <Calendar className="w-4 h-4" />
+                    <span>Created {new Date(campaign.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
+          {!isEditing && (
+            <Button onClick={() => setIsEditing(true)} variant="outline">
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Campaign
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Metrics Cards */}
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
-              <Phone className="w-5 h-5 text-purple-600" />
-              Total Calls
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.totalCalls}</div>
-            <p className="text-gray-600 text-sm">Calls initiated</p>
-          </CardContent>
-        </Card>
+      {!isEditing && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Metrics Cards */}
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                  <Phone className="w-5 h-5 text-purple-600" />
+                  Total Calls
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.totalCalls}</div>
+                <p className="text-gray-600 text-sm">Calls initiated</p>
+              </CardContent>
+            </Card>
 
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
-              Success Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.conversionRate}</div>
-            <p className="text-gray-600 text-sm">{metrics.successfulCalls} successful calls</p>
-          </CardContent>
-        </Card>
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-emerald-600" />
+                  Success Rate
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.conversionRate}</div>
+                <p className="text-gray-600 text-sm">{metrics.successfulCalls} successful calls</p>
+              </CardContent>
+            </Card>
 
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-600" />
-              Avg Duration
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.averageCallDuration}</div>
-            <p className="text-gray-600 text-sm">Per call</p>
-          </CardContent>
-        </Card>
-      </div>
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                  Avg Duration
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.averageCallDuration}</div>
+                <p className="text-gray-600 text-sm">Per call</p>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Call Analytics Table */}
-      <div className="space-y-6">
-        <Card className="bg-white border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-gray-900 flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              Campaign Call Analytics
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Post-call analytics with recordings, transcripts, and extracted insights
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <CallAnalyticsTable 
-              campaignId={campaign.id}
-              onCallClick={onCallClick}
-            />
-          </CardContent>
-        </Card>
-      </div>
+          {/* Call Analytics Table */}
+          <div className="space-y-6">
+            <Card className="bg-white border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Campaign Call Analytics
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  Post-call analytics with recordings, transcripts, and extracted insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <CallAnalyticsTable 
+                  campaignId={campaign.id}
+                  onCallClick={onCallClick}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 };
