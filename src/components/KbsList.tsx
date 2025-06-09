@@ -52,7 +52,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   if (isLoading) {
     return (
       <div className="flex-1 p-6">
-        <div className="text-center">Loading KBS items...</div>
+        <div className="text-center">Loading knowledge base items...</div>
       </div>
     );
   }
@@ -62,8 +62,8 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">KBS</h1>
-          <p className="text-gray-600">Manage your KBS content</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Knowledge Bases</h1>
+          <p className="text-gray-600">Manage your knowledge base content</p>
         </div>
         <Button onClick={onCreateItem} className="bg-purple-600 hover:bg-purple-700">
           <Plus className="w-4 h-4 mr-2" />
@@ -76,7 +76,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search KBS..."
+            placeholder="Search knowledge base..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -92,7 +92,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
         </Button>
       </div>
 
-      {/* KBS Table */}
+      {/* Knowledge Base Table */}
       <Card>
         <Table>
           <TableHeader>
