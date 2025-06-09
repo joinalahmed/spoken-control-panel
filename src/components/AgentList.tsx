@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2, Phone, Clock, MessageSquare, Calendar } from 'lucide-react';
+import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2, Phone, Clock, MessageSquare, Calendar, Building } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -160,28 +160,15 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                   </div>
                 </div>
 
-                {/* System Prompt Preview */}
-                {agent.system_prompt && (
+                {/* Company Name */}
+                {agent.company && (
                   <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-600">
                     <div className="flex items-center gap-2 mb-2">
-                      <Settings className="w-4 h-4 text-slate-400" />
-                      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">System Prompt</span>
+                      <Building className="w-4 h-4 text-slate-400" />
+                      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Company</span>
                     </div>
-                    <p className="text-slate-300 text-sm line-clamp-3">
-                      {agent.system_prompt}
-                    </p>
-                  </div>
-                )}
-
-                {/* First Message Preview */}
-                {agent.first_message && (
-                  <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-600">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MessageSquare className="w-4 h-4 text-slate-400" />
-                      <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">First Message</span>
-                    </div>
-                    <p className="text-slate-300 text-sm line-clamp-2">
-                      "{agent.first_message}"
+                    <p className="text-slate-300 text-sm font-medium">
+                      {agent.company}
                     </p>
                   </div>
                 )}

@@ -15,6 +15,7 @@ export interface Agent {
   system_prompt: string | null;
   first_message: string | null;
   knowledge_base_id: string | null;
+  company: string | null;
   created_at: string;
   updated_at: string;
 }
