@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity } from 'lucide-react';
 import { Campaign } from '@/hooks/useCampaigns';
-import ConversationInterface from './ConversationInterface';
+import CallAnalyticsTable from './CallAnalyticsTable';
 
 interface CampaignDetailsProps {
   campaign: Campaign;
   onBack: () => void;
+  onCallClick: (callId: string) => void;
 }
 
-const CampaignDetails = ({ campaign, onBack }: CampaignDetailsProps) => {
+const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -109,20 +110,23 @@ const CampaignDetails = ({ campaign, onBack }: CampaignDetailsProps) => {
         </Card>
       </div>
 
-      {/* Call Logs Section */}
+      {/* Call Analytics Table */}
       <div className="space-y-6">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Activity className="w-5 h-5" />
-              Campaign Activity & Call Logs
+              Campaign Call Analytics
             </CardTitle>
             <CardDescription className="text-slate-400">
-              Real-time conversation interface and call history for this campaign
+              Post-call analytics with recordings, transcripts, and extracted insights
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <ConversationInterface />
+            <CallAnalyticsTable 
+              campaignId={campaign.id}
+              onCallClick={onCallClick}
+            />
           </CardContent>
         </Card>
       </div>

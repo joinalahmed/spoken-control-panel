@@ -22,6 +22,7 @@ import CampaignsList from '@/components/CampaignsList';
 import CreateCampaignForm from '@/components/CreateCampaignForm';
 import CampaignDetails from '@/components/CampaignDetails';
 import ViewContactModal from '@/components/ViewContactModal';
+import CallDetails from '@/components/CallDetails';
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -35,8 +36,9 @@ const Index = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [viewingContact, setViewingContact] = useState<Contact | null>(null);
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
-  const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'details'>('overview');
+  const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'details' | 'call-details'>('overview');
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -205,6 +207,16 @@ const Index = () => {
 
   const handleSelectCampaign = (campaignId: string) => {
     setSelectedCampaignId(campaignId);
+    setCampaignsView('details');
+  };
+
+  const handleCallClick = (callId: string) => {
+    setSelectedCallId(callId);
+    setCampaignsView('call-details');
+  };
+
+  const handleBackToCampaignDetails = () => {
+    setSelectedCallId(null);
     setCampaignsView('details');
   };
 
@@ -405,6 +417,16 @@ const Index = () => {
               <CampaignDetails 
                 campaign={campaigns.find(c => c.id === selectedCampaignId)!}
                 onBack={() => setCampaignsView('overview')}
+                onCallClick={handleCallClick}
+              />
+            </div>
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'call-details' && selectedCallId && (
+            <div className="h-full overflow-y-auto">
+              <CallDetails 
+                callId={selectedCallId}
+                onBack={handleBackToCampaignDetails}
               />
             </div>
           )}
