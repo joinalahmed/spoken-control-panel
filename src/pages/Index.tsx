@@ -20,6 +20,7 @@ import CreateKbsForm from '@/components/CreateKbsForm';
 import HomeDashboard from '@/components/HomeDashboard';
 import CampaignsList from '@/components/CampaignsList';
 import CreateCampaignForm from '@/components/CreateCampaignForm';
+import ViewContactModal from '@/components/ViewContactModal';
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -31,8 +32,10 @@ const Index = () => {
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [viewingContact, setViewingContact] = useState<Contact | null>(null);
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
   const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'call-logs'>('overview');
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -155,6 +158,10 @@ const Index = () => {
     setContactsView('create');
   };
 
+  const handleViewContact = (contact: Contact) => {
+    setViewingContact(contact);
+  };
+
   const handleCreateKbsItem = () => {
     setKbsView('create');
   };
@@ -193,6 +200,11 @@ const Index = () => {
     } catch (error) {
       console.error('Error saving campaign:', error);
     }
+  };
+
+  const handleViewCampaignCallLogs = (campaignId: string) => {
+    setSelectedCampaignId(campaignId);
+    setCampaignsView('call-logs');
   };
 
   const handleLogout = async () => {
@@ -328,6 +340,12 @@ const Index = () => {
               <ContactsList 
                 onCreateContact={handleCreateContact}
                 onEditContact={handleEditContact}
+                onViewContact={handleViewContact}
+              />
+              <ViewContactModal 
+                contact={viewingContact}
+                isOpen={!!viewingContact}
+                onClose={() => setViewingContact(null)}
               />
             </div>
           )}
@@ -367,7 +385,7 @@ const Index = () => {
             <div className="h-full overflow-y-auto">
               <CampaignsList 
                 onCreateCampaign={handleCreateCampaign}
-                onViewCallLogs={() => setCampaignsView('call-logs')}
+                onViewCallLogs={handleViewCampaignCallLogs}
               />
             </div>
           )}
@@ -391,6 +409,9 @@ const Index = () => {
                 >
                   ← Back to Campaigns
                 </Button>
+                <h2 className="text-xl font-semibold mb-4">
+                  Call Logs {selectedCampaignId && `for Campaign`}
+                </h2>
               </div>
               <ConversationInterface />
             </div>

@@ -2,11 +2,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Phone, Users, Calendar } from 'lucide-react';
 
 interface CampaignsListProps {
   onCreateCampaign: () => void;
-  onViewCallLogs: () => void;
+  onViewCallLogs: (campaignId: string) => void;
 }
 
 const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps) => {
@@ -51,19 +51,19 @@ const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps)
 
           <Card>
             <CardHeader>
-              <CardTitle>Call Logs</CardTitle>
-              <CardDescription>View and analyze your campaign call history</CardDescription>
+              <CardTitle>Getting Started</CardTitle>
+              <CardDescription>Set up your first voice campaign</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-600">
-                Track all conversations and interactions from your campaigns.
+                Get started by creating agents, adding contacts, and launching your first campaign.
               </p>
               <Button 
-                onClick={onViewCallLogs}
+                onClick={onCreateCampaign}
                 variant="outline"
                 className="border-purple-600 text-purple-600 hover:bg-purple-50"
               >
-                View Call Logs
+                Learn More
               </Button>
             </CardContent>
           </Card>
@@ -72,7 +72,7 @@ const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps)
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map((campaign) => (
-              <Card key={campaign.id}>
+              <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">{campaign.name}</CardTitle>
                   <CardDescription>{campaign.description}</CardDescription>
@@ -89,35 +89,33 @@ const CampaignsList = ({ onCreateCampaign, onViewCallLogs }: CampaignsListProps)
                       {campaign.status}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <span>Contacts: {campaign.contact_ids.length}</span>
+                  
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      <span>{campaign.contact_ids.length} contacts</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{new Date(campaign.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Created: {new Date(campaign.created_at).toLocaleDateString()}
+
+                  <div className="pt-2 border-t border-gray-100">
+                    <Button 
+                      onClick={() => onViewCallLogs(campaign.id)}
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-purple-600 text-purple-600 hover:bg-purple-50"
+                    >
+                      <Phone className="w-4 h-4 mr-2" />
+                      View Call Logs
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Call Logs</CardTitle>
-              <CardDescription>View and analyze your campaign call history</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-600">
-                Track all conversations and interactions from your campaigns.
-              </p>
-              <Button 
-                onClick={onViewCallLogs}
-                variant="outline"
-                className="border-purple-600 text-purple-600 hover:bg-purple-50"
-              >
-                View Call Logs
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       )}
     </div>

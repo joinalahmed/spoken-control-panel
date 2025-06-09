@@ -25,9 +25,10 @@ import { formatDistanceToNow } from 'date-fns';
 interface ContactsListProps {
   onCreateContact: () => void;
   onEditContact: (contact: Contact) => void;
+  onViewContact: (contact: Contact) => void;
 }
 
-const ContactsList = ({ onCreateContact, onEditContact }: ContactsListProps) => {
+const ContactsList = ({ onCreateContact, onEditContact, onViewContact }: ContactsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { contacts, isLoading, deleteContact } = useContacts();
 
@@ -147,7 +148,7 @@ const ContactsList = ({ onCreateContact, onEditContact }: ContactsListProps) => 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onViewContact(contact)}>
                           <Eye className="w-4 h-4 mr-2" />
                           View
                         </DropdownMenuItem>
