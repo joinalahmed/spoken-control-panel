@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAgents, Agent } from '@/hooks/useAgents';
-import { Contact } from '@/hooks/useContacts';
+import { Contact, useContacts } from '@/hooks/useContacts';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
@@ -23,10 +23,12 @@ import CreateCampaignForm from '@/components/CreateCampaignForm';
 
 const Index = () => {
   const { user, signOut } = useAuth();
+  const { createContact } = useContacts();
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
   const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'call-logs'>('overview');
 
@@ -59,16 +61,46 @@ const Index = () => {
   };
 
   const handleCreateContact = () => {
+    setEditingContact(null);
     setContactsView('create');
   };
 
-  const handleContactSaved = (contactData: any) => {
-    console.log('Contact saved:', contactData);
-    setContactsView('list');
+  const handleContactSaved = async (contactData: any) => {
+    try {
+      console.log('Saving contact:', contactData);
+      
+      // Map the form data to match the database schema
+      const mappedContactData = {
+        name: contactData.name,
+        email: contactData.email || null,
+        phone: contactData.phoneNumber || null,
+        address: contactData.address || null,
+        city: contactData.city || null,
+        state: contactData.state || null,
+        zip_code: contactData.zipCode || null,
+        status: 'active' as const,
+        last_called: null
+      };
+
+      console.log('Mapped contact data:', mappedContactData);
+      
+      if (editingContact) {
+        // TODO: Implement update contact functionality
+        console.log('Updating contact:', editingContact.id, mappedContactData);
+      } else {
+        await createContact.mutateAsync(mappedContactData);
+      }
+      
+      setContactsView('list');
+      setEditingContact(null);
+    } catch (error) {
+      console.error('Error saving contact:', error);
+    }
   };
 
   const handleEditContact = (contact: Contact) => {
     console.log('Edit contact:', contact);
+    setEditingContact(contact);
     setContactsView('create');
   };
 
@@ -216,8 +248,12 @@ const Index = () => {
 
           {activeTab === 'contacts' && contactsView === 'create' && (
             <CreateContactForm 
-              onBack={() => setContactsView('list')}
+              onBack={() => {
+                setContactsView('list');
+                setEditingContact(null);
+              }}
               onSave={handleContactSaved}
+              editingContact={editingContact}
             />
           )}
 

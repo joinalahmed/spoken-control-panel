@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Contact } from '@/hooks/useContacts';
 
 interface CreateContactFormProps {
   onBack: () => void;
   onSave: (contact: any) => void;
+  editingContact?: Contact | null;
 }
 
 const countries = [
@@ -152,7 +153,7 @@ const states = [
   { value: 'NT', label: 'Northern Territory', country: 'AU' },
 ];
 
-const CreateContactForm = ({ onBack, onSave }: CreateContactFormProps) => {
+const CreateContactForm = ({ onBack, onSave, editingContact }: CreateContactFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -164,6 +165,48 @@ const CreateContactForm = ({ onBack, onSave }: CreateContactFormProps) => {
     note: '',
     country: 'US'
   });
+
+  // Pre-fill form when editing a contact
+  useEffect(() => {
+    if (editingContact) {
+      console.log('Editing contact:', editingContact);
+      
+      // Extract phone number without country code for editing
+      let phoneWithoutCode = editingContact.phone || '';
+      if (editingContact.phone) {
+        // Try to extract the phone number part (remove country code)
+        const phoneMatch = editingContact.phone.match(/^\+\d+\s(.+)$/);
+        if (phoneMatch) {
+          phoneWithoutCode = phoneMatch[1];
+        }
+      }
+
+      setFormData({
+        name: editingContact.name || '',
+        email: editingContact.email || '',
+        address: editingContact.address || '',
+        city: editingContact.city || '',
+        state: editingContact.state || '',
+        zipCode: editingContact.zip_code || '',
+        phoneNumber: phoneWithoutCode,
+        note: '', // Note is not stored in the database schema
+        country: 'US' // Default to US, could be enhanced to detect from phone
+      });
+    } else {
+      // Reset form for new contact
+      setFormData({
+        name: '',
+        email: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        phoneNumber: '',
+        note: '',
+        country: 'US'
+      });
+    }
+  }, [editingContact]);
 
   const selectedCountry = countries.find(c => c.code === formData.country) || countries[0];
   const availableStates = states.filter(state => state.country === formData.country);
@@ -178,15 +221,20 @@ const CreateContactForm = ({ onBack, onSave }: CreateContactFormProps) => {
   };
 
   const handleSave = () => {
+    console.log('Form data before save:', formData);
+    
     // Format phone number with country code
     const fullPhoneNumber = formData.phoneNumber 
       ? `${selectedCountry.dialCode} ${formData.phoneNumber}`
       : '';
     
-    onSave({
+    const contactData = {
       ...formData,
       phoneNumber: fullPhoneNumber
-    });
+    };
+    
+    console.log('Formatted contact data:', contactData);
+    onSave(contactData);
   };
 
   return (
@@ -196,7 +244,9 @@ const CreateContactForm = ({ onBack, onSave }: CreateContactFormProps) => {
         <Button variant="ghost" size="sm" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
-        <h1 className="text-2xl font-semibold text-gray-900">Create New Contact</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">
+          {editingContact ? 'Edit Contact' : 'Create New Contact'}
+        </h1>
       </div>
 
       <div className="max-w-2xl">
@@ -231,12 +281,13 @@ const CreateContactForm = ({ onBack, onSave }: CreateContactFormProps) => {
             <div className="grid grid-cols-2 gap-4">
               {/* Name */}
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Wilson Smith"
+                  required
                 />
               </div>
 
@@ -372,8 +423,12 @@ const CreateContactForm = ({ onBack, onSave }: CreateContactFormProps) => {
               <Button variant="outline" onClick={onBack}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700">
-                Save Contact
+              <Button 
+                onClick={handleSave} 
+                className="bg-purple-600 hover:bg-purple-700"
+                disabled={!formData.name.trim()}
+              >
+                {editingContact ? 'Update Contact' : 'Save Contact'}
               </Button>
             </div>
           </CardContent>
