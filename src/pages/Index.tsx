@@ -224,18 +224,8 @@ const Index = ({ onLogout }: IndexProps) => {
           ))}
         </nav>
 
-        {/* Upgrade Section */}
+        {/* Logout Section */}
         <div className="p-4 border-t border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <div className="text-sm text-gray-600 mb-2">Upgrade to <Badge variant="secondary" className="bg-purple-100 text-purple-700">Propel</Badge></div>
-            <div className="text-lg font-bold text-gray-900 mb-1">Ignite</div>
-            <div className="text-sm text-gray-600 mb-3">1,980 Credit Left</div>
-            <Button className="w-full bg-purple-600 hover:bg-purple-700">
-              Upgrade Plan
-            </Button>
-          </div>
-          
-          {/* Logout Button */}
           <Button 
             onClick={onLogout}
             variant="outline" 
