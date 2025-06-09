@@ -91,25 +91,25 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
+        return 'bg-green-100 text-green-800 border-green-200';
       case 'failed':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
+        return 'bg-red-100 text-red-800 border-red-200';
       case 'no-answer':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'voicemail':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
-        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getOutcomeIcon = (outcome: string, sentiment: number) => {
     if (outcome === 'positive' || sentiment > 0.3) {
-      return <TrendingUp className="w-4 h-4 text-green-400" />;
+      return <TrendingUp className="w-4 h-4 text-green-600" />;
     } else if (outcome === 'negative' || sentiment < -0.3) {
-      return <TrendingDown className="w-4 h-4 text-red-400" />;
+      return <TrendingDown className="w-4 h-4 text-red-600" />;
     }
-    return <div className="w-4 h-4 rounded-full bg-slate-500" />;
+    return <div className="w-4 h-4 rounded-full bg-gray-400" />;
   };
 
   const formatTime = (date: Date) => {
@@ -121,43 +121,43 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
   };
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg">
-      <div className="p-4 border-b border-slate-700">
-        <h3 className="text-lg font-semibold text-white">Call History</h3>
-        <p className="text-slate-400 text-sm">Click on any call to view detailed analytics</p>
+    <div className="bg-white border border-gray-200 rounded-lg">
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">Call History</h3>
+        <p className="text-gray-600 text-sm">Click on any call to view detailed analytics</p>
       </div>
       
       <Table>
         <TableHeader>
-          <TableRow className="border-slate-700 hover:bg-slate-800/30">
-            <TableHead className="text-slate-300">Contact</TableHead>
-            <TableHead className="text-slate-300">Phone</TableHead>
-            <TableHead className="text-slate-300">Date & Time</TableHead>
-            <TableHead className="text-slate-300">Duration</TableHead>
-            <TableHead className="text-slate-300">Status</TableHead>
-            <TableHead className="text-slate-300">Outcome</TableHead>
-            <TableHead className="text-slate-300">Recording</TableHead>
-            <TableHead className="text-slate-300">Actions</TableHead>
+          <TableRow className="border-gray-200 hover:bg-gray-50">
+            <TableHead className="text-gray-700">Contact</TableHead>
+            <TableHead className="text-gray-700">Phone</TableHead>
+            <TableHead className="text-gray-700">Date & Time</TableHead>
+            <TableHead className="text-gray-700">Duration</TableHead>
+            <TableHead className="text-gray-700">Status</TableHead>
+            <TableHead className="text-gray-700">Outcome</TableHead>
+            <TableHead className="text-gray-700">Recording</TableHead>
+            <TableHead className="text-gray-700">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {calls.map((call) => (
             <TableRow 
               key={call.id}
-              className="border-slate-700 hover:bg-slate-800/50 cursor-pointer transition-colors"
+              className="border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
               onClick={() => onCallClick(call.id)}
             >
-              <TableCell className="text-white font-medium">{call.contactName}</TableCell>
-              <TableCell className="text-slate-300">{call.contactPhone}</TableCell>
-              <TableCell className="text-slate-300">
+              <TableCell className="text-gray-900 font-medium">{call.contactName}</TableCell>
+              <TableCell className="text-gray-700">{call.contactPhone}</TableCell>
+              <TableCell className="text-gray-700">
                 <div className="flex flex-col">
                   <span>{formatDate(call.timestamp)}</span>
-                  <span className="text-xs text-slate-500">{formatTime(call.timestamp)}</span>
+                  <span className="text-xs text-gray-500">{formatTime(call.timestamp)}</span>
                 </div>
               </TableCell>
-              <TableCell className="text-slate-300">
+              <TableCell className="text-gray-700">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-slate-500" />
+                  <Clock className="w-4 h-4 text-gray-500" />
                   {call.duration}
                 </div>
               </TableCell>
@@ -169,15 +169,15 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
               <TableCell>
                 <div className="flex items-center gap-2">
                   {getOutcomeIcon(call.outcome, call.sentiment)}
-                  <span className="text-slate-300 capitalize">{call.outcome}</span>
+                  <span className="text-gray-700 capitalize">{call.outcome}</span>
                 </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   {call.hasRecording && (
-                    <Play className="w-4 h-4 text-blue-400" />
+                    <Play className="w-4 h-4 text-blue-600" />
                   )}
-                  <span className="text-slate-300 text-sm">
+                  <span className="text-gray-700 text-sm">
                     {call.hasRecording ? 'Available' : 'N/A'}
                   </span>
                 </div>
@@ -186,7 +186,7 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     onCallClick(call.id);
