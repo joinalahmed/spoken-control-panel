@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,9 +6,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Agent } from '@/hooks/useAgents';
+import { useAgents, Agent } from '@/hooks/useAgents';
 import { Contact } from '@/hooks/useContacts';
-import { KnowledgeBaseItem } from '@/hooks/useKnowledgeBase';
+import { useKnowledgeBase, KnowledgeBaseItem } from '@/hooks/useKnowledgeBase';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
