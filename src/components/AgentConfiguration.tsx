@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Phone, Copy, Volume2, Brain, Zap, Settings } from 'lucide-react';
+import { Phone, Copy, Volume2, Brain, Zap, Settings, ArrowLeft } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -20,9 +20,10 @@ interface Agent {
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
+  onBack?: () => void;
 }
 
-const AgentConfiguration = ({ selectedAgent }: AgentConfigurationProps) => {
+const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) => {
   const [config, setConfig] = useState({
     name: selectedAgent?.name || '',
     description: selectedAgent?.description || '',
@@ -50,6 +51,12 @@ const AgentConfiguration = ({ selectedAgent }: AgentConfigurationProps) => {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            {onBack && (
+              <Button variant="ghost" onClick={onBack} className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                All Agents
+              </Button>
+            )}
             <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>lwigfweg0wee</span>

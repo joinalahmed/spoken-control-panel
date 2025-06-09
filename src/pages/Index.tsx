@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -254,45 +253,12 @@ const Index = () => {
         )}
 
         {activeTab === 'agents' && selectedAgent && !showCreateAgent && (
-          <>
-            {/* Agent List */}
-            <div className="w-80 bg-white border-r border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">All Agents</h2>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={handleCreateNewAgent}>
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={handleBackToAgentsList}>
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-4">
-                {agents.map((agent) => (
-                  <button
-                    key={agent.id}
-                    onClick={() => handleSelectAgent(agent)}
-                    className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
-                      selectedAgent?.id === agent.id
-                        ? 'bg-purple-50 border border-purple-200'
-                        : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="font-medium text-gray-900">{agent.name}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Agent Configuration */}
-            <div className="flex-1">
-              <AgentConfiguration selectedAgent={selectedAgent} />
-            </div>
-          </>
+          <div className="flex-1">
+            <AgentConfiguration 
+              selectedAgent={selectedAgent} 
+              onBack={handleBackToAgentsList}
+            />
+          </div>
         )}
 
         {activeTab === 'contacts' && contactsView === 'list' && (
