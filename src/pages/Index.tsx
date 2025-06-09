@@ -40,9 +40,9 @@ const Index = () => {
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
   ];
 
-  const handleAgentCreated = (newAgent: Agent) => {
+  const handleAgentCreated = (agent: Agent) => {
     setShowCreateAgent(false);
-    setSelectedAgent(newAgent);
+    setSelectedAgent(agent);
   };
 
   const handleSelectAgent = (agent: Agent) => {

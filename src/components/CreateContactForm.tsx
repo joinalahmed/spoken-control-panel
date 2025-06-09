@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,61 +15,61 @@ interface CreateContactFormProps {
 }
 
 const countries = [
-  { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸' },
-  { code: 'CA', name: 'Canada', dialCode: '+1', flag: '🇨🇦' },
-  { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧' },
+  { code: 'AR', name: 'Argentina', dialCode: '+54', flag: '🇦🇷' },
   { code: 'AU', name: 'Australia', dialCode: '+61', flag: '🇦🇺' },
-  { code: 'DE', name: 'Germany', dialCode: '+49', flag: '🇩🇪' },
-  { code: 'FR', name: 'France', dialCode: '+33', flag: '🇫🇷' },
-  { code: 'IT', name: 'Italy', dialCode: '+39', flag: '🇮🇹' },
-  { code: 'ES', name: 'Spain', dialCode: '+34', flag: '🇪🇸' },
-  { code: 'NL', name: 'Netherlands', dialCode: '+31', flag: '🇳🇱' },
-  { code: 'SE', name: 'Sweden', dialCode: '+46', flag: '🇸🇪' },
-  { code: 'NO', name: 'Norway', dialCode: '+47', flag: '🇳🇴' },
-  { code: 'DK', name: 'Denmark', dialCode: '+45', flag: '🇩🇰' },
-  { code: 'FI', name: 'Finland', dialCode: '+358', flag: '🇫🇮' },
-  { code: 'BE', name: 'Belgium', dialCode: '+32', flag: '🇧🇪' },
-  { code: 'CH', name: 'Switzerland', dialCode: '+41', flag: '🇨🇭' },
   { code: 'AT', name: 'Austria', dialCode: '+43', flag: '🇦🇹' },
-  { code: 'IE', name: 'Ireland', dialCode: '+353', flag: '🇮🇪' },
-  { code: 'PT', name: 'Portugal', dialCode: '+351', flag: '🇵🇹' },
-  { code: 'GR', name: 'Greece', dialCode: '+30', flag: '🇬🇷' },
-  { code: 'PL', name: 'Poland', dialCode: '+48', flag: '🇵🇱' },
-  { code: 'CZ', name: 'Czech Republic', dialCode: '+420', flag: '🇨🇿' },
-  { code: 'HU', name: 'Hungary', dialCode: '+36', flag: '🇭🇺' },
-  { code: 'SK', name: 'Slovakia', dialCode: '+421', flag: '🇸🇰' },
-  { code: 'SI', name: 'Slovenia', dialCode: '+386', flag: '🇸🇮' },
-  { code: 'HR', name: 'Croatia', dialCode: '+385', flag: '🇭🇷' },
-  { code: 'RO', name: 'Romania', dialCode: '+40', flag: '🇷🇴' },
+  { code: 'BE', name: 'Belgium', dialCode: '+32', flag: '🇧🇪' },
+  { code: 'BO', name: 'Bolivia', dialCode: '+591', flag: '🇧🇴' },
+  { code: 'BR', name: 'Brazil', dialCode: '+55', flag: '🇧🇷' },
   { code: 'BG', name: 'Bulgaria', dialCode: '+359', flag: '🇧🇬' },
-  { code: 'LT', name: 'Lithuania', dialCode: '+370', flag: '🇱🇹' },
-  { code: 'LV', name: 'Latvia', dialCode: '+371', flag: '🇱🇻' },
+  { code: 'CA', name: 'Canada', dialCode: '+1', flag: '🇨🇦' },
+  { code: 'CL', name: 'Chile', dialCode: '+56', flag: '🇨🇱' },
+  { code: 'CN', name: 'China', dialCode: '+86', flag: '🇨🇳' },
+  { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
+  { code: 'HR', name: 'Croatia', dialCode: '+385', flag: '🇭🇷' },
+  { code: 'CZ', name: 'Czech Republic', dialCode: '+420', flag: '🇨🇿' },
+  { code: 'DK', name: 'Denmark', dialCode: '+45', flag: '🇩🇰' },
+  { code: 'EC', name: 'Ecuador', dialCode: '+593', flag: '🇪🇨' },
   { code: 'EE', name: 'Estonia', dialCode: '+372', flag: '🇪🇪' },
+  { code: 'FI', name: 'Finland', dialCode: '+358', flag: '🇫🇮' },
+  { code: 'FR', name: 'France', dialCode: '+33', flag: '🇫🇷' },
+  { code: 'DE', name: 'Germany', dialCode: '+49', flag: '🇩🇪' },
+  { code: 'GR', name: 'Greece', dialCode: '+30', flag: '🇬🇷' },
+  { code: 'HK', name: 'Hong Kong', dialCode: '+852', flag: '🇭🇰' },
+  { code: 'HU', name: 'Hungary', dialCode: '+36', flag: '🇭🇺' },
+  { code: 'ID', name: 'Indonesia', dialCode: '+62', flag: '🇮🇩' },
+  { code: 'IN', name: 'India', dialCode: '+91', flag: '🇮🇳' },
+  { code: 'IE', name: 'Ireland', dialCode: '+353', flag: '🇮🇪' },
+  { code: 'IT', name: 'Italy', dialCode: '+39', flag: '🇮🇹' },
   { code: 'JP', name: 'Japan', dialCode: '+81', flag: '🇯🇵' },
   { code: 'KR', name: 'South Korea', dialCode: '+82', flag: '🇰🇷' },
-  { code: 'CN', name: 'China', dialCode: '+86', flag: '🇨🇳' },
-  { code: 'IN', name: 'India', dialCode: '+91', flag: '🇮🇳' },
-  { code: 'SG', name: 'Singapore', dialCode: '+65', flag: '🇸🇬' },
-  { code: 'HK', name: 'Hong Kong', dialCode: '+852', flag: '🇭🇰' },
+  { code: 'LV', name: 'Latvia', dialCode: '+371', flag: '🇱🇻' },
+  { code: 'LT', name: 'Lithuania', dialCode: '+370', flag: '🇱🇹' },
   { code: 'MY', name: 'Malaysia', dialCode: '+60', flag: '🇲🇾' },
-  { code: 'TH', name: 'Thailand', dialCode: '+66', flag: '🇹🇭' },
-  { code: 'PH', name: 'Philippines', dialCode: '+63', flag: '🇵🇭' },
-  { code: 'ID', name: 'Indonesia', dialCode: '+62', flag: '🇮🇩' },
-  { code: 'VN', name: 'Vietnam', dialCode: '+84', flag: '🇻🇳' },
-  { code: 'NZ', name: 'New Zealand', dialCode: '+64', flag: '🇳🇿' },
-  { code: 'ZA', name: 'South Africa', dialCode: '+27', flag: '🇿🇦' },
-  { code: 'BR', name: 'Brazil', dialCode: '+55', flag: '🇧🇷' },
   { code: 'MX', name: 'Mexico', dialCode: '+52', flag: '🇲🇽' },
-  { code: 'AR', name: 'Argentina', dialCode: '+54', flag: '🇦🇷' },
-  { code: 'CL', name: 'Chile', dialCode: '+56', flag: '🇨🇱' },
-  { code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴' },
-  { code: 'PE', name: 'Peru', dialCode: '+51', flag: '🇵🇪' },
-  { code: 'UY', name: 'Uruguay', dialCode: '+598', flag: '🇺🇾' },
+  { code: 'NL', name: 'Netherlands', dialCode: '+31', flag: '🇳🇱' },
+  { code: 'NZ', name: 'New Zealand', dialCode: '+64', flag: '🇳🇿' },
+  { code: 'NO', name: 'Norway', dialCode: '+47', flag: '🇳🇴' },
   { code: 'PY', name: 'Paraguay', dialCode: '+595', flag: '🇵🇾' },
-  { code: 'BO', name: 'Bolivia', dialCode: '+591', flag: '🇧🇴' },
-  { code: 'EC', name: 'Ecuador', dialCode: '+593', flag: '🇪🇨' },
+  { code: 'PE', name: 'Peru', dialCode: '+51', flag: '🇵🇪' },
+  { code: 'PH', name: 'Philippines', dialCode: '+63', flag: '🇵🇭' },
+  { code: 'PL', name: 'Poland', dialCode: '+48', flag: '🇵🇱' },
+  { code: 'PT', name: 'Portugal', dialCode: '+351', flag: '🇵🇹' },
+  { code: 'RO', name: 'Romania', dialCode: '+40', flag: '🇷🇴' },
+  { code: 'SG', name: 'Singapore', dialCode: '+65', flag: '🇸🇬' },
+  { code: 'SK', name: 'Slovakia', dialCode: '+421', flag: '🇸🇰' },
+  { code: 'SI', name: 'Slovenia', dialCode: '+386', flag: '🇸🇮' },
+  { code: 'ZA', name: 'South Africa', dialCode: '+27', flag: '🇿🇦' },
+  { code: 'ES', name: 'Spain', dialCode: '+34', flag: '🇪🇸' },
+  { code: 'SE', name: 'Sweden', dialCode: '+46', flag: '🇸🇪' },
+  { code: 'CH', name: 'Switzerland', dialCode: '+41', flag: '🇨🇭' },
+  { code: 'TH', name: 'Thailand', dialCode: '+66', flag: '🇹🇭' },
+  { code: 'GB', name: 'United Kingdom', dialCode: '+44', flag: '🇬🇧' },
+  { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸' },
+  { code: 'UY', name: 'Uruguay', dialCode: '+598', flag: '🇺🇾' },
   { code: 'VE', name: 'Venezuela', dialCode: '+58', flag: '🇻🇪' },
-];
+  { code: 'VN', name: 'Vietnam', dialCode: '+84', flag: '🇻🇳' },
+].sort((a, b) => a.name.localeCompare(b.name));
 
 const states = [
   // US States
@@ -166,6 +166,10 @@ const CreateContactForm = ({ onBack, onSave, editingContact }: CreateContactForm
     country: 'US'
   });
 
+  const [countrySearchTerm, setCountrySearchTerm] = useState('');
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+
   // Pre-fill form when editing a contact
   useEffect(() => {
     if (editingContact) {
@@ -208,8 +212,29 @@ const CreateContactForm = ({ onBack, onSave, editingContact }: CreateContactForm
     }
   }, [editingContact]);
 
+  // Auto-scroll functionality for country dropdown
+  useEffect(() => {
+    if (isCountryDropdownOpen && countrySearchTerm && countryDropdownRef.current) {
+      const filteredCountries = countries.filter(country =>
+        country.name.toLowerCase().includes(countrySearchTerm.toLowerCase())
+      );
+      
+      if (filteredCountries.length > 0) {
+        const firstMatch = filteredCountries[0];
+        const countryElement = countryDropdownRef.current.querySelector(`[data-country="${firstMatch.code}"]`);
+        if (countryElement) {
+          countryElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+  }, [countrySearchTerm, isCountryDropdownOpen]);
+
   const selectedCountry = countries.find(c => c.code === formData.country) || countries[0];
   const availableStates = states.filter(state => state.country === formData.country);
+
+  const filteredCountries = countries.filter(country =>
+    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  );
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ 
@@ -303,16 +328,32 @@ const CreateContactForm = ({ onBack, onSave, editingContact }: CreateContactForm
                 />
               </div>
 
-              {/* Country */}
+              {/* Country with search and auto-scroll */}
               <div className="col-span-2">
                 <Label htmlFor="country">Country</Label>
-                <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
+                <Select 
+                  value={formData.country} 
+                  onValueChange={(value) => handleInputChange('country', value)}
+                  onOpenChange={setIsCountryDropdownOpen}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
+                  <SelectContent ref={countryDropdownRef} className="max-h-60">
+                    <div className="p-2">
+                      <Input
+                        placeholder="Search countries..."
+                        value={countrySearchTerm}
+                        onChange={(e) => setCountrySearchTerm(e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                    {filteredCountries.map((country) => (
+                      <SelectItem 
+                        key={country.code} 
+                        value={country.code}
+                        data-country={country.code}
+                      >
                         <div className="flex items-center gap-2">
                           <span>{country.flag}</span>
                           <span>{country.name}</span>
