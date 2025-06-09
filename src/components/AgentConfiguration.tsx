@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Copy, Settings, Zap, ArrowLeft, BookOpen, Save } from 'lucide-react';
 import { Agent } from '@/hooks/useAgents';
+import { useKbs } from '@/hooks/useKbs';
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
@@ -16,6 +18,8 @@ interface AgentConfigurationProps {
 }
 
 const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
+  const { kbs: knowledgeBaseItems, isLoading: kbsLoading } = useKbs();
+  
   const [config, setConfig] = useState({
     name: selectedAgent?.name || '',
     description: selectedAgent?.description || '',
@@ -25,15 +29,6 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     language: 'en',
     knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none'
   });
-
-  // Mock knowledge base items
-  const knowledgeBaseItems = [
-    { id: '1', title: 'Getting Started Guide' },
-    { id: '2', title: 'Voice Agent Configuration' },
-    { id: '3', title: 'Troubleshooting FAQ' },
-    { id: '4', title: 'Dental Office Procedures' },
-    { id: '5', title: 'Appointment Booking Guidelines' }
-  ];
 
   // Voice options
   const voiceOptions = [
@@ -74,7 +69,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
   return (
     <div className="flex-1 flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white p-6 border-b border-gray-200 shadow-sm">
+      <div className="bg-white p-6 border-b border-gray-200 shadow-sm flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -113,7 +108,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 flex-1 flex flex-col">
+      <div className="bg-white border-b border-gray-200 flex-1 flex flex-col overflow-hidden">
         <Tabs defaultValue="settings" className="w-full h-full flex flex-col">
           <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0 flex-shrink-0">
             <TabsTrigger 
@@ -134,7 +129,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
 
           <TabsContent value="settings" className="bg-gray-50 flex-1 p-8 space-y-8 m-0 overflow-auto">
             <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-fit">
                 {/* Left Column - Configuration */}
                 <div className="space-y-6">
                   <Card className="shadow-sm">
@@ -247,9 +242,13 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                         <Label htmlFor="knowledgeBase" className="text-sm font-medium text-gray-700">
                           Knowledge Base (Optional)
                         </Label>
-                        <Select value={config.knowledgeBaseId} onValueChange={(value) => setConfig({...config, knowledgeBaseId: value})}>
+                        <Select 
+                          value={config.knowledgeBaseId} 
+                          onValueChange={(value) => setConfig({...config, knowledgeBaseId: value})}
+                          disabled={kbsLoading}
+                        >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select knowledge base" />
+                            <SelectValue placeholder={kbsLoading ? "Loading..." : "Select knowledge base"} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">
@@ -277,24 +276,23 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
 
                 {/* Right Column - System Prompt */}
                 <div className="space-y-6">
-                  <Card className="shadow-sm h-full">
+                  <Card className="shadow-sm h-fit">
                     <CardHeader className="pb-4">
                       <CardTitle className="text-lg">System Prompt</CardTitle>
                       <CardDescription>
                         Define the agent's role, personality, and instructions
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col h-full">
-                      <div className="flex-1 min-h-0">
-                        <Textarea
-                          id="prompt"
-                          value={config.prompt}
-                          onChange={(e) => setConfig({...config, prompt: e.target.value})}
-                          className="w-full h-full resize-none min-h-[400px]"
-                          placeholder="You are a helpful assistant..."
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-3">
+                    <CardContent className="space-y-4">
+                      <Textarea
+                        id="prompt"
+                        value={config.prompt}
+                        onChange={(e) => setConfig({...config, prompt: e.target.value})}
+                        className="w-full resize-none"
+                        rows={20}
+                        placeholder="You are a helpful assistant..."
+                      />
+                      <p className="text-xs text-gray-500">
                         The system prompt defines the agent's behavior, personality, and capabilities. 
                         Be specific about the agent's role and how it should interact with users.
                       </p>
