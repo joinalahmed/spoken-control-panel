@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Copy, Volume2, Brain, Zap, Settings, ArrowLeft, BookOpen } from 'lucide-react';
+import { Copy, Brain, Zap, Settings, ArrowLeft, BookOpen } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -42,6 +43,16 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
     { id: '3', title: 'Troubleshooting FAQ' },
     { id: '4', title: 'Dental Office Procedures' },
     { id: '5', title: 'Appointment Booking Guidelines' }
+  ];
+
+  // Voice options
+  const voiceOptions = [
+    { id: 'Sarah', name: 'Sarah' },
+    { id: 'Alex', name: 'Alex' },
+    { id: 'Charlotte', name: 'Charlotte' },
+    { id: 'Brian', name: 'Brian' },
+    { id: 'Emma', name: 'Emma' },
+    { id: 'Liam', name: 'Liam' }
   ];
 
   if (!selectedAgent) {
@@ -98,13 +109,6 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
               Model
             </TabsTrigger>
             <TabsTrigger 
-              value="voice" 
-              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
-            >
-              <Volume2 className="w-4 h-4 mr-2" />
-              Voice
-            </TabsTrigger>
-            <TabsTrigger 
               value="functions" 
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
             >
@@ -136,6 +140,46 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
                   />
                   <p className="text-xs text-gray-500">
                     The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
+                  </p>
+                </div>
+
+                {/* Voice Selection */}
+                <div className="space-y-2">
+                  <Label htmlFor="voice" className="text-sm font-medium text-gray-700">Voice</Label>
+                  <Select value={config.voice} onValueChange={(value) => setConfig({...config, voice: value})}>
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Select voice" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {voiceOptions.map((voice) => (
+                        <SelectItem key={voice.id} value={voice.id}>
+                          {voice.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    Choose the voice for your agent from available options.
+                  </p>
+                </div>
+
+                {/* Language */}
+                <div className="space-y-2">
+                  <Label htmlFor="language" className="text-sm font-medium text-gray-700">Language</Label>
+                  <Select value={config.language} onValueChange={(value) => setConfig({...config, language: value})}>
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                      <SelectItem value="it">Italian</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    Select the primary language for the agent.
                   </p>
                 </div>
 
@@ -181,14 +225,6 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
                   The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
                 </p>
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="voice" className="bg-gray-50 flex-1 p-6 m-0">
-            <div className="text-center py-12">
-              <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Voice Configuration</h3>
-              <p className="text-gray-500">Voice settings will be available here</p>
             </div>
           </TabsContent>
 
