@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,8 +26,6 @@ const HomeDashboard = () => {
   // Mock call data - in a real app, this would come from a calls API
   const totalCallMinutes = 0; // This would be calculated from actual call data
   const numberOfCalls = 0;
-  const totalSpent = 0;
-  const avgCostPerCall = numberOfCalls > 0 ? totalSpent / numberOfCalls : 0;
 
   const userName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
 
@@ -79,7 +78,7 @@ const HomeDashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Hello, {userName} 👋</h1>
-          <p className="text-gray-600">Welcome to your Voice AI Dashboard</p>
+          <p className="text-gray-600">Your AI-powered calling platform at a glance</p>
         </div>
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm">
