@@ -20,13 +20,14 @@ import CreateKbsForm from '@/components/CreateKbsForm';
 import HomeDashboard from '@/components/HomeDashboard';
 import CampaignsList from '@/components/CampaignsList';
 import CreateCampaignForm from '@/components/CreateCampaignForm';
+import CampaignDetails from '@/components/CampaignDetails';
 import ViewContactModal from '@/components/ViewContactModal';
 
 const Index = () => {
   const { user, signOut } = useAuth();
   const { createAgent, updateAgent } = useAgents();
   const { createContact } = useContacts();
-  const { createCampaign } = useCampaigns();
+  const { createCampaign, campaigns } = useCampaigns();
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
@@ -34,7 +35,8 @@ const Index = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [viewingContact, setViewingContact] = useState<Contact | null>(null);
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
-  const [campaignsView, setCampaignsView] = useState<'overview' | 'create'>('overview');
+  const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'details'>('overview');
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -199,6 +201,11 @@ const Index = () => {
     } catch (error) {
       console.error('Error saving campaign:', error);
     }
+  };
+
+  const handleSelectCampaign = (campaignId: string) => {
+    setSelectedCampaignId(campaignId);
+    setCampaignsView('details');
   };
 
   const handleLogout = async () => {
@@ -389,6 +396,14 @@ const Index = () => {
               <CreateCampaignForm 
                 onBack={() => setCampaignsView('overview')}
                 onSave={handleCampaignSaved}
+              />
+            </div>
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'details' && (
+            <div className="h-full overflow-y-auto">
+              <CampaignDetails 
+                campaign={campaigns.find(c => c.id === selectedCampaignId)}
               />
             </div>
           )}

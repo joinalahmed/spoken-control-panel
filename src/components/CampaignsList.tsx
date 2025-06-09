@@ -2,18 +2,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Loader2, Phone, Users, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
-import ConversationInterface from './ConversationInterface';
+import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight } from 'lucide-react';
 
 interface CampaignsListProps {
   onCreateCampaign: () => void;
-  onViewCallLogs: (campaignId: string) => void;
+  onSelectCampaign: (campaignId: string) => void;
 }
 
-const CampaignsList = ({ onCreateCampaign }: CampaignsListProps) => {
+const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProps) => {
   const { campaigns, isLoading } = useCampaigns();
-  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -23,31 +20,54 @@ const CampaignsList = ({ onCreateCampaign }: CampaignsListProps) => {
     );
   }
 
-  const toggleCallLogs = (campaignId: string) => {
-    setExpandedCampaign(expandedCampaign === campaignId ? null : campaignId);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'text-green-600 bg-green-100';
+      case 'paused':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'completed':
+        return 'text-blue-600 bg-blue-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Play className="w-4 h-4" />;
+      case 'paused':
+        return <Pause className="w-4 h-4" />;
+      default:
+        return <BarChart3 className="w-4 h-4" />;
+    }
   };
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-1 bg-slate-900 p-6 overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Campaigns</h1>
-          <p className="text-gray-600">Manage your voice campaigns where contacts are mapped with agents</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Campaigns</h1>
+          <p className="text-slate-400">Manage your voice campaigns where contacts are mapped with agents</p>
         </div>
-        <Button onClick={onCreateCampaign} className="bg-purple-600 hover:bg-purple-700">
+        <Button 
+          onClick={onCreateCampaign}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
           Create New Campaign
         </Button>
       </div>
 
       {campaigns.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>Campaign Overview</CardTitle>
-              <CardDescription>Create and manage campaigns to connect your agents with contacts</CardDescription>
+              <CardTitle className="text-white">Campaign Overview</CardTitle>
+              <CardDescription className="text-slate-400">Create and manage campaigns to connect your agents with contacts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-slate-300">
                 A campaign allows you to map specific contacts with agents for automated voice interactions.
               </p>
               <Button onClick={onCreateCampaign} className="bg-purple-600 hover:bg-purple-700">
@@ -56,19 +76,19 @@ const CampaignsList = ({ onCreateCampaign }: CampaignsListProps) => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>Getting Started</CardTitle>
-              <CardDescription>Set up your first voice campaign</CardDescription>
+              <CardTitle className="text-white">Getting Started</CardTitle>
+              <CardDescription className="text-slate-400">Set up your first voice campaign</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-slate-300">
                 Get started by creating agents, adding contacts, and launching your first campaign.
               </p>
               <Button 
                 onClick={onCreateCampaign}
                 variant="outline"
-                className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800"
               >
                 Learn More
               </Button>
@@ -76,72 +96,48 @@ const CampaignsList = ({ onCreateCampaign }: CampaignsListProps) => {
           </Card>
         </div>
       ) : (
-        <div className="space-y-6">
-          <div className="space-y-4">
-            {campaigns.map((campaign) => (
-              <Card key={campaign.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                  <CardDescription>{campaign.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <span>Status:</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      campaign.status === 'active' ? 'bg-green-100 text-green-800' :
-                      campaign.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-                      campaign.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {campaign.status}
-                    </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {campaigns.map((campaign) => (
+            <Card 
+              key={campaign.id} 
+              className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer group"
+              onClick={() => onSelectCampaign(campaign.id)}
+            >
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                    {getStatusIcon(campaign.status)}
+                    {campaign.status}
                   </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{campaign.contact_ids.length} contacts</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(campaign.created_at).toLocaleDateString()}</span>
-                    </div>
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-purple-400 transition-colors" />
+                </div>
+                <CardTitle className="text-white text-lg">{campaign.name}</CardTitle>
+                <CardDescription className="text-slate-400 line-clamp-2">
+                  {campaign.description || 'No description provided'}
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Users className="w-4 h-4" />
+                    <span>{campaign.contact_ids.length} contacts</span>
                   </div>
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date(campaign.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
 
-                  <div className="pt-2 border-t border-gray-100">
-                    <Button 
-                      onClick={() => toggleCallLogs(campaign.id)}
-                      variant="outline"
-                      size="sm"
-                      className="w-full border-purple-600 text-purple-600 hover:bg-purple-50"
-                    >
-                      <Phone className="w-4 h-4 mr-2" />
-                      {expandedCampaign === campaign.id ? (
-                        <>
-                          Hide Call Logs
-                          <ChevronUp className="w-4 h-4 ml-2" />
-                        </>
-                      ) : (
-                        <>
-                          View Call Logs
-                          <ChevronDown className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
+                <div className="pt-2 border-t border-slate-700">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Last updated</span>
+                    <span>{new Date(campaign.updated_at).toLocaleDateString()}</span>
                   </div>
-
-                  {expandedCampaign === campaign.id && (
-                    <div className="mt-4 border-t border-gray-100 pt-4">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">Call Logs</h4>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <ConversationInterface />
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
