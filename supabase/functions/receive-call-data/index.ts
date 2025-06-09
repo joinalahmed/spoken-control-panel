@@ -55,7 +55,8 @@ Deno.serve(async (req) => {
       call_id,
       started_at,
       ended_at,
-      notes
+      notes,
+      campaign_id
     } = callData;
 
     // Find the contact by phone number
@@ -116,6 +117,7 @@ Deno.serve(async (req) => {
     // Store the call record (we'll need to create a calls table for this)
     const callRecord = {
       contact_id: contact.id,
+      campaign_id: campaign_id || null,
       phone: phone,
       duration: duration || null,
       status: status || 'unknown',
@@ -156,6 +158,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Call data received successfully',
+        campaign_id: campaign_id || null,
         contact: {
           id: contact.id,
           name: contact.name,

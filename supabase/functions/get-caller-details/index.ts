@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        campaign_id: campaign.id,
         caller: {
           contact: {
             id: contact.id,

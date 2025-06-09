@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Copy, CheckCircle } from 'lucide-react';
@@ -45,6 +44,7 @@ console.log(data);`;
 
   const responseExample = `{
   "success": true,
+  "campaign_id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
   "caller": {
     "contact": {
       "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -88,6 +88,7 @@ console.log(data);`;
   -H "Content-Type: application/json" \\
   -d '{
     "phone": "+1234567890",
+    "campaign_id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
     "duration": 180,
     "status": "completed",
     "direction": "outbound",
@@ -108,6 +109,7 @@ console.log(data);`;
   },
   body: JSON.stringify({
     phone: '+1234567890',
+    campaign_id: '987fcdeb-51a2-43d7-8b5c-123456789abc',
     duration: 180,
     status: 'completed',
     direction: 'outbound',
@@ -126,6 +128,7 @@ console.log(data);`;
   const callDataResponseExample = `{
   "success": true,
   "message": "Call data received successfully",
+  "campaign_id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
   "contact": {
     "id": "123e4567-e89b-12d3-a456-426614174000",
     "name": "John Doe",
@@ -206,6 +209,14 @@ console.log(data);`;
                     <td className="px-4 py-2 border-b">
                       Phone number of the caller (can be passed as query parameter for GET or in request body for POST)
                     </td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">campaign_id</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Campaign ID associated with the call</td>
                   </tr>
                 </tbody>
               </table>
@@ -386,6 +397,14 @@ console.log(data);`;
                       <Badge variant="destructive">Yes</Badge>
                     </td>
                     <td className="px-4 py-2 border-b">Phone number of the caller</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 border-b font-mono text-sm">campaign_id</td>
+                    <td className="px-4 py-2 border-b">string</td>
+                    <td className="px-4 py-2 border-b">
+                      <Badge variant="outline">No</Badge>
+                    </td>
+                    <td className="px-4 py-2 border-b">Campaign ID associated with the call</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-2 border-b font-mono text-sm">duration</td>
