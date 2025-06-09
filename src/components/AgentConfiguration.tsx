@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Phone, Copy, Volume2, Brain, Zap, Settings, ArrowLeft, BookOpen } from 'lucide-react';
+import { Copy, Volume2, Brain, Zap, Settings, ArrowLeft, BookOpen } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -69,7 +69,6 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-4 h-4" />
-              All Agents
             </Button>
             <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -80,10 +79,6 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="gap-2">
-              <Phone className="w-4 h-4" />
-              Talk with your Agent
-            </Button>
             <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
               Update
             </Button>
