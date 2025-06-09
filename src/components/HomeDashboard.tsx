@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,22 +46,6 @@ const HomeDashboard = () => {
       icon: Phone,
       color: 'text-teal-400',
       bgColor: 'bg-teal-500/20'
-    },
-    {
-      title: `$${totalSpent.toFixed(2)}`,
-      subtitle: 'Total Spent',
-      change: 'All time spending',
-      icon: DollarSign,
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-500/20'
-    },
-    {
-      title: `$${avgCostPerCall.toFixed(2)}`,
-      subtitle: 'Average Cost Per Call',
-      change: 'Current average',
-      icon: DollarSign,
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-500/20'
     }
   ];
 
@@ -141,7 +124,7 @@ const HomeDashboard = () => {
       {/* Calls Overview */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Calls Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {callsOverview.map((stat, index) => (
             <Card key={index} className="bg-white border border-gray-200">
               <CardContent className="p-6">
