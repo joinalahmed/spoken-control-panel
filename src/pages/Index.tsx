@@ -18,6 +18,8 @@ import CreateContactForm from '@/components/CreateContactForm';
 import KbsList from '@/components/KbsList';
 import CreateKbsForm from '@/components/CreateKbsForm';
 import HomeDashboard from '@/components/HomeDashboard';
+import CampaignsList from '@/components/CampaignsList';
+import CreateCampaignForm from '@/components/CreateCampaignForm';
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -26,7 +28,7 @@ const Index = () => {
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
-  const [campaignsView, setCampaignsView] = useState<'overview' | 'call-logs'>('overview');
+  const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'call-logs'>('overview');
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -82,6 +84,15 @@ const Index = () => {
   const handleEditKbsItem = (item: KbsItem) => {
     console.log('Edit KBS item:', item);
     setKbsView('create');
+  };
+
+  const handleCreateCampaign = () => {
+    setCampaignsView('create');
+  };
+
+  const handleCampaignSaved = (campaignData: any) => {
+    console.log('Campaign saved:', campaignData);
+    setCampaignsView('overview');
   };
 
   const handleLogout = async () => {
@@ -225,23 +236,17 @@ const Index = () => {
           )}
 
           {activeTab === 'campaigns' && campaignsView === 'overview' && (
-            <div className="flex-1 p-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Campaigns</CardTitle>
-                  <CardDescription>Manage your voice campaigns and view call logs</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button 
-                    onClick={() => setCampaignsView('call-logs')}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    View Call Logs
-                  </Button>
-                  <p className="text-gray-600">Campaign management features coming soon</p>
-                </CardContent>
-              </Card>
-            </div>
+            <CampaignsList 
+              onCreateCampaign={handleCreateCampaign}
+              onViewCallLogs={() => setCampaignsView('call-logs')}
+            />
+          )}
+
+          {activeTab === 'campaigns' && campaignsView === 'create' && (
+            <CreateCampaignForm 
+              onBack={() => setCampaignsView('overview')}
+              onSave={handleCampaignSaved}
+            />
           )}
 
           {activeTab === 'campaigns' && campaignsView === 'call-logs' && (
