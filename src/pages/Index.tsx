@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, Users, FileText, Settings, BarChart3, Plus } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, Plus, LogOut } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +51,11 @@ interface KnowledgeBaseItem {
   tags: string[];
 }
 
-const Index = () => {
+interface IndexProps {
+  onLogout: () => void;
+}
+
+const Index = ({ onLogout }: IndexProps) => {
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
@@ -222,7 +226,7 @@ const Index = () => {
 
         {/* Upgrade Section */}
         <div className="p-4 border-t border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <div className="text-sm text-gray-600 mb-2">Upgrade to <Badge variant="secondary" className="bg-purple-100 text-purple-700">Propel</Badge></div>
             <div className="text-lg font-bold text-gray-900 mb-1">Ignite</div>
             <div className="text-sm text-gray-600 mb-3">1,980 Credit Left</div>
@@ -230,6 +234,16 @@ const Index = () => {
               Upgrade Plan
             </Button>
           </div>
+          
+          {/* Logout Button */}
+          <Button 
+            onClick={onLogout}
+            variant="outline" 
+            className="w-full flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
         </div>
       </div>
 
