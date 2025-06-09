@@ -10,6 +10,8 @@ import AgentList from '@/components/AgentList';
 import CreateAgentFlow from '@/components/CreateAgentFlow';
 import ContactsList from '@/components/ContactsList';
 import CreateContactForm from '@/components/CreateContactForm';
+import KnowledgeBaseList from '@/components/KnowledgeBaseList';
+import CreateKnowledgeBaseForm from '@/components/CreateKnowledgeBaseForm';
 
 interface Agent {
   id: string;
@@ -36,10 +38,22 @@ interface Contact {
   lastCalled: string;
 }
 
+interface KnowledgeBaseItem {
+  id: string;
+  title: string;
+  type: 'document' | 'faq' | 'guide' | 'other';
+  description: string;
+  dateAdded: string;
+  lastModified: string;
+  status: 'published' | 'draft';
+  tags: string[];
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
+  const [knowledgeBaseView, setKnowledgeBaseView] = useState<'list' | 'create'>('list');
   const [agents, setAgents] = useState<Agent[]>([
     { 
       id: '1', 
@@ -132,6 +146,20 @@ const Index = () => {
     setContactsView('create');
   };
 
+  const handleCreateKnowledgeBaseItem = () => {
+    setKnowledgeBaseView('create');
+  };
+
+  const handleKnowledgeBaseItemSaved = (itemData: any) => {
+    console.log('Knowledge base item saved:', itemData);
+    setKnowledgeBaseView('list');
+  };
+
+  const handleEditKnowledgeBaseItem = (item: KnowledgeBaseItem) => {
+    console.log('Edit knowledge base item:', item);
+    setKnowledgeBaseView('create');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -155,6 +183,9 @@ const Index = () => {
                 setActiveTab(item.id);
                 if (item.id === 'contacts') {
                   setContactsView('list');
+                }
+                if (item.id === 'files') {
+                  setKnowledgeBaseView('list');
                 }
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
@@ -244,6 +275,20 @@ const Index = () => {
           />
         )}
 
+        {activeTab === 'files' && knowledgeBaseView === 'list' && (
+          <KnowledgeBaseList 
+            onCreateItem={handleCreateKnowledgeBaseItem}
+            onEditItem={handleEditKnowledgeBaseItem}
+          />
+        )}
+
+        {activeTab === 'files' && knowledgeBaseView === 'create' && (
+          <CreateKnowledgeBaseForm 
+            onBack={() => setKnowledgeBaseView('list')}
+            onSave={handleKnowledgeBaseItemSaved}
+          />
+        )}
+
         {activeTab === 'home' && (
           <div className="flex-1 p-6">
             <DashboardStats />
@@ -268,7 +313,7 @@ const Index = () => {
         )}
 
         {/* Default content for other tabs */}
-        {!['agents', 'home', 'call-logs', 'contacts'].includes(activeTab) && (
+        {!['agents', 'home', 'call-logs', 'contacts', 'files'].includes(activeTab) && (
           <div className="flex-1 p-6">
             <Card>
               <CardHeader>
