@@ -2,53 +2,89 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, Pause, Download, Phone, Clock, TrendingUp, User, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Play, Pause, Download, Phone, Clock, TrendingUp, User, MessageSquare, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CallDetailsProps {
   callId: string;
   onBack: () => void;
 }
 
+interface CallData {
+  id: string;
+  phone: string;
+  started_at: string;
+  ended_at: string | null;
+  duration: number | null;
+  status: string;
+  outcome: string | null;
+  sentiment: number | null;
+  recording_url: string | null;
+  transcript: string | null;
+  notes: string | null;
+  contact_id: string;
+  campaign_id: string | null;
+}
+
+interface ContactData {
+  name: string;
+}
+
 const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  // Mock data - in a real app, this would come from the database
-  const callData = {
-    id: callId,
-    contactName: 'John Smith',
-    contactPhone: '+1 (555) 123-4567',
-    timestamp: new Date('2024-01-15T10:30:00'),
-    duration: '4:23',
-    status: 'completed',
-    outcome: 'positive',
-    sentiment: 0.7,
-    recordingUrl: '/mock-recording.mp3',
-    transcript: [
-      { speaker: 'agent', text: "Hello, this is Sarah from ABC Company. Is this John Smith?", timestamp: '00:00' },
-      { speaker: 'contact', text: "Yes, this is John speaking.", timestamp: '00:05' },
-      { speaker: 'agent', text: "Hi John! I'm calling to follow up on your interest in our solar panel installation services. Do you have a few minutes to chat?", timestamp: '00:08' },
-      { speaker: 'contact', text: "Sure, I do have some time. I've been thinking about solar panels for a while now.", timestamp: '00:18' },
-      { speaker: 'agent', text: "That's great to hear! Based on your location and home size, we estimate you could save about 40% on your electricity bills. Would you like to schedule a free consultation?", timestamp: '00:25' },
-      { speaker: 'contact', text: "That sounds interesting. What would the consultation involve?", timestamp: '00:40' },
-      { speaker: 'agent', text: "One of our solar specialists would visit your home to assess your roof and energy needs. It takes about 30 minutes and there's no obligation.", timestamp: '00:45' },
-      { speaker: 'contact', text: "Okay, I'd like to schedule that. When are you available?", timestamp: '01:00' }
-    ],
-    keyInsights: [
-      'Customer expressed strong interest in solar panels',
-      'Mentioned 40% savings which resonated well',
-      'Successfully scheduled consultation',
-      'Positive sentiment throughout conversation'
-    ],
-    callMetrics: {
-      talkTime: '4:23',
-      silenceTime: '0:15',
-      agentTalkTime: '2:10',
-      contactTalkTime: '2:13',
-      interruptionCount: 2,
-      sentimentScore: 0.7
+  const [callData, setCallData] = useState<CallData | null>(null);
+  const [contactData, setContactData] = useState<ContactData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCallDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Fetch call data
+        const { data: call, error: callError } = await supabase
+          .from('calls')
+          .select('*')
+          .eq('id', callId)
+          .single();
+
+        if (callError) {
+          console.error('Error fetching call:', callError);
+          setError('Failed to load call details');
+          return;
+        }
+
+        setCallData(call);
+
+        // Fetch contact data
+        if (call.contact_id) {
+          const { data: contact, error: contactError } = await supabase
+            .from('contacts')
+            .select('name')
+            .eq('id', call.contact_id)
+            .single();
+
+          if (contactError) {
+            console.error('Error fetching contact:', contactError);
+          } else {
+            setContactData(contact);
+          }
+        }
+      } catch (error) {
+        console.error('Error in fetchCallDetails:', error);
+        setError('An unexpected error occurred');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (callId) {
+      fetchCallDetails();
     }
-  };
+  }, [callId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -63,17 +99,79 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
     }
   };
 
-  const getSentimentColor = (sentiment: number) => {
+  const getSentimentColor = (sentiment: number | null) => {
+    if (!sentiment) return 'text-slate-400';
     if (sentiment > 0.3) return 'text-green-400';
     if (sentiment < -0.3) return 'text-red-400';
     return 'text-yellow-400';
   };
 
-  const getSentimentLabel = (sentiment: number) => {
+  const getSentimentLabel = (sentiment: number | null) => {
+    if (!sentiment) return 'Unknown';
     if (sentiment > 0.3) return 'Positive';
     if (sentiment < -0.3) return 'Negative';
     return 'Neutral';
   };
+
+  const formatDuration = (duration: number | null) => {
+    if (!duration) return 'N/A';
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const parseTranscript = (transcript: string | null) => {
+    if (!transcript) return [];
+    
+    // Try to parse as JSON first (for structured transcript)
+    try {
+      const parsed = JSON.parse(transcript);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (e) {
+      // If not JSON, treat as plain text and create a simple structure
+      return [
+        { speaker: 'transcript', text: transcript, timestamp: '00:00' }
+      ];
+    }
+    
+    return [];
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 bg-slate-900 p-6 overflow-y-auto">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+          <span className="ml-2 text-slate-300">Loading call details...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !callData) {
+    return (
+      <div className="flex-1 bg-slate-900 p-6 overflow-y-auto">
+        <Button 
+          onClick={onBack}
+          variant="outline" 
+          className="mb-4 border-slate-600 text-slate-300 hover:bg-slate-800"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Call History
+        </Button>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-400 mb-2">{error || 'Call not found'}</p>
+            <p className="text-slate-500">Please try again or contact support if the issue persists.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const transcriptEntries = parseTranscript(callData.transcript);
 
   return (
     <div className="flex-1 bg-slate-900 p-6 overflow-y-auto">
@@ -89,19 +187,21 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
         
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Call with {callData.contactName}</h1>
-            <p className="text-slate-400 mb-4">{callData.contactPhone}</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Call with {contactData?.name || 'Unknown Contact'}
+            </h1>
+            <p className="text-slate-400 mb-4">{callData.phone}</p>
             <div className="flex items-center gap-4">
               <Badge variant="outline" className={getStatusColor(callData.status)}>
                 {callData.status}
               </Badge>
               <div className="flex items-center gap-2 text-slate-400 text-sm">
                 <Clock className="w-4 h-4" />
-                <span>{callData.duration}</span>
+                <span>{formatDuration(callData.duration)}</span>
               </div>
               <div className="flex items-center gap-2 text-slate-400 text-sm">
                 <Phone className="w-4 h-4" />
-                <span>{callData.timestamp.toLocaleString()}</span>
+                <span>{new Date(callData.started_at).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -120,19 +220,19 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
           <CardContent className="space-y-3">
             <div className="flex justify-between">
               <span className="text-slate-400">Total Duration</span>
-              <span className="text-white">{callData.callMetrics.talkTime}</span>
+              <span className="text-white">{formatDuration(callData.duration)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Agent Talk Time</span>
-              <span className="text-white">{callData.callMetrics.agentTalkTime}</span>
+              <span className="text-slate-400">Status</span>
+              <span className="text-white capitalize">{callData.status}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Contact Talk Time</span>
-              <span className="text-white">{callData.callMetrics.contactTalkTime}</span>
+              <span className="text-slate-400">Outcome</span>
+              <span className="text-white">{callData.outcome || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Interruptions</span>
-              <span className="text-white">{callData.callMetrics.interruptionCount}</span>
+              <span className="text-slate-400">Direction</span>
+              <span className="text-white">Outbound</span>
             </div>
           </CardContent>
         </Card>
@@ -148,7 +248,7 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
           <CardContent>
             <div className="text-center">
               <div className={`text-3xl font-bold mb-1 ${getSentimentColor(callData.sentiment)}`}>
-                {Math.round(callData.sentiment * 100)}%
+                {callData.sentiment ? Math.round(callData.sentiment * 100) : 'N/A'}%
               </div>
               <p className={`text-sm ${getSentimentColor(callData.sentiment)}`}>
                 {getSentimentLabel(callData.sentiment)}
@@ -163,32 +263,39 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
             <CardTitle className="text-white text-lg">Call Recording</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                onClick={() => setIsPlaying(!isPlaying)}
-              >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                {isPlaying ? 'Pause' : 'Play'}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-slate-600 text-slate-300 hover:bg-slate-800"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-2">
-              <div className="bg-purple-600 h-2 rounded-full" style={{ width: '45%' }}></div>
-            </div>
-            <div className="flex justify-between text-xs text-slate-400">
-              <span>1:58</span>
-              <span>{callData.duration}</span>
-            </div>
+            {callData.recording_url ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    onClick={() => setIsPlaying(!isPlaying)}
+                  >
+                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {isPlaying ? 'Pause' : 'Play'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    onClick={() => window.open(callData.recording_url!, '_blank')}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+                <div className="w-full bg-slate-700 rounded-full h-2">
+                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: '45%' }}></div>
+                </div>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>1:58</span>
+                  <span>{formatDuration(callData.duration)}</span>
+                </div>
+              </>
+            ) : (
+              <p className="text-slate-400 text-sm">No recording available</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -199,52 +306,55 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
           <CardHeader>
             <CardTitle className="text-white">Call Transcript</CardTitle>
             <CardDescription className="text-slate-400">
-              Full conversation transcript with timestamps
+              {transcriptEntries.length > 0 ? 'Full conversation transcript' : 'No transcript available'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {callData.transcript.map((entry, index) => (
-                <div key={index} className="flex gap-3">
-                  <div className="flex-shrink-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      entry.speaker === 'agent' ? 'bg-purple-600' : 'bg-blue-600'
-                    }`}>
-                      <User className="w-4 h-4 text-white" />
+            {transcriptEntries.length > 0 ? (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {transcriptEntries.map((entry, index) => (
+                  <div key={index} className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        entry.speaker === 'agent' ? 'bg-purple-600' : 'bg-blue-600'
+                      }`}>
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-white capitalize">
+                          {entry.speaker}
+                        </span>
+                        {entry.timestamp && (
+                          <span className="text-xs text-slate-500">{entry.timestamp}</span>
+                        )}
+                      </div>
+                      <p className="text-slate-300 text-sm">{entry.text}</p>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-white capitalize">
-                        {entry.speaker}
-                      </span>
-                      <span className="text-xs text-slate-500">{entry.timestamp}</span>
-                    </div>
-                    <p className="text-slate-300 text-sm">{entry.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-400">No transcript available for this call.</p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Key Insights */}
+        {/* Notes */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Key Insights</CardTitle>
+            <CardTitle className="text-white">Call Notes</CardTitle>
             <CardDescription className="text-slate-400">
-              AI-extracted insights from the conversation
+              Additional notes and observations from the call
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {callData.keyInsights.map((insight, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0"></div>
-                  <p className="text-slate-300 text-sm">{insight}</p>
-                </div>
-              ))}
-            </div>
+            {callData.notes ? (
+              <p className="text-slate-300 text-sm">{callData.notes}</p>
+            ) : (
+              <p className="text-slate-400 text-sm">No notes available for this call.</p>
+            )}
           </CardContent>
         </Card>
       </div>
