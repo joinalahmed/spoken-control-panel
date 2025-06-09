@@ -33,7 +33,7 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
     firstMessage: 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
     language: 'en',
-    knowledgeBaseId: selectedAgent?.knowledgeBaseId || ''
+    knowledgeBaseId: selectedAgent?.knowledgeBaseId || 'none'
   });
 
   // Mock knowledge base items
@@ -153,7 +153,7 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
                       <SelectValue placeholder="Select knowledge base" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">
+                      <SelectItem value="none">
                         <div className="flex items-center gap-2">
                           <span>None</span>
                         </div>
