@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Home, Users, FileText, Settings, BarChart3, Plus, LogOut, Heart } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, Plus, LogOut, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/AuthContext';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import DashboardStats from '@/components/DashboardStats';
@@ -51,11 +54,8 @@ interface KnowledgeBaseItem {
   tags: string[];
 }
 
-interface IndexProps {
-  onLogout: () => void;
-}
-
-const Index = ({ onLogout }: IndexProps) => {
+const Index = () => {
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
@@ -180,6 +180,10 @@ const Index = ({ onLogout }: IndexProps) => {
     setKnowledgeBaseView('create');
   };
 
+  const handleLogout = async () => {
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex flex-1">
@@ -225,16 +229,34 @@ const Index = ({ onLogout }: IndexProps) => {
             ))}
           </nav>
 
-          {/* Logout Section */}
+          {/* User Menu */}
           <div className="p-4 border-t border-gray-200">
-            <Button 
-              onClick={onLogout}
-              variant="outline" 
-              className="w-full flex items-center gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="w-full flex items-center gap-2 p-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium truncate">
+                      {user?.user_metadata?.full_name || user?.email}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
