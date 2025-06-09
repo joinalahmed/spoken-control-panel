@@ -36,7 +36,10 @@ export const useAgents = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Agent[];
+      return data.map(agent => ({
+        ...agent,
+        company: agent.company || null
+      })) as Agent[];
     },
     enabled: !!user,
   });
@@ -52,7 +55,10 @@ export const useAgents = () => {
         .single();
 
       if (error) throw error;
-      return data as Agent;
+      return {
+        ...data,
+        company: data.company || null
+      } as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
@@ -73,7 +79,10 @@ export const useAgents = () => {
         .single();
 
       if (error) throw error;
-      return data as Agent;
+      return {
+        ...data,
+        company: data.company || null
+      } as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
