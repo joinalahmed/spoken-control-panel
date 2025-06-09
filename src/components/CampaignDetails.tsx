@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X, Loader2 } from 'lucide-react';
 import { Campaign, useCampaigns } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
+import { supabase } from '@/integrations/supabase/client';
 import CallAnalyticsTable from './CallAnalyticsTable';
 
 interface CampaignDetailsProps {
@@ -19,8 +20,18 @@ interface CampaignDetailsProps {
   onCallClick: (callId: string) => void;
 }
 
+interface CampaignMetrics {
+  totalCalls: number;
+  successfulCalls: number;
+  averageCallDuration: string;
+  conversionRate: string;
+  lastActivity: string;
+}
+
 const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [metrics, setMetrics] = useState<CampaignMetrics | null>(null);
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
   const [editForm, setEditForm] = useState({
     name: campaign.name,
     description: campaign.description || '',
@@ -32,6 +43,79 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
   const { updateCampaign } = useCampaigns();
   const { agents } = useAgents();
   const { contacts } = useContacts();
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        setIsLoadingMetrics(true);
+        
+        // Get all calls for this campaign
+        const { data: callsData, error: callsError } = await supabase
+          .from('calls')
+          .select('*')
+          .eq('campaign_id', campaign.id);
+
+        if (callsError) {
+          console.error('Error fetching call metrics:', callsError);
+          return;
+        }
+
+        const calls = callsData || [];
+        const totalCalls = calls.length;
+        const successfulCalls = calls.filter(call => call.status === 'completed').length;
+        
+        // Calculate average duration
+        const callsWithDuration = calls.filter(call => call.duration && call.duration > 0);
+        const averageDurationSeconds = callsWithDuration.length > 0 
+          ? Math.round(callsWithDuration.reduce((sum, call) => sum + call.duration, 0) / callsWithDuration.length)
+          : 0;
+        
+        const averageCallDuration = averageDurationSeconds > 0 
+          ? `${Math.floor(averageDurationSeconds / 60)}:${String(averageDurationSeconds % 60).padStart(2, '0')}`
+          : 'N/A';
+
+        const conversionRate = totalCalls > 0 
+          ? `${Math.round((successfulCalls / totalCalls) * 100)}%`
+          : '0%';
+
+        // Find most recent call activity
+        let lastActivity = 'No activity';
+        if (calls.length > 0) {
+          const mostRecentCall = calls.reduce((latest, call) => {
+            const callTime = new Date(call.started_at);
+            const latestTime = new Date(latest.started_at);
+            return callTime > latestTime ? call : latest;
+          });
+          
+          const timeDiff = Date.now() - new Date(mostRecentCall.started_at).getTime();
+          const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+          const days = Math.floor(hours / 24);
+          
+          if (days > 0) {
+            lastActivity = `${days} day${days > 1 ? 's' : ''} ago`;
+          } else if (hours > 0) {
+            lastActivity = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+          } else {
+            lastActivity = 'Less than an hour ago';
+          }
+        }
+
+        setMetrics({
+          totalCalls,
+          successfulCalls,
+          averageCallDuration,
+          conversionRate,
+          lastActivity
+        });
+      } catch (error) {
+        console.error('Error calculating metrics:', error);
+      } finally {
+        setIsLoadingMetrics(false);
+      }
+    };
+
+    fetchMetrics();
+  }, [campaign.id]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -86,15 +170,6 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
       contactIds: campaign.contact_ids || []
     });
     setIsEditing(false);
-  };
-
-  // Mock metrics data - in a real app, this would come from the database
-  const metrics = {
-    totalCalls: 156,
-    successfulCalls: 134,
-    averageCallDuration: '3:42',
-    conversionRate: '86%',
-    lastActivity: '2 hours ago'
   };
 
   return (
@@ -234,44 +309,57 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
         <>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Metrics Cards */}
-            <Card className="bg-white border-gray-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-purple-600" />
-                  Total Calls
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.totalCalls}</div>
-                <p className="text-gray-600 text-sm">Calls initiated</p>
-              </CardContent>
-            </Card>
+            {isLoadingMetrics ? (
+              <div className="lg:col-span-3 flex items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                <span className="ml-2 text-gray-600">Loading metrics...</span>
+              </div>
+            ) : metrics ? (
+              <>
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                      <Phone className="w-5 h-5 text-purple-600" />
+                      Total Calls
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.totalCalls}</div>
+                    <p className="text-gray-600 text-sm">Calls initiated</p>
+                  </CardContent>
+                </Card>
 
-            <Card className="bg-white border-gray-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  Success Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.conversionRate}</div>
-                <p className="text-gray-600 text-sm">{metrics.successfulCalls} successful calls</p>
-              </CardContent>
-            </Card>
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-emerald-600" />
+                      Success Rate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.conversionRate}</div>
+                    <p className="text-gray-600 text-sm">{metrics.successfulCalls} successful calls</p>
+                  </CardContent>
+                </Card>
 
-            <Card className="bg-white border-gray-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" />
-                  Avg Duration
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.averageCallDuration}</div>
-                <p className="text-gray-600 text-sm">Per call</p>
-              </CardContent>
-            </Card>
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-blue-600" />
+                      Avg Duration
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{metrics.averageCallDuration}</div>
+                    <p className="text-gray-600 text-sm">Per call</p>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <div className="lg:col-span-3 text-center py-8 text-gray-500">
+                No metrics available
+              </div>
+            )}
           </div>
 
           {/* Call Analytics Table */}
@@ -284,6 +372,11 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                 </CardTitle>
                 <CardDescription className="text-gray-600">
                   Post-call analytics with recordings, transcripts, and extracted insights
+                  {metrics && (
+                    <span className="block mt-1">
+                      Last activity: {metrics.lastActivity}
+                    </span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
