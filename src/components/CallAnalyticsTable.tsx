@@ -12,9 +12,9 @@ interface Call {
   contactPhone: string;
   timestamp: Date;
   duration: string;
-  status: 'completed' | 'failed' | 'no-answer' | 'voicemail';
-  outcome: 'positive' | 'negative' | 'neutral';
-  sentiment: number;
+  status: 'completed' | 'failed' | 'no-answer' | 'voicemail' | 'busy' | 'unknown';
+  outcome: 'positive' | 'negative' | 'neutral' | null;
+  sentiment: number | null;
   hasRecording: boolean;
   hasTranscript: boolean;
 }
@@ -34,52 +34,49 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
       try {
         setIsLoading(true);
         
-        // First get all contacts for this campaign
-        const { data: campaign, error: campaignError } = await supabase
-          .from('campaigns')
-          .select('contact_ids')
-          .eq('id', campaignId)
-          .single();
+        // Get calls for this campaign with contact information
+        const { data: callsData, error: callsError } = await supabase
+          .from('calls')
+          .select(`
+            id,
+            phone,
+            duration,
+            status,
+            outcome,
+            sentiment,
+            recording_url,
+            transcript,
+            started_at,
+            ended_at,
+            contacts!inner(
+              name,
+              phone
+            )
+          `)
+          .eq('campaign_id', campaignId)
+          .order('started_at', { ascending: false });
 
-        if (campaignError) {
-          console.error('Error fetching campaign:', campaignError);
-          setError('Failed to fetch campaign data');
+        if (callsError) {
+          console.error('Error fetching calls:', callsError);
+          setError('Failed to fetch call data');
           return;
         }
 
-        if (!campaign?.contact_ids || campaign.contact_ids.length === 0) {
-          setCalls([]);
-          return;
-        }
-
-        // Get contact details for the campaign
-        const { data: contacts, error: contactsError } = await supabase
-          .from('contacts')
-          .select('id, name, phone')
-          .in('id', campaign.contact_ids);
-
-        if (contactsError) {
-          console.error('Error fetching contacts:', contactsError);
-          setError('Failed to fetch contacts data');
-          return;
-        }
-
-        // For now, create mock calls based on contacts since we don't have a calls table yet
-        // This will be replaced when the calls table is created
-        const mockCalls: Call[] = contacts?.map((contact, index) => ({
-          id: `call_${contact.id}_${index}`,
-          contactName: contact.name,
-          contactPhone: contact.phone || 'N/A',
-          timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Random date within last week
-          duration: `${Math.floor(Math.random() * 10) + 1}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-          status: ['completed', 'failed', 'no-answer', 'voicemail'][Math.floor(Math.random() * 4)] as any,
-          outcome: ['positive', 'negative', 'neutral'][Math.floor(Math.random() * 3)] as any,
-          sentiment: (Math.random() - 0.5) * 2, // Random sentiment between -1 and 1
-          hasRecording: Math.random() > 0.3,
-          hasTranscript: Math.random() > 0.4
+        // Transform the data to match the expected format
+        const transformedCalls: Call[] = callsData?.map((call) => ({
+          id: call.id,
+          contactName: call.contacts.name,
+          contactPhone: call.contacts.phone || call.phone,
+          timestamp: new Date(call.started_at),
+          duration: call.duration ? formatDuration(call.duration) : 'N/A',
+          status: call.status as any,
+          outcome: call.outcome as any,
+          sentiment: call.sentiment,
+          hasRecording: !!call.recording_url,
+          hasTranscript: !!call.transcript
         })) || [];
 
-        setCalls(mockCalls);
+        setCalls(transformedCalls);
       } catch (err) {
         console.error('Error in fetchCalls:', err);
         setError('An unexpected error occurred');
@@ -91,6 +88,12 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
     fetchCalls();
   }, [campaignId]);
 
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -101,15 +104,17 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'voicemail':
         return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'busy':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getOutcomeIcon = (outcome: string, sentiment: number) => {
-    if (outcome === 'positive' || sentiment > 0.3) {
+  const getOutcomeIcon = (outcome: string | null, sentiment: number | null) => {
+    if (outcome === 'positive' || (sentiment !== null && sentiment > 0.3)) {
       return <TrendingUp className="w-4 h-4 text-green-600" />;
-    } else if (outcome === 'negative' || sentiment < -0.3) {
+    } else if (outcome === 'negative' || (sentiment !== null && sentiment < -0.3)) {
       return <TrendingDown className="w-4 h-4 text-red-600" />;
     }
     return <div className="w-4 h-4 rounded-full bg-gray-400" />;
@@ -203,7 +208,9 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {getOutcomeIcon(call.outcome, call.sentiment)}
-                    <span className="text-gray-700 capitalize">{call.outcome}</span>
+                    <span className="text-gray-700 capitalize">
+                      {call.outcome || 'Unknown'}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>

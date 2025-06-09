@@ -56,7 +56,10 @@ Deno.serve(async (req) => {
       started_at,
       ended_at,
       notes,
-      campaign_id
+      campaign_id,
+      outcome,
+      sentiment,
+      user_id
     } = callData;
 
     // Find the contact by phone number
@@ -114,28 +117,29 @@ Deno.serve(async (req) => {
       console.log('Error updating contact:', updateError);
     }
 
-    // Store the call record (we'll need to create a calls table for this)
+    // Store the call record in the new calls table
     const callRecord = {
       contact_id: contact.id,
       campaign_id: campaign_id || null,
       phone: phone,
       duration: duration || null,
       status: status || 'unknown',
-      direction: direction || 'inbound',
+      direction: direction || 'outbound',
       recording_url: recording_url || null,
       transcript: transcript || null,
       external_call_id: call_id || null,
       started_at: started_at || new Date().toISOString(),
       ended_at: ended_at || null,
       notes: notes || null,
-      created_at: new Date().toISOString()
+      outcome: outcome || null,
+      sentiment: sentiment || null,
+      user_id: user_id || contact.user_id, // Use provided user_id or fall back to contact's user_id
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     console.log('Storing call record:', callRecord);
 
-    // For now, just log the call data since we don't have a calls table yet
-    // You can uncomment this when the calls table is created
-    /*
     const { data: callResult, error: callError } = await supabase
       .from('calls')
       .insert([callRecord])
@@ -145,26 +149,25 @@ Deno.serve(async (req) => {
     if (callError) {
       console.log('Error storing call record:', callError);
       return new Response(
-        JSON.stringify({ error: 'Error storing call record' }),
+        JSON.stringify({ error: 'Error storing call record', details: callError.message }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
-    */
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Call data received successfully',
+        message: 'Call data received and stored successfully',
         campaign_id: campaign_id || null,
         contact: {
           id: contact.id,
           name: contact.name,
           phone: contact.phone
         },
-        // call_id: callResult?.id
+        call_id: callResult?.id
       }),
       { 
         status: 200, 

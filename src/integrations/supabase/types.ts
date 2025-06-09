@@ -68,6 +68,84 @@ export type Database = {
           },
         ]
       }
+      calls: {
+        Row: {
+          campaign_id: string | null
+          contact_id: string
+          created_at: string
+          direction: string
+          duration: number | null
+          ended_at: string | null
+          external_call_id: string | null
+          id: string
+          notes: string | null
+          outcome: string | null
+          phone: string
+          recording_url: string | null
+          sentiment: number | null
+          started_at: string
+          status: string
+          transcript: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          contact_id: string
+          created_at?: string
+          direction?: string
+          duration?: number | null
+          ended_at?: string | null
+          external_call_id?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          phone: string
+          recording_url?: string | null
+          sentiment?: number | null
+          started_at?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          contact_id?: string
+          created_at?: string
+          direction?: string
+          duration?: number | null
+          ended_at?: string | null
+          external_call_id?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          phone?: string
+          recording_url?: string | null
+          sentiment?: number | null
+          started_at?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calls_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_contacts: {
         Row: {
           campaign_id: string
