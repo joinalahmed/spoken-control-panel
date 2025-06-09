@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,7 +77,7 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
           ? `${Math.round((successfulCalls / totalCalls) * 100)}%`
           : '0%';
 
-        // Find most recent call activity
+        // Calculate last activity based on most recent call
         let lastActivity = 'No activity';
         if (calls.length > 0) {
           const mostRecentCall = calls.reduce((latest, call) => {
@@ -87,16 +86,31 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
             return callTime > latestTime ? call : latest;
           });
           
-          const timeDiff = Date.now() - new Date(mostRecentCall.started_at).getTime();
-          const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-          const days = Math.floor(hours / 24);
+          const now = new Date();
+          const callTime = new Date(mostRecentCall.started_at);
+          const timeDiff = now.getTime() - callTime.getTime();
           
-          if (days > 0) {
+          const minutes = Math.floor(timeDiff / (1000 * 60));
+          const hours = Math.floor(minutes / 60);
+          const days = Math.floor(hours / 24);
+          const weeks = Math.floor(days / 7);
+          const months = Math.floor(days / 30);
+          const years = Math.floor(days / 365);
+          
+          if (years > 0) {
+            lastActivity = `${years} year${years > 1 ? 's' : ''} ago`;
+          } else if (months > 0) {
+            lastActivity = `${months} month${months > 1 ? 's' : ''} ago`;
+          } else if (weeks > 0) {
+            lastActivity = `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+          } else if (days > 0) {
             lastActivity = `${days} day${days > 1 ? 's' : ''} ago`;
           } else if (hours > 0) {
             lastActivity = `${hours} hour${hours > 1 ? 's' : ''} ago`;
+          } else if (minutes > 0) {
+            lastActivity = `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
           } else {
-            lastActivity = 'Less than an hour ago';
+            lastActivity = 'Just now';
           }
         }
 
