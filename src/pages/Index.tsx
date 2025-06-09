@@ -13,6 +13,7 @@ import CreateContactForm from '@/components/CreateContactForm';
 import KnowledgeBaseList from '@/components/KnowledgeBaseList';
 import CreateKnowledgeBaseForm from '@/components/CreateKnowledgeBaseForm';
 import HomeDashboard from '@/components/HomeDashboard';
+import Footer from '@/components/Footer';
 
 interface Agent {
   id: string;
@@ -181,140 +182,148 @@ const Index = ({ onLogout }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - Always visible */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo */}
-        <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">A</span>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="flex flex-1">
+        {/* Sidebar - Always visible */}
+        <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+          {/* Logo */}
+          <div className="p-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">D</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-gray-900">hwani</span>
+                <span className="text-xs text-gray-500">Voice AI Agents Playground</span>
+              </div>
             </div>
-            <span className="text-xl font-bold text-gray-900">awer</span>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                if (item.id === 'contacts') {
-                  setContactsView('list');
-                }
-                if (item.id === 'files') {
-                  setKnowledgeBaseView('list');
-                }
-                if (item.id === 'agents') {
-                  setShowCreateAgent(false);
-                  setSelectedAgent(null);
-                }
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
-                activeTab === item.id
-                  ? 'bg-purple-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+          {/* Navigation */}
+          <nav className="flex-1 px-4">
+            {sidebarItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  if (item.id === 'contacts') {
+                    setContactsView('list');
+                  }
+                  if (item.id === 'files') {
+                    setKnowledgeBaseView('list');
+                  }
+                  if (item.id === 'agents') {
+                    setShowCreateAgent(false);
+                    setSelectedAgent(null);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
+                  activeTab === item.id
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Logout Section */}
+          <div className="p-4 border-t border-gray-200">
+            <Button 
+              onClick={onLogout}
+              variant="outline" 
+              className="w-full flex items-center gap-2"
             >
-              <item.icon className="w-5 h-5" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
 
-        {/* Logout Section */}
-        <div className="p-4 border-t border-gray-200">
-          <Button 
-            onClick={onLogout}
-            variant="outline" 
-            className="w-full flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
+        {/* Main Content */}
+        <div className="flex-1 flex">
+          {activeTab === 'home' && (
+            <HomeDashboard />
+          )}
+
+          {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
+            <div className="flex-1 bg-slate-900 p-6">
+              <AgentList 
+                onSelectAgent={handleSelectAgent}
+                onCreateAgent={handleCreateNewAgent}
+              />
+            </div>
+          )}
+
+          {activeTab === 'agents' && showCreateAgent && (
+            <CreateAgentFlow 
+              onAgentCreated={handleAgentCreated}
+              onBack={handleBackToAgentsList}
+            />
+          )}
+
+          {activeTab === 'agents' && selectedAgent && !showCreateAgent && (
+            <AgentConfiguration 
+              selectedAgent={selectedAgent} 
+              onBack={handleBackToAgentsList}
+            />
+          )}
+
+          {activeTab === 'contacts' && contactsView === 'list' && (
+            <ContactsList 
+              onCreateContact={handleCreateContact}
+              onEditContact={handleEditContact}
+            />
+          )}
+
+          {activeTab === 'contacts' && contactsView === 'create' && (
+            <CreateContactForm 
+              onBack={() => setContactsView('list')}
+              onSave={handleContactSaved}
+            />
+          )}
+
+          {activeTab === 'files' && knowledgeBaseView === 'list' && (
+            <KnowledgeBaseList 
+              onCreateItem={handleCreateKnowledgeBaseItem}
+              onEditItem={handleEditKnowledgeBaseItem}
+            />
+          )}
+
+          {activeTab === 'files' && knowledgeBaseView === 'create' && (
+            <CreateKnowledgeBaseForm 
+              onBack={() => setKnowledgeBaseView('list')}
+              onSave={handleKnowledgeBaseItemSaved}
+            />
+          )}
+
+          {activeTab === 'call-logs' && (
+            <div className="flex-1">
+              <ConversationInterface />
+            </div>
+          )}
+
+          {/* Default content for other tabs */}
+          {!['agents', 'home', 'call-logs', 'contacts', 'files'].includes(activeTab) && (
+            <div className="flex-1 p-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="capitalize">{activeTab.replace('-', ' ')}</CardTitle>
+                  <CardDescription>This section is coming soon</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">Feature under development</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {activeTab === 'home' && (
-          <HomeDashboard />
-        )}
-
-        {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
-          <div className="flex-1 bg-slate-900 p-6">
-            <AgentList 
-              onSelectAgent={handleSelectAgent}
-              onCreateAgent={handleCreateNewAgent}
-            />
-          </div>
-        )}
-
-        {activeTab === 'agents' && showCreateAgent && (
-          <CreateAgentFlow 
-            onAgentCreated={handleAgentCreated}
-            onBack={handleBackToAgentsList}
-          />
-        )}
-
-        {activeTab === 'agents' && selectedAgent && !showCreateAgent && (
-          <AgentConfiguration 
-            selectedAgent={selectedAgent} 
-            onBack={handleBackToAgentsList}
-          />
-        )}
-
-        {activeTab === 'contacts' && contactsView === 'list' && (
-          <ContactsList 
-            onCreateContact={handleCreateContact}
-            onEditContact={handleEditContact}
-          />
-        )}
-
-        {activeTab === 'contacts' && contactsView === 'create' && (
-          <CreateContactForm 
-            onBack={() => setContactsView('list')}
-            onSave={handleContactSaved}
-          />
-        )}
-
-        {activeTab === 'files' && knowledgeBaseView === 'list' && (
-          <KnowledgeBaseList 
-            onCreateItem={handleCreateKnowledgeBaseItem}
-            onEditItem={handleEditKnowledgeBaseItem}
-          />
-        )}
-
-        {activeTab === 'files' && knowledgeBaseView === 'create' && (
-          <CreateKnowledgeBaseForm 
-            onBack={() => setKnowledgeBaseView('list')}
-            onSave={handleKnowledgeBaseItemSaved}
-          />
-        )}
-
-        {activeTab === 'call-logs' && (
-          <div className="flex-1">
-            <ConversationInterface />
-          </div>
-        )}
-
-        {/* Default content for other tabs */}
-        {!['agents', 'home', 'call-logs', 'contacts', 'files'].includes(activeTab) && (
-          <div className="flex-1 p-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="capitalize">{activeTab.replace('-', ' ')}</CardTitle>
-                <CardDescription>This section is coming soon</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Feature under development</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -44,10 +44,11 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-purple-600 font-bold text-lg">A</span>
+              <span className="text-purple-600 font-bold text-lg">D</span>
             </div>
-            <span className="text-2xl font-bold text-white">awer</span>
+            <span className="text-2xl font-bold text-white">hwani</span>
           </div>
+          <p className="text-white/80 text-sm">Voice AI Agents Playground</p>
         </div>
 
         {/* Login Card */}
