@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Phone, Settings, BarChart3, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,8 @@ import ConversationInterface from '@/components/ConversationInterface';
 import DashboardStats from '@/components/DashboardStats';
 import AgentList from '@/components/AgentList';
 import CreateAgentFlow from '@/components/CreateAgentFlow';
+import ContactsList from '@/components/ContactsList';
+import CreateContactForm from '@/components/CreateContactForm';
 
 interface Agent {
   id: string;
@@ -22,9 +23,23 @@ interface Agent {
   firstMessage?: string;
 }
 
+interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  status: 'active' | 'inactive';
+  lastCalled: string;
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState('agents');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [contactsView, setContactsView] = useState<'list' | 'create'>('list');
   const [agents, setAgents] = useState<Agent[]>([
     { 
       id: '1', 
@@ -103,6 +118,20 @@ const Index = () => {
     setSelectedAgent(agent);
   };
 
+  const handleCreateContact = () => {
+    setContactsView('create');
+  };
+
+  const handleContactSaved = (contactData: any) => {
+    console.log('Contact saved:', contactData);
+    setContactsView('list');
+  };
+
+  const handleEditContact = (contact: Contact) => {
+    console.log('Edit contact:', contact);
+    setContactsView('create');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -122,7 +151,12 @@ const Index = () => {
           {sidebarItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (item.id === 'contacts') {
+                  setContactsView('list');
+                }
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
                 activeTab === item.id
                   ? 'bg-purple-600 text-white'
@@ -196,6 +230,20 @@ const Index = () => {
           </>
         )}
 
+        {activeTab === 'contacts' && contactsView === 'list' && (
+          <ContactsList 
+            onCreateContact={handleCreateContact}
+            onEditContact={handleEditContact}
+          />
+        )}
+
+        {activeTab === 'contacts' && contactsView === 'create' && (
+          <CreateContactForm 
+            onBack={() => setContactsView('list')}
+            onSave={handleContactSaved}
+          />
+        )}
+
         {activeTab === 'home' && (
           <div className="flex-1 p-6">
             <DashboardStats />
@@ -220,7 +268,7 @@ const Index = () => {
         )}
 
         {/* Default content for other tabs */}
-        {!['agents', 'home', 'call-logs'].includes(activeTab) && (
+        {!['agents', 'home', 'call-logs', 'contacts'].includes(activeTab) && (
           <div className="flex-1 p-6">
             <Card>
               <CardHeader>
