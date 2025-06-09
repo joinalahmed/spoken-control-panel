@@ -46,169 +46,131 @@ const AgentConfiguration = ({ selectedAgent, onBack }: AgentConfigurationProps) 
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo */}
-        <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">A</span>
+    <div className="flex-1 flex flex-col h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={onBack}
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              All Agents
+            </Button>
+            <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>lwigfweg0wee</span>
+              <Button size="sm" variant="ghost" className="p-1">
+                <Copy className="w-4 h-4" />
+              </Button>
             </div>
-            <span className="text-xl font-bold text-gray-900">awer</span>
           </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-4">
-          <button
-            onClick={onBack}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors text-gray-700 hover:bg-gray-100"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            All Agents
-          </button>
-          
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors bg-purple-600 text-white">
-            <Brain className="w-5 h-5" />
-            Agents
-          </button>
-          
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors text-gray-700 hover:bg-gray-100">
-            <Phone className="w-5 h-5" />
-            Contacts
-          </button>
-        </nav>
-
-        {/* Upgrade Section */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600 mb-2">Upgrade to Propel</div>
-          <div className="text-lg font-bold text-gray-900 mb-1">Ignite</div>
-          <div className="text-sm text-gray-600 mb-3">1,980 Credit Left</div>
-          <Button className="w-full bg-purple-600 hover:bg-purple-700">
-            Upgrade Plan
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" className="gap-2">
+              <Phone className="w-4 h-4" />
+              Talk with your Agent
+            </Button>
+            <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
+              Update
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-gray-900">{selectedAgent.name}</h1>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>lwigfweg0wee</span>
-                <Button size="sm" variant="ghost" className="p-1">
-                  <Copy className="w-4 h-4" />
-                </Button>
+      {/* Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <Tabs defaultValue="model" className="w-full">
+          <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0">
+            <TabsTrigger 
+              value="model" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              Model
+            </TabsTrigger>
+            <TabsTrigger 
+              value="voice" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Volume2 className="w-4 h-4 mr-2" />
+              Voice
+            </TabsTrigger>
+            <TabsTrigger 
+              value="functions" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Functions
+            </TabsTrigger>
+            <TabsTrigger 
+              value="advanced" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Advanced
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="model" className="bg-gray-50 flex-1 p-6 space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column - First Message */}
+              <div className="space-y-2">
+                <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
+                <Input
+                  id="firstMessage"
+                  value={config.firstMessage}
+                  onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
+                  className="w-full bg-white"
+                  placeholder="Type Name"
+                />
+                <p className="text-xs text-gray-500">
+                  The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
+                </p>
+              </div>
+
+              {/* Right Column - System Prompt */}
+              <div className="space-y-2">
+                <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">System Prompt</Label>
+                <Textarea
+                  id="prompt"
+                  value={config.prompt}
+                  onChange={(e) => setConfig({...config, prompt: e.target.value})}
+                  className="w-full h-64 resize-none bg-white"
+                />
+                <p className="text-xs text-gray-500">
+                  The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="gap-2">
-                <Phone className="w-4 h-4" />
-                Talk with your Agent
-              </Button>
-              <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
-                Update
-              </Button>
+          </TabsContent>
+
+          <TabsContent value="voice" className="bg-gray-50 flex-1 p-6">
+            <div className="text-center py-12">
+              <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Voice Configuration</h3>
+              <p className="text-gray-500">Voice settings will be available here</p>
             </div>
-          </div>
-        </div>
+          </TabsContent>
 
-        {/* Tabs */}
-        <div className="bg-white border-b border-gray-200">
-          <Tabs defaultValue="model" className="w-full">
-            <TabsList className="w-full justify-start bg-transparent border-0 h-auto p-0">
-              <TabsTrigger 
-                value="model" 
-                className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
-              >
-                <Brain className="w-4 h-4 mr-2" />
-                Model
-              </TabsTrigger>
-              <TabsTrigger 
-                value="voice" 
-                className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
-              >
-                <Volume2 className="w-4 h-4 mr-2" />
-                Voice
-              </TabsTrigger>
-              <TabsTrigger 
-                value="functions" 
-                className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Functions
-              </TabsTrigger>
-              <TabsTrigger 
-                value="advanced" 
-                className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:text-purple-600 rounded-none px-6 py-4"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Advanced
-              </TabsTrigger>
-            </TabsList>
+          <TabsContent value="functions" className="bg-gray-50 flex-1 p-6">
+            <div className="text-center py-12">
+              <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Functions</h3>
+              <p className="text-gray-500">Function configuration will be available here</p>
+            </div>
+          </TabsContent>
 
-            <TabsContent value="model" className="bg-gray-50 flex-1 p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                {/* Left Column - First Message */}
-                <div className="space-y-2">
-                  <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
-                  <Input
-                    id="firstMessage"
-                    value={config.firstMessage}
-                    onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
-                    className="w-full bg-white"
-                    placeholder="Type Name"
-                  />
-                  <p className="text-xs text-gray-500">
-                    The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
-                  </p>
-                </div>
-
-                {/* Right Column - System Prompt */}
-                <div className="space-y-2">
-                  <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">System Prompt</Label>
-                  <Textarea
-                    id="prompt"
-                    value={config.prompt}
-                    onChange={(e) => setConfig({...config, prompt: e.target.value})}
-                    className="w-full h-64 resize-none bg-white"
-                  />
-                  <p className="text-xs text-gray-500">
-                    The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="voice" className="bg-gray-50 flex-1 p-6">
-              <div className="text-center py-12">
-                <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Voice Configuration</h3>
-                <p className="text-gray-500">Voice settings will be available here</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="functions" className="bg-gray-50 flex-1 p-6">
-              <div className="text-center py-12">
-                <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Functions</h3>
-                <p className="text-gray-500">Function configuration will be available here</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="advanced" className="bg-gray-50 flex-1 p-6">
-              <div className="text-center py-12">
-                <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Settings</h3>
-                <p className="text-gray-500">Advanced configuration will be available here</p>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+          <TabsContent value="advanced" className="bg-gray-50 flex-1 p-6">
+            <div className="text-center py-12">
+              <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Advanced Settings</h3>
+              <p className="text-gray-500">Advanced configuration will be available here</p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

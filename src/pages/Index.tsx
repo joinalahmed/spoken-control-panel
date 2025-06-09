@@ -175,65 +175,63 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Only show sidebar when not viewing agent configuration */}
-      {!(activeTab === 'agents' && selectedAgent && !showCreateAgent) && (
-        <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-          {/* Logo */}
-          <div className="p-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">A</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">awer</span>
+      {/* Sidebar - Always visible */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Logo */}
+        <div className="p-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">A</span>
             </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4">
-            {sidebarItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  if (item.id === 'contacts') {
-                    setContactsView('list');
-                  }
-                  if (item.id === 'files') {
-                    setKnowledgeBaseView('list');
-                  }
-                  if (item.id === 'agents') {
-                    setShowCreateAgent(false);
-                    setSelectedAgent(null);
-                  }
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
-                  activeTab === item.id
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Upgrade Section */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-600 mb-2">Upgrade to <Badge variant="secondary" className="bg-purple-100 text-purple-700">Propel</Badge></div>
-              <div className="text-lg font-bold text-gray-900 mb-1">Ignite</div>
-              <div className="text-sm text-gray-600 mb-3">1,980 Credit Left</div>
-              <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                Upgrade Plan
-              </Button>
-            </div>
+            <span className="text-xl font-bold text-gray-900">awer</span>
           </div>
         </div>
-      )}
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (item.id === 'contacts') {
+                  setContactsView('list');
+                }
+                if (item.id === 'files') {
+                  setKnowledgeBaseView('list');
+                }
+                if (item.id === 'agents') {
+                  setShowCreateAgent(false);
+                  setSelectedAgent(null);
+                }
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
+                activeTab === item.id
+                  ? 'bg-purple-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Upgrade Section */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-2">Upgrade to <Badge variant="secondary" className="bg-purple-100 text-purple-700">Propel</Badge></div>
+            <div className="text-lg font-bold text-gray-900 mb-1">Ignite</div>
+            <div className="text-sm text-gray-600 mb-3">1,980 Credit Left</div>
+            <Button className="w-full bg-purple-600 hover:bg-purple-700">
+              Upgrade Plan
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <div className={`flex-1 flex ${(activeTab === 'agents' && selectedAgent && !showCreateAgent) ? 'w-full' : ''}`}>
+      <div className="flex-1 flex">
         {activeTab === 'home' && (
           <HomeDashboard />
         )}
