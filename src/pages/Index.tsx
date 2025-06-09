@@ -386,7 +386,7 @@ const Index = () => {
             <div className="h-full overflow-y-auto">
               <CampaignsList 
                 onCreateCampaign={handleCreateCampaign}
-                onViewCallLogs={() => {}} // This prop is no longer used but keeping for compatibility
+                onSelectCampaign={handleSelectCampaign}
               />
             </div>
           )}
@@ -400,29 +400,12 @@ const Index = () => {
             </div>
           )}
 
-          {activeTab === 'campaigns' && campaignsView === 'details' && (
+          {activeTab === 'campaigns' && campaignsView === 'details' && selectedCampaignId && (
             <div className="h-full overflow-y-auto">
               <CampaignDetails 
-                campaign={campaigns.find(c => c.id === selectedCampaignId)}
+                campaign={campaigns.find(c => c.id === selectedCampaignId)!}
+                onBack={() => setCampaignsView('overview')}
               />
-            </div>
-          )}
-
-          {activeTab === 'campaigns' && campaignsView === 'call-logs' && (
-            <div className="h-full overflow-y-auto">
-              <div className="p-6">
-                <Button 
-                  onClick={() => setCampaignsView('overview')}
-                  variant="outline" 
-                  className="mb-4"
-                >
-                  ← Back to Campaigns
-                </Button>
-                <h2 className="text-xl font-semibold mb-4">
-                  Call Logs {selectedCampaignId && `for Campaign`}
-                </h2>
-              </div>
-              <ConversationInterface />
             </div>
           )}
 
