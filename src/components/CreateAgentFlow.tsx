@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase, ArrowLeft } from 'lucide-react';
+import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase, ArrowLeft, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CreateAgentFlowProps {
@@ -18,6 +17,7 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
   const [companyName, setCompanyName] = useState('');
   const [companyIndustry, setCompanyIndustry] = useState('');
   const [agentRole, setAgentRole] = useState('');
+  const [agentType, setAgentType] = useState<'inbound' | 'outbound'>('outbound');
   const { toast } = useToast();
 
   const industries = [
@@ -51,6 +51,7 @@ Company Information:
 - Business: ${companyName}
 - Industry: ${companyIndustry}
 - Your Role: ${agentRole}
+- Agent Type: ${agentType} calls
 
 When helping customers, always:
 1. Listen carefully to their concerns
@@ -58,7 +59,9 @@ When helping customers, always:
 3. Provide clear, step-by-step solutions
 4. Follow up to ensure their issue is resolved
 5. Maintain a professional and empathetic tone`,
-      firstMessage: `Hello! I'm ${agentRole} at ${companyName}. I'm here to help you with any questions or issues you might have. How can I assist you today?`
+      firstMessage: agentType === 'inbound' 
+        ? `Hello! Thank you for calling ${companyName}. I'm ${agentRole} and I'm here to help you with any questions or issues you might have. How can I assist you today?`
+        : `Hello! I'm ${agentRole} calling from ${companyName}. I'm reaching out to help you with any questions or issues you might have. How can I assist you today?`
     },
     {
       id: 'appointment-setter',
@@ -66,12 +69,13 @@ When helping customers, always:
       description: 'Streamline bookings by managing appointments and sending reminders with ease.',
       icon: Calendar,
       color: 'bg-teal-100 text-teal-600',
-      systemPrompt: `You are an appointment scheduling assistant for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}.
+      systemPrompt: `You are an appointment scheduling assistant for ${companyName} in the ${companyIndustry} industry. Your role is ${agentRole}. You handle ${agentType} calls for appointment management.
 
 Company Information:
 - Business: ${companyName}
 - Industry: ${companyIndustry}
 - Your Role: ${agentRole}
+- Agent Type: ${agentType} calls
 
 Your goal is to help customers book, reschedule, or cancel appointments efficiently. When scheduling:
 
@@ -82,7 +86,9 @@ Your goal is to help customers book, reschedule, or cancel appointments efficien
 5. Provide appointment confirmation details
 
 Always confirm details and provide clear scheduling information.`,
-      firstMessage: `Hi! I'm ${agentRole} at ${companyName}. I can help you schedule an appointment with us. What type of service are you looking to book?`
+      firstMessage: agentType === 'inbound'
+        ? `Hi! Thank you for calling ${companyName}. I'm ${agentRole} and I can help you schedule an appointment with us. What type of service are you looking to book?`
+        : `Hi! I'm ${agentRole} calling from ${companyName}. I can help you schedule an appointment with us. What type of service are you looking to book?`
     },
     {
       id: 'feedback-collector',
@@ -234,7 +240,8 @@ Be professional, helpful, and maintain confidentiality.`,
       voice: 'Sarah',
       description: template.description,
       systemPrompt: template.systemPrompt,
-      firstMessage: template.firstMessage
+      firstMessage: template.firstMessage,
+      agent_type: agentType
     };
 
     onAgentCreated(agentData);
@@ -283,6 +290,31 @@ Be professional, helpful, and maintain confidentiality.`,
                 onChange={(e) => setAgentName(e.target.value)}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agentType" className="text-sm font-medium text-gray-700">
+                Agent Type <span className="text-red-500">*</span>
+              </Label>
+              <Select value={agentType} onValueChange={(value: 'inbound' | 'outbound') => setAgentType(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select agent type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="outbound">
+                    <div className="flex items-center gap-2">
+                      <PhoneOutgoing className="w-4 h-4" />
+                      <span>Outbound - Makes calls to contacts</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="inbound">
+                    <div className="flex items-center gap-2">
+                      <PhoneIncoming className="w-4 h-4" />
+                      <span>Inbound - Receives incoming calls</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

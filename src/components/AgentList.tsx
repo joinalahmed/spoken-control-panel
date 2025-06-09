@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2, Phone, Clock, MessageSquare, Calendar, Building } from 'lucide-react';
+import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2, Phone, Clock, MessageSquare, Calendar, Building, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,17 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
         return 'bg-gray-500/20 text-gray-600 border-gray-500/30';
       case 'training':
         return 'bg-orange-500/20 text-orange-600 border-orange-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-600 border-gray-500/30';
+    }
+  };
+
+  const getAgentTypeColor = (agentType: string) => {
+    switch (agentType) {
+      case 'inbound':
+        return 'bg-blue-500/20 text-blue-600 border-blue-500/30';
+      case 'outbound':
+        return 'bg-green-500/20 text-green-600 border-green-500/30';
       default:
         return 'bg-gray-500/20 text-gray-600 border-gray-500/30';
     }
@@ -94,6 +105,16 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className={getStatusColor(agent.status)}>
                           {agent.status}
+                        </Badge>
+                        <Badge variant="outline" className={getAgentTypeColor(agent.agent_type)}>
+                          <div className="flex items-center gap-1">
+                            {agent.agent_type === 'inbound' ? (
+                              <PhoneIncoming className="w-3 h-3" />
+                            ) : (
+                              <PhoneOutgoing className="w-3 h-3" />
+                            )}
+                            {agent.agent_type}
+                          </div>
                         </Badge>
                       </div>
                       <CardDescription className="text-gray-600 text-sm line-clamp-2">
