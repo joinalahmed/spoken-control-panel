@@ -5,10 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Phone, Copy, Volume2, Brain, Zap, Settings } from 'lucide-react';
 
 interface Agent {
@@ -32,11 +29,7 @@ const AgentConfiguration = ({ selectedAgent }: AgentConfigurationProps) => {
     prompt: 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
     firstMessage: 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
-    language: 'en',
-    temperature: 7,
-    maxTokens: 23,
-    detectEmotion: true,
-    training: 'Select Files'
+    language: 'en'
   });
 
   if (!selectedAgent) {
@@ -113,91 +106,32 @@ const AgentConfiguration = ({ selectedAgent }: AgentConfigurationProps) => {
 
           <TabsContent value="model" className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-6">
-              {/* Left Column */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="training" className="text-sm font-medium text-gray-700">Training</Label>
-                  <Select value={config.training} onValueChange={(value) => setConfig({...config, training: value})}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Select Files">Select Files</SelectItem>
-                      <SelectItem value="file1">Training File 1</SelectItem>
-                      <SelectItem value="file2">Training File 2</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="temperature" className="text-sm font-medium text-gray-700">Temperature</Label>
-                  <div className="relative">
-                    <input
-                      type="range"
-                      id="temperature"
-                      min="0"
-                      max="10"
-                      value={config.temperature}
-                      onChange={(e) => setConfig({...config, temperature: parseInt(e.target.value)})}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${config.temperature * 10}%, #e5e7eb ${config.temperature * 10}%, #e5e7eb 100%)`
-                      }}
-                    />
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-2 py-1 rounded text-sm">
-                      {config.temperature}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="maxTokens" className="text-sm font-medium text-gray-700">Max Tokens</Label>
-                  <Input
-                    id="maxTokens"
-                    type="number"
-                    value={config.maxTokens}
-                    onChange={(e) => setConfig({...config, maxTokens: parseInt(e.target.value)})}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="detectEmotion" className="text-sm font-medium text-gray-700">Detect Emotion</Label>
-                  <Switch
-                    id="detectEmotion"
-                    checked={config.detectEmotion}
-                    onCheckedChange={(checked) => setConfig({...config, detectEmotion: checked})}
-                  />
-                </div>
+              {/* Left Column - First Message */}
+              <div className="space-y-2">
+                <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
+                <Input
+                  id="firstMessage"
+                  value={config.firstMessage}
+                  onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
+                </p>
               </div>
 
-              {/* Right Column */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">First Message</Label>
-                  <Input
-                    id="firstMessage"
-                    value={config.firstMessage}
-                    onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-gray-500">
-                    The first message that the assistant will say. This can also be a URL to a containerized audio file (mp3, wav, etc.).
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">System Prompt</Label>
-                  <Textarea
-                    id="prompt"
-                    value={config.prompt}
-                    onChange={(e) => setConfig({...config, prompt: e.target.value})}
-                    className="w-full h-64 resize-none"
-                  />
-                  <p className="text-xs text-gray-500">
-                    The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
-                  </p>
-                </div>
+              {/* Right Column - System Prompt */}
+              <div className="space-y-2">
+                <Label htmlFor="prompt" className="text-sm font-medium text-gray-700">System Prompt</Label>
+                <Textarea
+                  id="prompt"
+                  value={config.prompt}
+                  onChange={(e) => setConfig({...config, prompt: e.target.value})}
+                  className="w-full h-64 resize-none"
+                />
+                <p className="text-xs text-gray-500">
+                  The system prompt can be used to configure the context, role, personality, instructions and so on for the assistant.
+                </p>
               </div>
             </div>
           </TabsContent>
