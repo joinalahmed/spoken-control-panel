@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,18 +38,18 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-3xl font-bold text-white">Dhwani</span>
+            <span className="text-3xl font-bold text-gray-900">Dhwani</span>
           </div>
-          <p className="text-white/80 text-sm">Voice AI Agents Playground</p>
+          <p className="text-gray-600 text-sm">Voice AI Agents Playground</p>
         </div>
 
         {/* Login Card */}
-        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <Card className="bg-white border-gray-200 shadow-lg">
           <CardHeader className="space-y-1 pb-4">
             <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
             <p className="text-gray-600">Welcome back! Please enter your details.</p>
@@ -143,8 +144,8 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         </Card>
 
         {/* Demo Credentials */}
-        <div className="mt-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
-          <div className="text-white text-sm">
+        <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg">
+          <div className="text-gray-700 text-sm">
             <div className="font-medium mb-2">Demo Credentials:</div>
             <div>Email: thomas@gmail.com</div>
             <div>Password: password123</div>
