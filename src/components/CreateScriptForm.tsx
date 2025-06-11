@@ -364,5 +364,3 @@ const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
 };
 
 export default CreateScriptForm;
-
-</edits_to_apply>
