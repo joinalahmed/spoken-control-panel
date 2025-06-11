@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -283,16 +282,15 @@ const Index = () => {
     }
   };
 
-  const handleEditScript = (scriptId: string) => {
-    // We need to get the script from the scripts hook, not agents
-    // This will be handled by the scripts list component
-    setEditingScript({ id: scriptId } as Script);
+  const handleEditScript = (script: Script) => {
+    console.log('Edit script:', script);
+    setEditingScript(script);
     setScriptView('create');
   };
 
-  const handleViewScript = (scriptId: string) => {
-    // This will be handled by the scripts list component
-    setViewingScript({ id: scriptId } as Script);
+  const handleViewScript = (script: Script) => {
+    console.log('View script:', script);
+    setViewingScript(script);
   };
 
   return (

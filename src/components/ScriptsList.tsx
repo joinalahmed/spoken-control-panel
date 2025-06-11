@@ -3,12 +3,12 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
-import { useScripts } from '@/hooks/useScripts';
+import { useScripts, Script } from '@/hooks/useScripts';
 
 interface ScriptsListProps {
   onCreateScript: () => void;
-  onEditScript: (scriptId: string) => void;
-  onViewScript: (scriptId: string) => void;
+  onEditScript: (script: Script) => void;
+  onViewScript: (script: Script) => void;
 }
 
 const ScriptsList: React.FC<ScriptsListProps> = ({
@@ -91,14 +91,14 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onViewScript(script.id)}
+                        onClick={() => onViewScript(script)}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onEditScript(script.id)}
+                        onClick={() => onEditScript(script)}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
