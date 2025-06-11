@@ -855,5 +855,3 @@ console.log(data);`;
 };
 
 export default ApiDocumentation;
-
-</edits_to_apply>
