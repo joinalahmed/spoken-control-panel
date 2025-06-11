@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Plus, Trash2, GripVertical } from 'lucide-react';
-import { Agent } from '@/hooks/useAgents';
+import { Script } from '@/hooks/useScripts';
 
 interface ScriptSection {
   id: string;
@@ -364,3 +364,5 @@ const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
 };
 
 export default CreateScriptForm;
+
+</edits_to_apply>

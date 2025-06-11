@@ -39,10 +39,7 @@ export const useAgents = () => {
       
       const { data, error } = await supabase
         .from('agents')
-        .select(`
-          *,
-          script:scripts(id, name, description, sections)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
