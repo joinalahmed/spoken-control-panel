@@ -502,7 +502,7 @@ const Index = () => {
             </div>
           )}
 
-          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'overview' && (
+          {activeTab === 'campaigns' && campaignsView === 'overview' && (
             <div className="h-full overflow-y-auto">
               <CampaignsList 
                 onCreateCampaign={handleCreateCampaign}
@@ -511,7 +511,7 @@ const Index = () => {
             </div>
           )}
 
-          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'create' && (
+          {activeTab === 'campaigns' && campaignsView === 'create' && (
             <div className="h-full overflow-y-auto">
               <CreateCampaignForm 
                 onBack={() => setCampaignsView('overview')}
@@ -520,7 +520,7 @@ const Index = () => {
             </div>
           )}
 
-          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'details' && selectedCampaignId && (
+          {activeTab === 'campaigns' && campaignsView === 'details' && selectedCampaignId && (
             <div className="h-full overflow-y-auto">
               <CampaignDetails 
                 campaign={campaigns.find(c => c.id === selectedCampaignId)!}
@@ -530,7 +530,7 @@ const Index = () => {
             </div>
           )}
 
-          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'call-details' && selectedCallId && (
+          {activeTab === 'campaigns' && campaignsView === 'call-details' && selectedCallId && (
             <div className="h-full overflow-y-auto">
               <CallDetails 
                 callId={selectedCallId}
