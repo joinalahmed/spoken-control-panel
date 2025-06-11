@@ -142,6 +142,17 @@ Deno.serve(async (req) => {
       console.log('User profile not found:', userError);
     }
 
+    // Get knowledge bases for the user
+    const { data: knowledgeBases, error: kbError } = await supabase
+      .from('knowledge_base')
+      .select('*')
+      .eq('user_id', campaign.user_id)
+      .eq('status', 'published');
+
+    if (kbError) {
+      console.log('Error fetching knowledge bases:', kbError);
+    }
+
     // Return comprehensive caller details
     return new Response(
       JSON.stringify({
@@ -170,7 +181,8 @@ Deno.serve(async (req) => {
             id: userProfile.id,
             full_name: userProfile.full_name,
             email: userProfile.email
-          } : null
+          } : null,
+          knowledge_bases: knowledgeBases || []
         }
       }),
       { 
