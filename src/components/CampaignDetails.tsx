@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X } from 'lucide-react';
+import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns, Campaign } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
@@ -31,14 +32,16 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const [editingAgent, setEditingAgent] = useState(false);
   const [editingKb, setEditingKb] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
+  const [editingStatus, setEditingStatus] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState(campaign.agent_id || '');
   const [selectedKbId, setSelectedKbId] = useState(campaign.knowledge_base_id || '');
   const [editedDescription, setEditedDescription] = useState(campaign.description || '');
+  const [selectedStatus, setSelectedStatus] = useState(campaign.status);
   
   const { contacts } = useContacts();
   const { agents } = useAgents();
   const { kbs } = useKbs();
-  const { updateCampaign } = useCampaigns();
+  const { updateCampaign, deleteCampaign } = useCampaigns();
   const { user } = useAuth();
 
   // Fetch campaign contacts from the junction table
@@ -142,6 +145,31 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     }
   };
 
+  const handleUpdateStatus = async () => {
+    try {
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        status: selectedStatus
+      });
+      setEditingStatus(false);
+      toast.success('Campaign status updated');
+    } catch (error) {
+      console.error('Error updating campaign status:', error);
+      toast.error('Failed to update campaign status');
+    }
+  };
+
+  const handleDeleteCampaign = async () => {
+    try {
+      await deleteCampaign.mutateAsync(campaign.id);
+      toast.success('Campaign deleted successfully');
+      onBack();
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      toast.error('Failed to delete campaign');
+    }
+  };
+
   const handleCancelAgentEdit = () => {
     setSelectedAgentId(campaign.agent_id || '');
     setEditingAgent(false);
@@ -155,6 +183,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const handleCancelDescriptionEdit = () => {
     setEditedDescription(campaign.description || '');
     setEditingDescription(false);
+  };
+
+  const handleCancelStatusEdit = () => {
+    setSelectedStatus(campaign.status);
+    setEditingStatus(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -192,12 +225,77 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 <p className="text-gray-600 mt-1">Campaign Overview & Analytics</p>
               </div>
             </div>
-            <Badge 
-              variant="outline" 
-              className={`${getStatusColor(campaign.status)} px-3 py-1 text-sm font-medium capitalize`}
-            >
-              {campaign.status}
-            </Badge>
+            <div className="flex items-center gap-3">
+              {editingStatus ? (
+                <div className="flex items-center gap-2">
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="paused">Paused</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={handleUpdateStatus} className="bg-green-600 hover:bg-green-700">
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleCancelStatusEdit}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant="outline" 
+                    className={`${getStatusColor(campaign.status)} px-3 py-1 text-sm font-medium capitalize cursor-pointer`}
+                    onClick={() => setEditingStatus(true)}
+                  >
+                    {campaign.status}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingStatus(true)}
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{campaign.name}"? This action cannot be undone and will remove all associated data including contacts and call records.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteCampaign}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete Campaign
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </div>
       </div>
