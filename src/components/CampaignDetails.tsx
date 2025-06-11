@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -623,5 +624,3 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 };
 
 export default CampaignDetails;
-
-}
