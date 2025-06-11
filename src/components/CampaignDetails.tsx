@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const [showAddContacts, setShowAddContacts] = useState(false);
   const { contacts } = useContacts();
   const { agents } = useAgents();
-  const { kbsItems } = useKbs();
+  const { kbs } = useKbs();
   const { updateCampaign } = useCampaigns();
 
   // Get campaign contacts
@@ -38,7 +37,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const campaignAgent = agents.find(agent => agent.id === campaign.agent_id);
 
   // Get campaign knowledge base
-  const campaignKb = kbsItems.find(kb => kb.id === campaign.knowledge_base_id);
+  const campaignKb = kbs.find(kb => kb.id === campaign.knowledge_base_id);
 
   const handleRemoveContact = async (contactId: string) => {
     try {
