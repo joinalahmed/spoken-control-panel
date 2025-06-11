@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,9 @@ import { useKbs } from '@/hooks/useKbs';
 import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CampaignDetailsProps {
   campaign: Campaign;
@@ -37,10 +39,32 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const { agents } = useAgents();
   const { kbs } = useKbs();
   const { updateCampaign } = useCampaigns();
+  const { user } = useAuth();
+
+  // Fetch campaign contacts from the junction table
+  const { data: campaignContactIds = [] } = useQuery({
+    queryKey: ['campaign-contacts', campaign.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('campaign_contacts')
+        .select('contact_id')
+        .eq('campaign_id', campaign.id);
+
+      if (error) {
+        console.error('Error fetching campaign contacts:', error);
+        return [];
+      }
+
+      return data.map(item => item.contact_id);
+    },
+    enabled: !!user?.id,
+  });
 
   // Get campaign contacts
   const campaignContacts = contacts.filter(contact => 
-    campaign.contact_ids?.includes(contact.id)
+    campaignContactIds.includes(contact.id)
   );
 
   // Get campaign agent
@@ -53,12 +77,17 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     try {
       console.log('Removing contact from campaign:', { campaignId: campaign.id, contactId });
       
-      const updatedContactIds = campaign.contact_ids?.filter(id => id !== contactId) || [];
-      
-      await updateCampaign.mutateAsync({
-        id: campaign.id,
-        contact_ids: updatedContactIds
-      });
+      const { error } = await supabase
+        .from('campaign_contacts')
+        .delete()
+        .eq('campaign_id', campaign.id)
+        .eq('contact_id', contactId);
+
+      if (error) {
+        console.error('Error removing contact from campaign:', error);
+        toast.error('Failed to remove contact from campaign');
+        return;
+      }
 
       toast.success('Contact removed from campaign');
     } catch (error) {
@@ -482,7 +511,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
       {/* Add Contacts Modal */}
       <AddContactToCampaign
         campaignId={campaign.id}
-        currentContactIds={campaign.contact_ids || []}
+        currentContactIds={campaignContactIds}
         isOpen={showAddContacts}
         onClose={() => setShowAddContacts(false)}
         onContactsAdded={handleContactsAdded}

@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { useContacts } from '@/hooks/useContacts';
-import { useCampaigns } from '@/hooks/useCampaigns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AddContactToCampaignProps {
   campaignId: string;
@@ -26,8 +26,8 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
   const { contacts, isLoading: contactsLoading } = useContacts();
-  const { updateCampaign } = useCampaigns();
 
   // Filter contacts that aren't already in the campaign
   const availableContacts = contacts.filter(contact => 
@@ -51,15 +51,25 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
       return;
     }
 
+    setIsAdding(true);
     try {
       console.log('Adding contacts to campaign:', { campaignId, selectedContactIds });
       
-      const updatedContactIds = [...currentContactIds, ...selectedContactIds];
-      
-      await updateCampaign.mutateAsync({
-        id: campaignId,
-        contact_ids: updatedContactIds
-      });
+      // Create campaign_contacts entries
+      const campaignContacts = selectedContactIds.map(contactId => ({
+        campaign_id: campaignId,
+        contact_id: contactId
+      }));
+
+      const { error } = await supabase
+        .from('campaign_contacts')
+        .insert(campaignContacts);
+
+      if (error) {
+        console.error('Error adding contacts to campaign:', error);
+        toast.error('Failed to add contacts to campaign');
+        return;
+      }
 
       toast.success(`Added ${selectedContactIds.length} contact(s) to campaign`);
       setSelectedContactIds([]);
@@ -69,6 +79,8 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
     } catch (error) {
       console.error('Error adding contacts to campaign:', error);
       toast.error('Failed to add contacts to campaign');
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -152,9 +164,9 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
             </Button>
             <Button 
               onClick={handleAddContacts}
-              disabled={selectedContactIds.length === 0 || updateCampaign.isPending}
+              disabled={selectedContactIds.length === 0 || isAdding}
             >
-              {updateCampaign.isPending ? (
+              {isAdding ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Adding...
