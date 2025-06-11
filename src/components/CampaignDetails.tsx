@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns, Campaign } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
@@ -24,6 +25,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   onCallClick 
 }) => {
   const [showAddContacts, setShowAddContacts] = useState(false);
+  const [editingAgent, setEditingAgent] = useState(false);
+  const [editingKb, setEditingKb] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState(campaign.agent_id || '');
+  const [selectedKbId, setSelectedKbId] = useState(campaign.knowledge_base_id || '');
+  
   const { contacts } = useContacts();
   const { agents } = useAgents();
   const { kbs } = useKbs();
@@ -60,6 +66,44 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
   const handleContactsAdded = () => {
     console.log('Contacts added, refreshing campaign data');
+  };
+
+  const handleUpdateAgent = async () => {
+    try {
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        agent_id: selectedAgentId || null
+      });
+      setEditingAgent(false);
+      toast.success('Campaign agent updated');
+    } catch (error) {
+      console.error('Error updating campaign agent:', error);
+      toast.error('Failed to update campaign agent');
+    }
+  };
+
+  const handleUpdateKb = async () => {
+    try {
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        knowledge_base_id: selectedKbId || null
+      });
+      setEditingKb(false);
+      toast.success('Campaign knowledge base updated');
+    } catch (error) {
+      console.error('Error updating campaign knowledge base:', error);
+      toast.error('Failed to update campaign knowledge base');
+    }
+  };
+
+  const handleCancelAgentEdit = () => {
+    setSelectedAgentId(campaign.agent_id || '');
+    setEditingAgent(false);
+  };
+
+  const handleCancelKbEdit = () => {
+    setSelectedKbId(campaign.knowledge_base_id || '');
+    setEditingKb(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -189,25 +233,87 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   </div>
                 )}
 
-                {campaignAgent && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Assigned Agent
-                    </label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">{campaignAgent.name}</p>
-                  </div>
-                )}
+                {/* Agent Selection */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                    <User className="h-4 w-4" />
+                    Assigned Script/Agent
+                  </label>
+                  {editingAgent ? (
+                    <div className="space-y-2">
+                      <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select an agent/script" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {agents.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.id}>
+                              {agent.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleUpdateAgent} className="bg-green-600 hover:bg-green-700">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelAgentEdit}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-900">
+                        {campaignAgent ? campaignAgent.name : 'No agent assigned'}
+                      </span>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingAgent(true)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
-                {campaignKb && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Database className="h-4 w-4" />
-                      Knowledge Base
-                    </label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">{campaignKb.title}</p>
-                  </div>
-                )}
+                {/* Knowledge Base Selection */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                    <Database className="h-4 w-4" />
+                    Knowledge Base
+                  </label>
+                  {editingKb ? (
+                    <div className="space-y-2">
+                      <Select value={selectedKbId} onValueChange={setSelectedKbId}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a knowledge base" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {kbs.map((kb) => (
+                            <SelectItem key={kb.id} value={kb.id}>
+                              {kb.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleUpdateKb} className="bg-green-600 hover:bg-green-700">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelKbEdit}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-900">
+                        {campaignKb ? campaignKb.title : 'No knowledge base assigned'}
+                      </span>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingKb(true)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-700">Created</label>
