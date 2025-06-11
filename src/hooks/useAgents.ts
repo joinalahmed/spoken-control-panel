@@ -17,8 +17,15 @@ export interface Agent {
   knowledge_base_id: string | null;
   company: string | null;
   agent_type: 'inbound' | 'outbound';
+  script_id: string | null;
   created_at: string;
   updated_at: string;
+  script?: {
+    id: string;
+    name: string;
+    description: string | null;
+    sections: any[];
+  };
 }
 
 export const useAgents = () => {
@@ -32,7 +39,10 @@ export const useAgents = () => {
       
       const { data, error } = await supabase
         .from('agents')
-        .select('*')
+        .select(`
+          *,
+          script:scripts(id, name, description, sections)
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 

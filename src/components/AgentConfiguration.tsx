@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Copy, Settings, Zap, ArrowLeft, BookOpen, Save, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { Agent } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
+import { useScripts } from '@/hooks/useScripts';
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
@@ -18,6 +19,7 @@ interface AgentConfigurationProps {
 
 const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
   const { kbs: knowledgeBaseItems, isLoading: kbsLoading } = useKbs();
+  const { scripts, isLoading: scriptsLoading } = useScripts();
   
   const [config, setConfig] = useState({
     name: selectedAgent?.name || '',
@@ -27,7 +29,8 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     voice: selectedAgent?.voice || 'Sarah',
     language: 'en',
     agentType: selectedAgent?.agent_type || 'outbound' as 'inbound' | 'outbound',
-    knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none'
+    knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none',
+    scriptId: selectedAgent?.script_id || 'none'
   });
 
   // Voice options
@@ -49,7 +52,8 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
         systemPrompt: config.prompt,
         firstMessage: config.firstMessage,
         agent_type: config.agentType,
-        knowledgeBaseId: config.knowledgeBaseId === 'none' ? null : config.knowledgeBaseId
+        knowledgeBaseId: config.knowledgeBaseId === 'none' ? null : config.knowledgeBaseId,
+        scriptId: config.scriptId === 'none' ? null : config.scriptId
       };
       onUpdate(updateData);
     }
@@ -261,10 +265,10 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
 
                   <Card className="shadow-sm">
                     <CardHeader className="pb-4">
-                      <CardTitle className="text-lg">Knowledge Base</CardTitle>
-                      <CardDescription>Link additional context and information</CardDescription>
+                      <CardTitle className="text-lg">Knowledge Base & Script</CardTitle>
+                      <CardDescription>Link additional context and script information</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="knowledgeBase" className="text-sm font-medium text-gray-700">
                           Knowledge Base (Optional)
@@ -295,6 +299,39 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                         </Select>
                         <p className="text-xs text-gray-500">
                           Link a knowledge base to provide the agent with additional context and information.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="script" className="text-sm font-medium text-gray-700">
+                          Script (Optional)
+                        </Label>
+                        <Select 
+                          value={config.scriptId} 
+                          onValueChange={(value) => setConfig({...config, scriptId: value})}
+                          disabled={scriptsLoading}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={scriptsLoading ? "Loading..." : "Select script"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              <div className="flex items-center gap-2">
+                                <span>None</span>
+                              </div>
+                            </SelectItem>
+                            {scripts.map((script) => (
+                              <SelectItem key={script.id} value={script.id}>
+                                <div className="flex items-center gap-2">
+                                  <span>{script.name}</span>
+                                  <span className="text-xs text-gray-500">({script.agent_type})</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500">
+                          Link a script to define the conversation flow and structure for this agent.
                         </p>
                       </div>
                     </CardContent>

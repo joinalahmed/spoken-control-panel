@@ -9,6 +9,7 @@ import { useAgents, Agent } from '@/hooks/useAgents';
 import { Contact, useContacts } from '@/hooks/useContacts';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
 import { useCampaigns } from '@/hooks/useCampaigns';
+import { useScripts, Script } from '@/hooks/useScripts';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
@@ -32,6 +33,7 @@ const Index = () => {
   const { agents, createAgent, updateAgent } = useAgents();
   const { createContact } = useContacts();
   const { createCampaign, campaigns } = useCampaigns();
+  const { createScript, updateScript } = useScripts();
   
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -45,8 +47,8 @@ const Index = () => {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
   const [scriptView, setScriptView] = useState<'list' | 'create'>('list');
-  const [editingScript, setEditingScript] = useState<Agent | null>(null);
-  const [viewingScript, setViewingScript] = useState<Agent | null>(null);
+  const [editingScript, setEditingScript] = useState<Script | null>(null);
+  const [viewingScript, setViewingScript] = useState<Script | null>(null);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -100,7 +102,8 @@ const Index = () => {
         description: agentData.description || null,
         system_prompt: agentData.systemPrompt || null,
         first_message: agentData.firstMessage || null,
-        knowledge_base_id: agentData.knowledgeBaseId || null
+        knowledge_base_id: agentData.knowledgeBaseId || null,
+        script_id: agentData.scriptId || null
       };
 
       console.log('Mapped agent update data:', mappedAgentData);
@@ -249,16 +252,12 @@ const Index = () => {
       // Map the script data to match the database schema
       const mappedScriptData = {
         name: scriptData.name,
-        voice: scriptData.voice || 'Sarah',
-        status: 'inactive' as const,
-        conversations: 0,
-        last_active: null,
         description: scriptData.description || null,
-        system_prompt: scriptData.systemPrompt || null,
+        voice: scriptData.voice || 'Sarah',
+        agent_type: scriptData.agentType || 'outbound' as 'inbound' | 'outbound',
         first_message: scriptData.firstMessage || null,
-        knowledge_base_id: null,
         company: scriptData.company || null,
-        agent_type: scriptData.agentType || 'outbound' as 'inbound' | 'outbound'
+        sections: scriptData.sections || []
       };
 
       console.log('Mapped script data:', mappedScriptData);
@@ -268,9 +267,9 @@ const Index = () => {
           id: editingScript.id,
           ...mappedScriptData
         };
-        await updateAgent.mutateAsync(updatedScriptData);
+        await updateScript.mutateAsync(updatedScriptData);
       } else {
-        await createAgent.mutateAsync(mappedScriptData);
+        await createScript.mutateAsync(mappedScriptData);
       }
       
       setScriptView('list');
@@ -280,19 +279,16 @@ const Index = () => {
     }
   };
 
-  const handleEditScript = (agentId: string) => {
-    const agent = agents.find(a => a.id === agentId);
-    if (agent) {
-      setEditingScript(agent);
-      setScriptView('create');
-    }
+  const handleEditScript = (scriptId: string) => {
+    // We need to get the script from the scripts hook, not agents
+    // This will be handled by the scripts list component
+    setEditingScript({ id: scriptId } as Script);
+    setScriptView('create');
   };
 
-  const handleViewScript = (agentId: string) => {
-    const agent = agents.find(a => a.id === agentId);
-    if (agent) {
-      setViewingScript(agent);
-    }
+  const handleViewScript = (scriptId: string) => {
+    // This will be handled by the scripts list component
+    setViewingScript({ id: scriptId } as Script);
   };
 
   return (
@@ -482,7 +478,7 @@ const Index = () => {
                 onViewScript={handleViewScript}
               />
               <ViewScriptModal 
-                agent={viewingScript}
+                script={viewingScript}
                 isOpen={!!viewingScript}
                 onClose={() => setViewingScript(null)}
               />
@@ -497,7 +493,7 @@ const Index = () => {
                   setEditingScript(null);
                 }}
                 onSave={handleScriptSaved}
-                editingAgent={editingScript}
+                editingScript={editingScript}
               />
             </div>
           )}
@@ -560,3 +556,5 @@ const Index = () => {
 };
 
 export default Index;
+
+}

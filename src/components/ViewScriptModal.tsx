@@ -1,190 +1,135 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Agent } from '@/hooks/useAgents';
-
-interface ScriptSection {
-  id: string;
-  title: string;
-  description?: string;
-  steps: ScriptStep[];
-}
-
-interface ScriptStep {
-  id: string;
-  title: string;
-  content: string;
-  type: 'dialogue' | 'instruction' | 'question' | 'objection-handling';
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Script } from '@/hooks/useScripts';
 
 interface ViewScriptModalProps {
-  agent: Agent | null;
+  script: Script | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const getStepTypeColor = (type: string) => {
-  switch (type) {
-    case 'dialogue':
-      return 'bg-blue-100 text-blue-800';
-    case 'instruction':
-      return 'bg-green-100 text-green-800';
-    case 'question':
-      return 'bg-purple-100 text-purple-800';
-    case 'objection-handling':
-      return 'bg-orange-100 text-orange-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
-
 const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
-  agent,
+  script,
   isOpen,
   onClose
 }) => {
-  if (!agent) return null;
+  if (!script) return null;
 
-  let sections: ScriptSection[] = [];
-  let basePrompt = '';
-  let isStructuredPrompt = false;
-
-  // Parse sections from system_prompt
-  if (agent.system_prompt) {
-    try {
-      const parsed = JSON.parse(agent.system_prompt);
-      if (parsed.sections && Array.isArray(parsed.sections)) {
-        sections = parsed.sections;
-        basePrompt = parsed.basePrompt || '';
-        isStructuredPrompt = true;
-      } else {
-        basePrompt = agent.system_prompt;
-      }
-    } catch {
-      basePrompt = agent.system_prompt;
+  const getStepTypeColor = (type: string) => {
+    switch (type) {
+      case 'dialogue':
+        return 'bg-blue-100 text-blue-800';
+      case 'instruction':
+        return 'bg-green-100 text-green-800';
+      case 'question':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'objection-handling':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {agent.name}
-            <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
-              {agent.status}
+            {script.name}
+            <Badge variant="outline" className="capitalize">
+              {script.agent_type}
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            Script details and configuration
+            {script.description || 'No description available'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          <div>
-            <h3 className="font-medium mb-2">Basic Information</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500">Voice:</span>
-                <span className="ml-2">{agent.voice}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Type:</span>
-                <span className="ml-2 capitalize">{agent.agent_type}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Conversations:</span>
-                <span className="ml-2">{agent.conversations}</span>
-              </div>
-              {agent.company && (
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Basic Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">Company:</span>
-                  <span className="ml-2">{agent.company}</span>
+                  <span className="font-medium text-gray-700">Voice:</span>
+                  <span className="ml-2">{script.voice}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Type:</span>
+                  <span className="ml-2 capitalize">{script.agent_type}</span>
+                </div>
+                {script.company && (
+                  <div className="col-span-2">
+                    <span className="font-medium text-gray-700">Company:</span>
+                    <span className="ml-2">{script.company}</span>
+                  </div>
+                )}
+              </div>
+              
+              {script.first_message && (
+                <div>
+                  <span className="font-medium text-gray-700">Opening Message:</span>
+                  <p className="mt-1 p-3 bg-gray-50 rounded-md text-sm">
+                    {script.first_message}
+                  </p>
                 </div>
               )}
-            </div>
-            {agent.description && (
-              <div className="mt-3">
-                <span className="text-gray-500">Description:</span>
-                <p className="mt-1">{agent.description}</p>
-              </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
 
-          <Separator />
-
-          {basePrompt && (
-            <div>
-              <h3 className="font-medium mb-2">
-                {isStructuredPrompt ? 'Base Instructions' : 'System Instructions'}
-              </h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm whitespace-pre-wrap">{basePrompt}</p>
-              </div>
-            </div>
-          )}
-
-          {agent.first_message && (
-            <div>
-              <h3 className="font-medium mb-2">Opening Message</h3>
-              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-200">
-                <p className="text-sm whitespace-pre-wrap">{agent.first_message}</p>
-              </div>
-            </div>
-          )}
-
-          {sections.length > 0 && (
-            <div>
-              <h3 className="font-medium mb-4">Script Sections</h3>
-              <div className="space-y-6">
-                {sections.map((section, index) => (
-                  <div key={section.id} className="border rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium text-gray-500">
-                        Section {index + 1}
-                      </span>
-                      <h4 className="text-lg font-semibold">{section.title}</h4>
+          {/* Script Sections */}
+          {script.sections && script.sections.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Script Sections</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {script.sections.map((section: any, sectionIndex: number) => (
+                  <div key={section.id || sectionIndex} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-lg">{section.title}</h3>
+                      {section.description && (
+                        <span className="text-sm text-gray-600">{section.description}</span>
+                      )}
                     </div>
-                    {section.description && (
-                      <p className="text-gray-600 text-sm mb-4">{section.description}</p>
-                    )}
                     
-                    <div className="space-y-3">
-                      {section.steps.map((step, stepIndex) => (
-                        <div key={step.id} className="border-l-4 border-gray-200 pl-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge 
-                              variant="secondary" 
-                              className={`text-xs ${getStepTypeColor(step.type)}`}
-                            >
-                              {step.type.replace('-', ' ')}
-                            </Badge>
-                            <span className="font-medium text-sm">{step.title}</span>
+                    {section.steps && section.steps.length > 0 && (
+                      <div className="space-y-3">
+                        {section.steps.map((step: any, stepIndex: number) => (
+                          <div key={step.id || stepIndex} className="border-l-2 border-gray-200 pl-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge 
+                                variant="secondary" 
+                                className={getStepTypeColor(step.type)}
+                              >
+                                {step.type}
+                              </Badge>
+                              <span className="font-medium">{step.title}</span>
+                            </div>
+                            <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                              {step.content}
+                            </p>
                           </div>
-                          <div className="bg-gray-50 p-3 rounded text-sm">
-                            <p className="whitespace-pre-wrap">{step.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
-
-          <div>
-            <h3 className="font-medium mb-2">Timestamps</h3>
-            <div className="text-sm text-gray-500 space-y-1">
-              <div>Created: {new Date(agent.created_at).toLocaleString()}</div>
-              <div>Updated: {new Date(agent.updated_at).toLocaleString()}</div>
-              {agent.last_active && (
-                <div>Last Active: {new Date(agent.last_active).toLocaleString()}</div>
-              )}
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

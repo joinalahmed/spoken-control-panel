@@ -25,20 +25,19 @@ interface ScriptStep {
 interface CreateScriptFormProps {
   onBack: () => void;
   onSave: (scriptData: any) => void;
-  editingAgent?: Agent | null;
+  editingScript?: Script | null;
 }
 
 const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
   onBack,
   onSave,
-  editingAgent
+  editingScript
 }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     voice: 'Sarah',
     agentType: 'outbound',
-    systemPrompt: '',
     firstMessage: '',
     company: ''
   });
@@ -60,38 +59,29 @@ const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
   ]);
 
   useEffect(() => {
-    if (editingAgent) {
+    if (editingScript) {
       setFormData({
-        name: editingAgent.name,
-        description: editingAgent.description || '',
-        voice: editingAgent.voice,
-        agentType: editingAgent.agent_type,
-        systemPrompt: editingAgent.system_prompt || '',
-        firstMessage: editingAgent.first_message || '',
-        company: editingAgent.company || ''
+        name: editingScript.name,
+        description: editingScript.description || '',
+        voice: editingScript.voice,
+        agentType: editingScript.agent_type,
+        firstMessage: editingScript.first_message || '',
+        company: editingScript.company || ''
       });
 
-      // Parse sections from system_prompt if it contains structured data
-      if (editingAgent.system_prompt) {
-        try {
-          const parsed = JSON.parse(editingAgent.system_prompt);
-          if (parsed.sections) {
-            setSections(parsed.sections);
-          }
-        } catch {
-          // If not JSON, keep default sections
-        }
+      // Parse sections from script data
+      if (editingScript.sections) {
+        setSections(editingScript.sections);
       }
     }
-  }, [editingAgent]);
+  }, [editingScript]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Combine structured script data with basic form data
+    // Combine structured script data
     const scriptData = {
       ...formData,
-      systemPrompt: JSON.stringify({ sections, basePrompt: formData.systemPrompt }),
       sections
     };
     
@@ -170,10 +160,10 @@ const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
           </Button>
           <div>
             <h1 className="text-2xl font-bold">
-              {editingAgent ? 'Edit Script' : 'Create New Script'}
+              {editingScript ? 'Edit Script' : 'Create New Script'}
             </h1>
             <p className="text-gray-600">
-              {editingAgent ? 'Update your agent script' : 'Design a new call script for your agent'}
+              {editingScript ? 'Update your script' : 'Design a new call script'}
             </p>
           </div>
         </div>
@@ -250,24 +240,6 @@ const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
                   </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* System Instructions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>System Instructions</CardTitle>
-              <CardDescription>
-                Define the agent's core behavior and personality
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={formData.systemPrompt}
-                onChange={(e) => handleChange('systemPrompt', e.target.value)}
-                placeholder="Define the agent's role, personality, and behavior guidelines..."
-                rows={4}
-              />
             </CardContent>
           </Card>
 
@@ -382,7 +354,7 @@ const CreateScriptForm: React.FC<CreateScriptFormProps> = ({
               Cancel
             </Button>
             <Button type="submit">
-              {editingAgent ? 'Update Script' : 'Create Script'}
+              {editingScript ? 'Update Script' : 'Create Script'}
             </Button>
           </div>
         </form>

@@ -3,12 +3,12 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
-import { useAgents } from '@/hooks/useAgents';
+import { useScripts } from '@/hooks/useScripts';
 
 interface ScriptsListProps {
   onCreateScript: () => void;
-  onEditScript: (agentId: string) => void;
-  onViewScript: (agentId: string) => void;
+  onEditScript: (scriptId: string) => void;
+  onViewScript: (scriptId: string) => void;
 }
 
 const ScriptsList: React.FC<ScriptsListProps> = ({
@@ -16,12 +16,12 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
   onEditScript,
   onViewScript
 }) => {
-  const { agents, isLoading, deleteAgent } = useAgents();
+  const { scripts, isLoading, deleteScript } = useScripts();
 
-  const handleDeleteScript = async (agentId: string, agentName: string) => {
-    if (window.confirm(`Are you sure you want to delete the script for "${agentName}"?`)) {
+  const handleDeleteScript = async (scriptId: string, scriptName: string) => {
+    if (window.confirm(`Are you sure you want to delete the script "${scriptName}"?`)) {
       try {
-        await deleteAgent.mutateAsync(agentId);
+        await deleteScript.mutateAsync(scriptId);
       } catch (error) {
         console.error('Error deleting script:', error);
       }
@@ -55,7 +55,7 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
           </Button>
         </div>
 
-        {agents.length === 0 ? (
+        {scripts.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <div className="text-center">
@@ -72,46 +72,40 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
           </Card>
         ) : (
           <div className="grid gap-4">
-            {agents.map((agent) => (
-              <Card key={agent.id}>
+            {scripts.map((script) => (
+              <Card key={script.id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        {agent.name}
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          agent.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : agent.status === 'training'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {agent.status}
+                        {script.name}
+                        <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                          {script.agent_type}
                         </span>
                       </CardTitle>
                       <CardDescription>
-                        {agent.description || 'No description available'}
+                        {script.description || 'No description available'}
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onViewScript(agent.id)}
+                        onClick={() => onViewScript(script.id)}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onEditScript(agent.id)}
+                        onClick={() => onEditScript(script.id)}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteScript(agent.id, agent.name)}
+                        onClick={() => handleDeleteScript(script.id, script.name)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -121,26 +115,24 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>Voice: {agent.voice}</span>
-                      <span>Type: {agent.agent_type}</span>
-                      <span>Conversations: {agent.conversations}</span>
+                      <span>Voice: {script.voice}</span>
+                      <span>Type: {script.agent_type}</span>
+                      {script.company && <span>Company: {script.company}</span>}
                     </div>
-                    {agent.system_prompt && (
-                      <div className="text-sm">
-                        <strong>System Prompt:</strong>
-                        <p className="mt-1 text-gray-600 line-clamp-2">
-                          {agent.system_prompt}
-                        </p>
-                      </div>
-                    )}
-                    {agent.first_message && (
+                    {script.first_message && (
                       <div className="text-sm">
                         <strong>Opening Message:</strong>
                         <p className="mt-1 text-gray-600 line-clamp-2">
-                          {agent.first_message}
+                          {script.first_message}
                         </p>
                       </div>
                     )}
+                    <div className="text-sm">
+                      <strong>Sections:</strong>
+                      <span className="ml-2 text-gray-600">
+                        {script.sections?.length || 0} section(s)
+                      </span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
