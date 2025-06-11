@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -47,6 +48,7 @@ const Index = () => {
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'files', label: 'Knowledge Bases', icon: FileText },
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
+    { id: 'script', label: 'Script', icon: FileType },
   ];
 
   const handleAgentCreated = async (agentData: any) => {
@@ -265,6 +267,9 @@ const Index = () => {
                   if (item.id === 'campaigns') {
                     setCampaignsView('overview');
                   }
+                  if (item.id === 'script') {
+                    setCampaignsView('overview');
+                  }
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
                   activeTab === item.id
@@ -404,7 +409,7 @@ const Index = () => {
             </div>
           )}
 
-          {activeTab === 'campaigns' && campaignsView === 'overview' && (
+          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'overview' && (
             <div className="h-full overflow-y-auto">
               <CampaignsList 
                 onCreateCampaign={handleCreateCampaign}
@@ -413,7 +418,7 @@ const Index = () => {
             </div>
           )}
 
-          {activeTab === 'campaigns' && campaignsView === 'create' && (
+          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'create' && (
             <div className="h-full overflow-y-auto">
               <CreateCampaignForm 
                 onBack={() => setCampaignsView('overview')}
@@ -422,7 +427,7 @@ const Index = () => {
             </div>
           )}
 
-          {activeTab === 'campaigns' && campaignsView === 'details' && selectedCampaignId && (
+          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'details' && selectedCampaignId && (
             <div className="h-full overflow-y-auto">
               <CampaignDetails 
                 campaign={campaigns.find(c => c.id === selectedCampaignId)!}
@@ -432,7 +437,7 @@ const Index = () => {
             </div>
           )}
 
-          {activeTab === 'campaigns' && campaignsView === 'call-details' && selectedCallId && (
+          {(activeTab === 'campaigns' || activeTab === 'script') && campaignsView === 'call-details' && selectedCallId && (
             <div className="h-full overflow-y-auto">
               <CallDetails 
                 callId={selectedCallId}
@@ -442,7 +447,7 @@ const Index = () => {
           )}
 
           {/* Default content for other tabs */}
-          {!['agents', 'home', 'campaigns', 'contacts', 'files'].includes(activeTab) && (
+          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script'].includes(activeTab) && (
             <div className="h-full overflow-y-auto p-6">
               <Card>
                 <CardHeader>
