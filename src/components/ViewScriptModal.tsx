@@ -5,11 +5,40 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Agent } from '@/hooks/useAgents';
 
+interface ScriptSection {
+  id: string;
+  title: string;
+  description?: string;
+  steps: ScriptStep[];
+}
+
+interface ScriptStep {
+  id: string;
+  title: string;
+  content: string;
+  type: 'dialogue' | 'instruction' | 'question' | 'objection-handling';
+}
+
 interface ViewScriptModalProps {
   agent: Agent | null;
   isOpen: boolean;
   onClose: () => void;
 }
+
+const getStepTypeColor = (type: string) => {
+  switch (type) {
+    case 'dialogue':
+      return 'bg-blue-100 text-blue-800';
+    case 'instruction':
+      return 'bg-green-100 text-green-800';
+    case 'question':
+      return 'bg-purple-100 text-purple-800';
+    case 'objection-handling':
+      return 'bg-orange-100 text-orange-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
 
 const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
   agent,
@@ -18,9 +47,27 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
 }) => {
   if (!agent) return null;
 
+  let sections: ScriptSection[] = [];
+  let basePrompt = '';
+
+  // Parse sections from system_prompt
+  if (agent.system_prompt) {
+    try {
+      const parsed = JSON.parse(agent.system_prompt);
+      if (parsed.sections) {
+        sections = parsed.sections;
+        basePrompt = parsed.basePrompt || '';
+      } else {
+        basePrompt = agent.system_prompt;
+      }
+    } catch {
+      basePrompt = agent.system_prompt;
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {agent.name}
@@ -66,11 +113,11 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
 
           <Separator />
 
-          {agent.system_prompt && (
+          {basePrompt && (
             <div>
               <h3 className="font-medium mb-2">System Instructions</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm whitespace-pre-wrap">{agent.system_prompt}</p>
+                <p className="text-sm whitespace-pre-wrap">{basePrompt}</p>
               </div>
             </div>
           )}
@@ -80,6 +127,46 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
               <h3 className="font-medium mb-2">Opening Message</h3>
               <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-200">
                 <p className="text-sm whitespace-pre-wrap">{agent.first_message}</p>
+              </div>
+            </div>
+          )}
+
+          {sections.length > 0 && (
+            <div>
+              <h3 className="font-medium mb-4">Script Sections</h3>
+              <div className="space-y-6">
+                {sections.map((section, index) => (
+                  <div key={section.id} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-sm font-medium text-gray-500">
+                        Section {index + 1}
+                      </span>
+                      <h4 className="text-lg font-semibold">{section.title}</h4>
+                    </div>
+                    {section.description && (
+                      <p className="text-gray-600 text-sm mb-4">{section.description}</p>
+                    )}
+                    
+                    <div className="space-y-3">
+                      {section.steps.map((step, stepIndex) => (
+                        <div key={step.id} className="border-l-4 border-gray-200 pl-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs ${getStepTypeColor(step.type)}`}
+                            >
+                              {step.type.replace('-', ' ')}
+                            </Badge>
+                            <span className="font-medium text-sm">{step.title}</span>
+                          </div>
+                          <div className="bg-gray-50 p-3 rounded text-sm">
+                            <p className="whitespace-pre-wrap">{step.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
