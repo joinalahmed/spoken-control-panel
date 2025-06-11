@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X, Loader2, FileType } from 'lucide-react';
 import { Campaign, useCampaigns } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
@@ -36,7 +37,8 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
     description: campaign.description || '',
     status: campaign.status,
     agentId: campaign.agent_id || '',
-    contactIds: campaign.contact_ids || []
+    contactIds: campaign.contact_ids || [],
+    scriptId: campaign.agent_id || '' // Using agent_id as script_id for now
   });
 
   const { updateCampaign } = useCampaigns();
@@ -166,7 +168,7 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
         name: editForm.name,
         description: editForm.description,
         status: editForm.status as any,
-        agent_id: editForm.agentId || null,
+        agent_id: editForm.scriptId || null, // Using scriptId as agent_id
         contact_ids: editForm.contactIds
       });
       setIsEditing(false);
@@ -181,10 +183,14 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
       description: campaign.description || '',
       status: campaign.status,
       agentId: campaign.agent_id || '',
-      contactIds: campaign.contact_ids || []
+      contactIds: campaign.contact_ids || [],
+      scriptId: campaign.agent_id || ''
     });
     setIsEditing(false);
   };
+
+  // Get the linked script/agent
+  const linkedScript = agents.find(agent => agent.id === campaign.agent_id);
 
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-y-auto">
@@ -237,12 +243,13 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                     </Select>
                   </div>
                   <div className="flex-1">
-                    <Label htmlFor="campaign-agent">Agent</Label>
-                    <Select value={editForm.agentId} onValueChange={(value) => handleInputChange('agentId', value)}>
+                    <Label htmlFor="campaign-script">Linked Script</Label>
+                    <Select value={editForm.scriptId} onValueChange={(value) => handleInputChange('scriptId', value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an agent" />
+                        <SelectValue placeholder="Select a script" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="">No script</SelectItem>
                         {agents.map((agent) => (
                           <SelectItem key={agent.id} value={agent.id}>
                             {agent.name} - {agent.voice}
@@ -306,6 +313,12 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                     <Calendar className="w-4 h-4" />
                     <span>Created {new Date(campaign.created_at).toLocaleDateString()}</span>
                   </div>
+                  {linkedScript && (
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <FileType className="w-4 h-4" />
+                      <span>Script: {linkedScript.name}</span>
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -321,6 +334,60 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
 
       {!isEditing && (
         <>
+          {/* Script Information Card */}
+          {linkedScript && (
+            <div className="mb-6">
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-gray-900 flex items-center gap-2">
+                    <FileType className="w-5 h-5 text-purple-600" />
+                    Linked Script
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    The script that will be used for calls in this campaign
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{linkedScript.name}</h3>
+                        <p className="text-sm text-gray-600">{linkedScript.description || 'No description available'}</p>
+                      </div>
+                      <Badge variant="outline" className={`${
+                        linkedScript.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : linkedScript.status === 'training'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {linkedScript.status}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-gray-700">Voice:</span>
+                        <span className="ml-2 text-gray-600">{linkedScript.voice}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Type:</span>
+                        <span className="ml-2 text-gray-600">{linkedScript.agent_type}</span>
+                      </div>
+                    </div>
+                    {linkedScript.first_message && (
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-700">Opening Message:</span>
+                        <p className="mt-1 text-gray-600 bg-gray-50 p-2 rounded text-sm">
+                          {linkedScript.first_message}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Metrics Cards */}
             {isLoadingMetrics ? (
