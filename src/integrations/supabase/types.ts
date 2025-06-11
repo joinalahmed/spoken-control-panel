@@ -192,6 +192,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          knowledge_base_id: string | null
           name: string
           status: string
           updated_at: string
@@ -203,6 +204,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          knowledge_base_id?: string | null
           name: string
           status?: string
           updated_at?: string
@@ -214,12 +216,21 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          knowledge_base_id?: string | null
           name?: string
           status?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_knowledge_base_id_fkey"
+            columns: ["knowledge_base_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_base"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contacts: {
         Row: {
