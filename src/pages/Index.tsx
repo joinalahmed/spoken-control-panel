@@ -29,7 +29,7 @@ import ViewScriptModal from '@/components/ViewScriptModal';
 
 const Index = () => {
   const { user, signOut } = useAuth();
-  const { createAgent, updateAgent } = useAgents();
+  const { agents, createAgent, updateAgent } = useAgents();
   const { createContact } = useContacts();
   const { createCampaign, campaigns } = useCampaigns();
   const [activeTab, setActiveTab] = useState('home');
@@ -559,3 +559,5 @@ const Index = () => {
 };
 
 export default Index;
+
+}
