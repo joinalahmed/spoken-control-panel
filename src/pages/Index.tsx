@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +23,9 @@ import CreateCampaignForm from '@/components/CreateCampaignForm';
 import CampaignDetails from '@/components/CampaignDetails';
 import ViewContactModal from '@/components/ViewContactModal';
 import CallDetails from '@/components/CallDetails';
+import ScriptsList from '@/components/ScriptsList';
+import CreateScriptForm from '@/components/CreateScriptForm';
+import ViewScriptModal from '@/components/ViewScriptModal';
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -41,6 +43,9 @@ const Index = () => {
   const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'details' | 'call-details'>('overview');
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
+  const [scriptView, setScriptView] = useState<'list' | 'create'>('list');
+  const [editingScript, setEditingScript] = useState<Agent | null>(null);
+  const [viewingScript, setViewingScript] = useState<Agent | null>(null);
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -231,6 +236,64 @@ const Index = () => {
     await signOut();
   };
 
+  const handleCreateScript = () => {
+    setEditingScript(null);
+    setScriptView('create');
+  };
+
+  const handleScriptSaved = async (scriptData: any) => {
+    try {
+      console.log('Saving script:', scriptData);
+      
+      // Map the script data to match the database schema
+      const mappedScriptData = {
+        name: scriptData.name,
+        voice: scriptData.voice || 'Sarah',
+        status: 'inactive' as const,
+        conversations: 0,
+        last_active: null,
+        description: scriptData.description || null,
+        system_prompt: scriptData.systemPrompt || null,
+        first_message: scriptData.firstMessage || null,
+        knowledge_base_id: null,
+        company: scriptData.company || null,
+        agent_type: scriptData.agentType || 'outbound' as 'inbound' | 'outbound'
+      };
+
+      console.log('Mapped script data:', mappedScriptData);
+      
+      if (editingScript) {
+        const updatedScriptData = {
+          id: editingScript.id,
+          ...mappedScriptData
+        };
+        await updateAgent.mutateAsync(updatedScriptData);
+      } else {
+        await createAgent.mutateAsync(mappedScriptData);
+      }
+      
+      setScriptView('list');
+      setEditingScript(null);
+    } catch (error) {
+      console.error('Error saving script:', error);
+    }
+  };
+
+  const handleEditScript = (agentId: string) => {
+    const agent = agents.find(a => a.id === agentId);
+    if (agent) {
+      setEditingScript(agent);
+      setScriptView('create');
+    }
+  };
+
+  const handleViewScript = (agentId: string) => {
+    const agent = agents.find(a => a.id === agentId);
+    if (agent) {
+      setViewingScript(agent);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Sidebar - Fixed height and proper overflow handling */}
@@ -268,7 +331,8 @@ const Index = () => {
                     setCampaignsView('overview');
                   }
                   if (item.id === 'script') {
-                    setCampaignsView('overview');
+                    setScriptView('list');
+                    setEditingScript(null);
                   }
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
@@ -405,6 +469,34 @@ const Index = () => {
                 }}
                 onSave={handleKbsItemSaved}
                 editingItem={editingKbsItem}
+              />
+            </div>
+          )}
+
+          {activeTab === 'script' && scriptView === 'list' && (
+            <div className="h-full overflow-y-auto">
+              <ScriptsList 
+                onCreateScript={handleCreateScript}
+                onEditScript={handleEditScript}
+                onViewScript={handleViewScript}
+              />
+              <ViewScriptModal 
+                agent={viewingScript}
+                isOpen={!!viewingScript}
+                onClose={() => setViewingScript(null)}
+              />
+            </div>
+          )}
+
+          {activeTab === 'script' && scriptView === 'create' && (
+            <div className="h-full overflow-y-auto">
+              <CreateScriptForm 
+                onBack={() => {
+                  setScriptView('list');
+                  setEditingScript(null);
+                }}
+                onSave={handleScriptSaved}
+                editingAgent={editingScript}
               />
             </div>
           )}
