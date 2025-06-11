@@ -146,6 +146,30 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Get script details if campaign has a script
+    let script = null;
+    if (campaignData.script_id) {
+      const { data: scriptData, error: scriptError } = await supabase
+        .from('scripts')
+        .select('*')
+        .eq('id', campaignData.script_id)
+        .single();
+
+      if (!scriptError && scriptData) {
+        script = {
+          id: scriptData.id,
+          name: scriptData.name,
+          description: scriptData.description,
+          company: scriptData.company,
+          agent_type: scriptData.agent_type,
+          voice: scriptData.voice,
+          first_message: scriptData.first_message,
+          sections: scriptData.sections
+        };
+        console.log(`Found script: ${script.name}`);
+      }
+    }
+
     // Get user details (campaign owner)
     const { data: userProfile, error: userError } = await supabase
       .from('profiles')
@@ -192,6 +216,7 @@ Deno.serve(async (req) => {
             status: campaignData.status
           },
           agent: agent,
+          script: script,
           user: userProfile ? {
             id: userProfile.id,
             full_name: userProfile.full_name,
