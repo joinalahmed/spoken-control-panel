@@ -120,17 +120,23 @@ export const useCampaigns = () => {
 
   const updateCampaign = useMutation({
     mutationFn: async (campaignData: Partial<Campaign> & { id: string }) => {
+      console.log('Updating campaign with data:', campaignData);
+      
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
+      // Only include fields that are being updated
+      if (campaignData.name !== undefined) updateData.name = campaignData.name;
+      if (campaignData.description !== undefined) updateData.description = campaignData.description;
+      if (campaignData.agent_id !== undefined) updateData.agent_id = campaignData.agent_id;
+      if (campaignData.contact_ids !== undefined) updateData.contact_ids = campaignData.contact_ids;
+      if (campaignData.status !== undefined) updateData.status = campaignData.status;
+      if (campaignData.knowledge_base_id !== undefined) updateData.knowledge_base_id = campaignData.knowledge_base_id;
+
       const { data, error } = await supabase
         .from('campaigns')
-        .update({
-          name: campaignData.name,
-          description: campaignData.description,
-          agent_id: campaignData.agent_id,
-          contact_ids: campaignData.contact_ids,
-          status: campaignData.status,
-          knowledge_base_id: campaignData.knowledge_base_id,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', campaignData.id)
         .select()
         .single();
@@ -140,6 +146,7 @@ export const useCampaigns = () => {
         throw error;
       }
 
+      console.log('Campaign updated successfully:', data);
       return data as Campaign;
     },
     onSuccess: () => {
