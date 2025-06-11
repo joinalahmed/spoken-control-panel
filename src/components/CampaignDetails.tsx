@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns, Campaign } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
@@ -27,8 +28,10 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const [showAddContacts, setShowAddContacts] = useState(false);
   const [editingAgent, setEditingAgent] = useState(false);
   const [editingKb, setEditingKb] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState(campaign.agent_id || '');
   const [selectedKbId, setSelectedKbId] = useState(campaign.knowledge_base_id || '');
+  const [editedDescription, setEditedDescription] = useState(campaign.description || '');
   
   const { contacts } = useContacts();
   const { agents } = useAgents();
@@ -96,6 +99,20 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     }
   };
 
+  const handleUpdateDescription = async () => {
+    try {
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        description: editedDescription || null
+      });
+      setEditingDescription(false);
+      toast.success('Campaign description updated');
+    } catch (error) {
+      console.error('Error updating campaign description:', error);
+      toast.error('Failed to update campaign description');
+    }
+  };
+
   const handleCancelAgentEdit = () => {
     setSelectedAgentId(campaign.agent_id || '');
     setEditingAgent(false);
@@ -104,6 +121,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const handleCancelKbEdit = () => {
     setSelectedKbId(campaign.knowledge_base_id || '');
     setEditingKb(false);
+  };
+
+  const handleCancelDescriptionEdit = () => {
+    setEditedDescription(campaign.description || '');
+    setEditingDescription(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -226,12 +248,37 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {campaign.description && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Description</label>
-                    <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{campaign.description}</p>
-                  </div>
-                )}
+                {/* Description Section */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                  {editingDescription ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editedDescription}
+                        onChange={(e) => setEditedDescription(e.target.value)}
+                        placeholder="Enter campaign description..."
+                        className="min-h-[80px]"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleUpdateDescription} className="bg-green-600 hover:bg-green-700">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelDescriptionEdit}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg flex items-start justify-between">
+                      <span className="text-sm text-gray-900 flex-1">
+                        {campaign.description || 'No description provided'}
+                      </span>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingDescription(true)} className="ml-2 flex-shrink-0">
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Agent Selection */}
                 <div>
