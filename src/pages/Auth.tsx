@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -95,7 +96,7 @@ const Auth = () => {
   if (showForgotPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -148,6 +149,11 @@ const Auth = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Made by Aivar */}
+          <div className="text-center mt-8">
+            <p className="text-white/60 text-sm">Made by Aivar</p>
+          </div>
         </div>
       </div>
     );
@@ -170,7 +176,7 @@ const Auth = () => {
 
       {/* Right side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
           {/* Login Card */}
           <Card className="bg-white border-0 shadow-xl">
             <CardHeader className="space-y-1 pb-6">
@@ -344,6 +350,11 @@ const Auth = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Made by Aivar */}
+          <div className="text-center mt-8">
+            <p className="text-white/60 text-sm">Made by Aivar</p>
+          </div>
         </div>
       </div>
     </div>
