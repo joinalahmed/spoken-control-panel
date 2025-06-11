@@ -21,6 +21,7 @@ export type Database = {
           knowledge_base_id: string | null
           last_active: string | null
           name: string
+          script_id: string | null
           status: string
           system_prompt: string | null
           updated_at: string | null
@@ -38,6 +39,7 @@ export type Database = {
           knowledge_base_id?: string | null
           last_active?: string | null
           name: string
+          script_id?: string | null
           status?: string
           system_prompt?: string | null
           updated_at?: string | null
@@ -55,6 +57,7 @@ export type Database = {
           knowledge_base_id?: string | null
           last_active?: string | null
           name?: string
+          script_id?: string | null
           status?: string
           system_prompt?: string | null
           updated_at?: string | null
@@ -62,6 +65,13 @@ export type Database = {
           voice?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "agents_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_agents_knowledge_base"
             columns: ["knowledge_base_id"]
@@ -349,6 +359,48 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      scripts: {
+        Row: {
+          agent_type: string
+          company: string | null
+          created_at: string
+          description: string | null
+          first_message: string | null
+          id: string
+          name: string
+          sections: Json | null
+          updated_at: string
+          user_id: string
+          voice: string
+        }
+        Insert: {
+          agent_type?: string
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          first_message?: string | null
+          id?: string
+          name: string
+          sections?: Json | null
+          updated_at?: string
+          user_id: string
+          voice?: string
+        }
+        Update: {
+          agent_type?: string
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          first_message?: string | null
+          id?: string
+          name?: string
+          sections?: Json | null
+          updated_at?: string
+          user_id?: string
+          voice?: string
         }
         Relationships: []
       }

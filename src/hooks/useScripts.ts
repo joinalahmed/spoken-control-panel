@@ -27,14 +27,13 @@ export const useScripts = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      // Use the edge function since TypeScript types don't include scripts table yet
-      const { data, error } = await supabase.functions.invoke('get-user-scripts');
+      const { data, error } = await supabase
+        .from('scripts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching scripts via function:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
       return (data || []) as Script[];
     },
     enabled: !!user,
@@ -44,9 +43,11 @@ export const useScripts = () => {
     mutationFn: async (scriptData: Omit<Script, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase.functions.invoke('create-script', {
-        body: { ...scriptData, user_id: user.id }
-      });
+      const { data, error } = await supabase
+        .from('scripts')
+        .insert([{ ...scriptData, user_id: user.id }])
+        .select('*')
+        .single();
 
       if (error) throw error;
       return data as Script;
@@ -62,9 +63,12 @@ export const useScripts = () => {
 
   const updateScript = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Script> & { id: string }) => {
-      const { data, error } = await supabase.functions.invoke('create-script', {
-        body: { id, ...updates, updated_at: new Date().toISOString() }
-      });
+      const { data, error } = await supabase
+        .from('scripts')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('*')
+        .single();
 
       if (error) throw error;
       return data as Script;
@@ -80,9 +84,10 @@ export const useScripts = () => {
 
   const deleteScript = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.functions.invoke('create-script', {
-        body: { id, _action: 'delete' }
-      });
+      const { error } = await supabase
+        .from('scripts')
+        .delete()
+        .eq('id', id);
 
       if (error) throw error;
     },
