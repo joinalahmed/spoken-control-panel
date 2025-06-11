@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, FileText, HelpCircle, BookOpen, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,15 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useKbs } from '@/hooks/useKbs';
+import { useKbs, KbsItem } from '@/hooks/useKbs';
 
 interface CreateKbsFormProps {
   onBack: () => void;
   onSave: (data: any) => void;
+  editingItem?: KbsItem | null;
 }
 
-const CreateKbsForm = ({ onBack, onSave }: CreateKbsFormProps) => {
-  const { createKbsItem } = useKbs();
+const CreateKbsForm = ({ onBack, onSave, editingItem }: CreateKbsFormProps) => {
+  const { createKbsItem, updateKbsItem } = useKbs();
   const [formData, setFormData] = useState({
     title: '',
     type: '',
@@ -26,6 +27,20 @@ const CreateKbsForm = ({ onBack, onSave }: CreateKbsFormProps) => {
     status: 'draft' as 'draft' | 'published'
   });
   const [newTag, setNewTag] = useState('');
+
+  // Populate form data when editing an existing item
+  useEffect(() => {
+    if (editingItem) {
+      setFormData({
+        title: editingItem.title || '',
+        type: editingItem.type || '',
+        description: editingItem.description || '',
+        content: editingItem.content || '',
+        tags: editingItem.tags || [],
+        status: editingItem.status || 'draft'
+      });
+    }
+  }, [editingItem]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -59,21 +74,38 @@ const CreateKbsForm = ({ onBack, onSave }: CreateKbsFormProps) => {
     }
 
     try {
-      await createKbsItem.mutateAsync({
-        title: formData.title,
-        type: formData.type as 'document' | 'faq' | 'guide' | 'other',
-        description: formData.description || null,
-        content: formData.content,
-        tags: formData.tags.length > 0 ? formData.tags : null,
-        status: formData.status,
-        date_added: new Date().toISOString(),
-        last_modified: new Date().toISOString()
-      });
+      if (editingItem) {
+        // Update existing item
+        await updateKbsItem.mutateAsync({
+          id: editingItem.id,
+          title: formData.title,
+          type: formData.type as 'document' | 'faq' | 'guide' | 'other',
+          description: formData.description || null,
+          content: formData.content,
+          tags: formData.tags.length > 0 ? formData.tags : null,
+          status: formData.status,
+          last_modified: new Date().toISOString()
+        });
+      } else {
+        // Create new item
+        await createKbsItem.mutateAsync({
+          title: formData.title,
+          type: formData.type as 'document' | 'faq' | 'guide' | 'other',
+          description: formData.description || null,
+          content: formData.content,
+          tags: formData.tags.length > 0 ? formData.tags : null,
+          status: formData.status,
+          date_added: new Date().toISOString(),
+          last_modified: new Date().toISOString()
+        });
+      }
       onSave(formData);
     } catch (error) {
-      console.error('Error creating KBS item:', error);
+      console.error('Error saving KBS item:', error);
     }
   };
+
+  const isLoading = editingItem ? updateKbsItem.isPending : createKbsItem.isPending;
 
   return (
     <div className="flex-1 p-6">
@@ -83,8 +115,12 @@ const CreateKbsForm = ({ onBack, onSave }: CreateKbsFormProps) => {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Add KBS Item</h1>
-          <p className="text-gray-600">Create a new KBS entry</p>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {editingItem ? 'Edit KBS Item' : 'Add KBS Item'}
+          </h1>
+          <p className="text-gray-600">
+            {editingItem ? 'Update your knowledge base entry' : 'Create a new KBS entry'}
+          </p>
         </div>
       </div>
 
@@ -217,10 +253,10 @@ const CreateKbsForm = ({ onBack, onSave }: CreateKbsFormProps) => {
               <Button 
                 type="submit" 
                 className="bg-purple-600 hover:bg-purple-700"
-                disabled={createKbsItem.isPending}
+                disabled={isLoading}
               >
                 <Save className="w-4 h-4 mr-2" />
-                {createKbsItem.isPending ? 'Saving...' : 'Save Item'}
+                {isLoading ? 'Saving...' : (editingItem ? 'Update Item' : 'Save Item')}
               </Button>
               <Button type="button" variant="outline" onClick={onBack}>
                 Cancel

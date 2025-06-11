@@ -49,6 +49,11 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
     deleteKbsItem.mutate(id);
   };
 
+  const handleEdit = (item: KbsItem) => {
+    console.log('Editing KBS item:', item);
+    onEditItem(item);
+  };
+
   if (isLoading) {
     return (
       <div className="flex-1 p-6">
@@ -154,7 +159,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEditItem(item)}>
+                      <DropdownMenuItem onClick={() => handleEdit(item)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>

@@ -36,6 +36,7 @@ const Index = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [viewingContact, setViewingContact] = useState<Contact | null>(null);
   const [kbsView, setKbsView] = useState<'list' | 'create'>('list');
+  const [editingKbsItem, setEditingKbsItem] = useState<KbsItem | null>(null);
   const [campaignsView, setCampaignsView] = useState<'overview' | 'create' | 'details' | 'call-details'>('overview');
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
@@ -167,16 +168,19 @@ const Index = () => {
   };
 
   const handleCreateKbsItem = () => {
+    setEditingKbsItem(null);
     setKbsView('create');
   };
 
   const handleKbsItemSaved = (itemData: any) => {
     console.log('KBS item saved:', itemData);
     setKbsView('list');
+    setEditingKbsItem(null);
   };
 
   const handleEditKbsItem = (item: KbsItem) => {
     console.log('Edit KBS item:', item);
+    setEditingKbsItem(item);
     setKbsView('create');
   };
 
@@ -252,6 +256,7 @@ const Index = () => {
                   }
                   if (item.id === 'files') {
                     setKbsView('list');
+                    setEditingKbsItem(null);
                   }
                   if (item.id === 'agents') {
                     setShowCreateAgent(false);
@@ -389,8 +394,12 @@ const Index = () => {
           {activeTab === 'files' && kbsView === 'create' && (
             <div className="h-full overflow-y-auto">
               <CreateKbsForm 
-                onBack={() => setKbsView('list')}
+                onBack={() => {
+                  setKbsView('list');
+                  setEditingKbsItem(null);
+                }}
                 onSave={handleKbsItemSaved}
+                editingItem={editingKbsItem}
               />
             </div>
           )}
