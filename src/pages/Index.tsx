@@ -55,8 +55,8 @@ const Index = () => {
     { id: 'agents', label: 'Agents', icon: Users },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'files', label: 'Knowledge Bases', icon: FileText },
-    { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
     { id: 'script', label: 'Script', icon: FileType },
+    { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
   ];
 
   const handleAgentCreated = async (agentData: any) => {
