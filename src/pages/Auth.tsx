@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -149,11 +148,11 @@ const Auth = () => {
               </form>
             </CardContent>
           </Card>
-
-          {/* Made by Aivar */}
-          <div className="text-center mt-8">
-            <p className="text-white/60 text-sm">Made by Aivar</p>
-          </div>
+        </div>
+        
+        {/* Made by Aivar Innovations - centered to page */}
+        <div className="fixed bottom-8 left-0 right-0 text-center">
+          <p className="text-white/60 text-sm">Made by Aivar Innovations</p>
         </div>
       </div>
     );
@@ -350,12 +349,12 @@ const Auth = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Made by Aivar */}
-          <div className="text-center mt-8">
-            <p className="text-white/60 text-sm">Made by Aivar</p>
-          </div>
         </div>
+      </div>
+      
+      {/* Made by Aivar Innovations - centered to page */}
+      <div className="fixed bottom-8 left-0 right-0 text-center">
+        <p className="text-white/60 text-sm">Made by Aivar Innovations</p>
       </div>
     </div>
   );
