@@ -136,6 +136,76 @@ console.log(data);`;
   }
 }`;
 
+  // New endpoint examples for creation APIs
+  const createAgentExample = `curl -X POST "${baseUrl}/create-agent" \\
+  -H "Authorization: Bearer ${authToken}" \\
+  -H "apikey: ${authToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Customer Service Agent",
+    "voice": "nova",
+    "status": "active",
+    "description": "Handles customer inquiries",
+    "system_prompt": "You are a helpful customer service agent...",
+    "first_message": "Hello! How can I help you today?",
+    "agent_type": "inbound",
+    "company": "My Company"
+  }'`;
+
+  const createContactExample = `curl -X POST "${baseUrl}/create-contact" \\
+  -H "Authorization: Bearer ${authToken}" \\
+  -H "apikey: ${authToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1234567890",
+    "address": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zip_code": "12345",
+    "status": "active"
+  }'`;
+
+  const createKnowledgeBaseExample = `curl -X POST "${baseUrl}/create-knowledge-base" \\
+  -H "Authorization: Bearer ${authToken}" \\
+  -H "apikey: ${authToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "title": "Product FAQ",
+    "type": "faq",
+    "description": "Frequently asked questions about our products",
+    "content": "Q: What is your return policy?\\nA: We offer 30-day returns...",
+    "tags": ["faq", "products", "returns"],
+    "status": "published"
+  }'`;
+
+  const createCampaignExample = `curl -X POST "${baseUrl}/create-campaign" \\
+  -H "Authorization: Bearer ${authToken}" \\
+  -H "apikey: ${authToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Summer Campaign 2024",
+    "description": "Promotional campaign for summer products",
+    "agent_id": "agent-uuid-here",
+    "contact_ids": ["contact-uuid-1", "contact-uuid-2"],
+    "status": "active",
+    "knowledge_base_id": "kb-uuid-here"
+  }'`;
+
+  const createEntityExample = `curl -X POST "${baseUrl}/create-entity" \\
+  -H "Authorization: Bearer ${authToken}" \\
+  -H "apikey: ${authToken}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "entityType": "agent",
+    "data": {
+      "name": "AI Assistant",
+      "voice": "nova",
+      "status": "active"
+    }
+  }'`;
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="mb-8">
@@ -334,6 +404,207 @@ console.log(data);`;
             <p className="text-sm text-blue-700">
               This API is subject to rate limiting. Please ensure you don't exceed reasonable request rates to maintain service availability.
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* New: Creation APIs */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl">Entity Creation APIs</CardTitle>
+            <Badge variant="secondary">POST</Badge>
+          </div>
+          <p className="text-gray-600">
+            APIs for creating agents, contacts, knowledge bases, campaigns, and other entities.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Authentication */}
+          <div>
+            <h3 className="font-semibold mb-2">Authentication</h3>
+            <p className="text-gray-600 mb-3">
+              All creation APIs require authentication using a Bearer token.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Required Headers:</strong>
+              </p>
+              <ul className="text-sm text-yellow-800 mt-1 list-disc list-inside">
+                <li><code>Authorization: Bearer YOUR_TOKEN</code></li>
+                <li><code>apikey: YOUR_API_KEY</code></li>
+                <li><code>Content-Type: application/json</code></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Available Endpoints */}
+          <div>
+            <h3 className="font-semibold mb-2">Available Endpoints</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <code className="text-sm font-mono">/create-agent</code>
+                <p className="text-xs text-gray-600 mt-1">Create AI agents</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <code className="text-sm font-mono">/create-contact</code>
+                <p className="text-xs text-gray-600 mt-1">Create contacts</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <code className="text-sm font-mono">/create-knowledge-base</code>
+                <p className="text-xs text-gray-600 mt-1">Create knowledge bases</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <code className="text-sm font-mono">/create-campaign</code>
+                <p className="text-xs text-gray-600 mt-1">Create campaigns</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <code className="text-sm font-mono">/create-entity</code>
+                <p className="text-xs text-gray-600 mt-1">Universal creation endpoint</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Examples */}
+          <div>
+            <h3 className="font-semibold mb-4">Examples</h3>
+            
+            {/* Create Agent */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Create Agent</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(createAgentExample, 'create-agent')}
+                >
+                  {copiedCode === 'create-agent' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {createAgentExample}
+              </pre>
+            </div>
+
+            {/* Create Contact */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Create Contact</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(createContactExample, 'create-contact')}
+                >
+                  {copiedCode === 'create-contact' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {createContactExample}
+              </pre>
+            </div>
+
+            {/* Create Knowledge Base */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Create Knowledge Base</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(createKnowledgeBaseExample, 'create-kb')}
+                >
+                  {copiedCode === 'create-kb' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {createKnowledgeBaseExample}
+              </pre>
+            </div>
+
+            {/* Create Campaign */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Create Campaign</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(createCampaignExample, 'create-campaign')}
+                >
+                  {copiedCode === 'create-campaign' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {createCampaignExample}
+              </pre>
+            </div>
+
+            {/* Universal Create Entity */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Universal Create Entity</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(createEntityExample, 'create-entity')}
+                >
+                  {copiedCode === 'create-entity' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                {createEntityExample}
+              </pre>
+              <p className="text-sm text-gray-600 mt-2">
+                The universal endpoint accepts <code>entityType</code> values: "agent", "contact", "knowledge_base", "campaign"
+              </p>
+            </div>
+          </div>
+
+          {/* Response Format */}
+          <div>
+            <h3 className="font-semibold mb-2">Response Format</h3>
+            <p className="text-gray-600 mb-3">All creation endpoints return the same response format:</p>
+            <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
+{`{
+  "success": true,
+  "data": {
+    "id": "generated-uuid",
+    "user_id": "user-uuid",
+    "name": "Entity Name",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    // ... other entity-specific fields
+  }
+}`}
+            </pre>
+          </div>
+
+          {/* Error Responses */}
+          <div>
+            <h3 className="font-semibold mb-2">Error Responses</h3>
+            <div className="space-y-3">
+              <div className="border border-red-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="destructive">401</Badge>
+                  <span className="font-medium">Unauthorized</span>
+                </div>
+                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Unauthorized\" }"}</pre>
+              </div>
+              
+              <div className="border border-red-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="destructive">400</Badge>
+                  <span className="font-medium">Bad Request</span>
+                </div>
+                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Field 'name' is required\" }"}</pre>
+              </div>
+              
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="secondary">500</Badge>
+                  <span className="font-medium">Internal Server Error</span>
+                </div>
+                <pre className="text-sm bg-gray-50 p-2 rounded">{"{ \"error\": \"Internal server error\" }"}</pre>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -584,3 +855,5 @@ console.log(data);`;
 };
 
 export default ApiDocumentation;
+
+</edits_to_apply>
