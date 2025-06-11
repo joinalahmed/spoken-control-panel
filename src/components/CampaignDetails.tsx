@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus } from 'lucide-react';
+import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,165 +59,270 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   };
 
   const handleContactsAdded = () => {
-    // This will trigger a refetch of the campaign data
     console.log('Contacts added, refreshing campaign data');
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'paused':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'completed':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Campaigns
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{campaign.name}</h1>
-          <p className="text-gray-600">Campaign Details</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onBack}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Campaigns
+              </Button>
+              <div className="h-6 w-px bg-gray-300" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{campaign.name}</h1>
+                <p className="text-gray-600 mt-1">Campaign Overview & Analytics</p>
+              </div>
+            </div>
+            <Badge 
+              variant="outline" 
+              className={`${getStatusColor(campaign.status)} px-3 py-1 text-sm font-medium capitalize`}
+            >
+              {campaign.status}
+            </Badge>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Campaign Info */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <span className="text-sm text-gray-500">Status</span>
-                <div className="mt-1">
-                  <Badge 
-                    variant={campaign.status === 'active' ? 'default' : 'secondary'}
-                    className={
-                      campaign.status === 'active' 
-                        ? 'bg-green-100 text-green-700' 
-                        : campaign.status === 'paused'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }
-                  >
-                    {campaign.status}
-                  </Badge>
-                </div>
-              </div>
-
-              {campaign.description && (
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm text-gray-500">Description</span>
-                  <p className="mt-1 text-sm">{campaign.description}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Contacts</p>
+                  <p className="text-2xl font-bold text-gray-900">{campaignContacts.length}</p>
                 </div>
-              )}
-
-              {campaignAgent && (
-                <div>
-                  <span className="text-sm text-gray-500">Agent</span>
-                  <p className="mt-1 text-sm font-medium">{campaignAgent.name}</p>
+                <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Users className="h-6 w-6 text-blue-600" />
                 </div>
-              )}
-
-              {campaignKb && (
-                <div>
-                  <span className="text-sm text-gray-500">Knowledge Base</span>
-                  <p className="mt-1 text-sm font-medium">{campaignKb.title}</p>
-                </div>
-              )}
-
-              <div>
-                <span className="text-sm text-gray-500">Created</span>
-                <p className="mt-1 text-sm">{new Date(campaign.created_at).toLocaleDateString()}</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Contacts */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Contacts ({campaignContacts.length})
-              </CardTitle>
-              <Button 
-                size="sm" 
-                onClick={() => setShowAddContacts(true)}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {campaignContacts.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 mb-3">No contacts in this campaign</p>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => setShowAddContacts(true)}
-                  >
-                    Add First Contact
-                  </Button>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Calls Made</p>
+                  <p className="text-2xl font-bold text-gray-900">0</p>
                 </div>
-              ) : (
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {campaignContacts.map((contact) => (
-                    <div key={contact.id} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{contact.name}</div>
-                          <div className="space-y-1 mt-1">
-                            {contact.phone && (
-                              <div className="flex items-center text-xs text-gray-500">
-                                <Phone className="w-3 h-3 mr-1" />
-                                {contact.phone}
-                              </div>
-                            )}
-                            {contact.email && (
-                              <div className="flex items-center text-xs text-gray-500">
-                                <Mail className="w-3 h-3 mr-1" />
-                                {contact.email}
-                              </div>
-                            )}
-                            {contact.address && (
-                              <div className="flex items-center text-xs text-gray-500">
-                                <MapPin className="w-3 h-3 mr-1" />
-                                {contact.address}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveContact(contact.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Phone className="h-6 w-6 text-green-600" />
                 </div>
-              )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Success Rate</p>
+                  <p className="text-2xl font-bold text-gray-900">0%</p>
+                </div>
+                <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg Duration</p>
+                  <p className="text-2xl font-bold text-gray-900">0m</p>
+                </div>
+                <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Call Analytics */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Call Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CallAnalyticsTable 
-                campaignId={campaign.id} 
-                onCallClick={onCallClick}
-              />
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Left Sidebar - Campaign Info & Contacts */}
+          <div className="xl:col-span-1 space-y-6">
+            {/* Campaign Information */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-4 w-4 text-blue-600" />
+                  </div>
+                  Campaign Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {campaign.description && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Description</label>
+                    <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{campaign.description}</p>
+                  </div>
+                )}
+
+                {campaignAgent && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Assigned Agent
+                    </label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">{campaignAgent.name}</p>
+                  </div>
+                )}
+
+                {campaignKb && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Database className="h-4 w-4" />
+                      Knowledge Base
+                    </label>
+                    <p className="mt-1 text-sm font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">{campaignKb.title}</p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Created</label>
+                  <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                    {new Date(campaign.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contacts Section */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Users className="h-4 w-4 text-green-600" />
+                    </div>
+                    Contacts ({campaignContacts.length})
+                  </CardTitle>
+                  <Button 
+                    size="sm" 
+                    onClick={() => setShowAddContacts(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {campaignContacts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No contacts yet</h3>
+                    <p className="text-gray-500 mb-4">Add contacts to start your campaign</p>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => setShowAddContacts(true)}
+                      className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                    >
+                      Add First Contact
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {campaignContacts.map((contact) => (
+                      <div key={contact.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 mb-2">{contact.name}</h4>
+                            <div className="space-y-1">
+                              {contact.phone && (
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                                  {contact.phone}
+                                </div>
+                              )}
+                              {contact.email && (
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                                  {contact.email}
+                                </div>
+                              )}
+                              {contact.address && (
+                                <div className="flex items-center text-sm text-gray-600">
+                                  <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                                  {contact.address}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveContact(contact.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-2"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Content - Call Analytics */}
+          <div className="xl:col-span-2">
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="h-4 w-4 text-purple-600" />
+                  </div>
+                  Call Analytics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <CallAnalyticsTable 
+                  campaignId={campaign.id} 
+                  onCallClick={onCallClick}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
