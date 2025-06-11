@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,8 +39,8 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
     status: campaign.status,
     agentId: campaign.agent_id || '',
     contactIds: campaign.contact_ids || [],
-    scriptId: campaign.agent_id || '', // Using agent_id as script_id for now
-    knowledgeBaseId: '' // Will be populated from campaign data
+    scriptId: campaign.agent_id || '',
+    knowledgeBaseId: campaign.knowledge_base_id || ''
   });
 
   const { updateCampaign } = useCampaigns();
@@ -170,8 +171,9 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
         name: editForm.name,
         description: editForm.description,
         status: editForm.status as any,
-        agent_id: editForm.scriptId || null, // Using scriptId as agent_id
-        contact_ids: editForm.contactIds
+        agent_id: editForm.scriptId || null,
+        contact_ids: editForm.contactIds,
+        knowledge_base_id: editForm.knowledgeBaseId || null
       });
       setIsEditing(false);
     } catch (error) {
@@ -187,15 +189,15 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
       agentId: campaign.agent_id || '',
       contactIds: campaign.contact_ids || [],
       scriptId: campaign.agent_id || '',
-      knowledgeBaseId: ''
+      knowledgeBaseId: campaign.knowledge_base_id || ''
     });
     setIsEditing(false);
   };
 
   // Get the linked script/agent
   const linkedScript = agents.find(agent => agent.id === campaign.agent_id);
-  // Get the linked knowledge base (assuming we'll add this field to campaign)
-  const linkedKnowledgeBase = kbs.find(kb => kb.id === editForm.knowledgeBaseId);
+  // Get the linked knowledge base
+  const linkedKnowledgeBase = kbs.find(kb => kb.id === campaign.knowledge_base_id);
 
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-y-auto">
@@ -249,12 +251,12 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                   </div>
                   <div className="flex-1">
                     <Label htmlFor="campaign-script">Linked Script</Label>
-                    <Select value={editForm.scriptId} onValueChange={(value) => handleInputChange('scriptId', value)}>
+                    <Select value={editForm.scriptId || "none"} onValueChange={(value) => handleInputChange('scriptId', value === "none" ? "" : value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a script" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No script</SelectItem>
+                        <SelectItem value="none">No script</SelectItem>
                         {agents.map((agent) => (
                           <SelectItem key={agent.id} value={agent.id}>
                             {agent.name} - {agent.voice}
@@ -266,12 +268,12 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                 </div>
                 <div>
                   <Label htmlFor="campaign-knowledge-base">Linked Knowledge Base</Label>
-                  <Select value={editForm.knowledgeBaseId} onValueChange={(value) => handleInputChange('knowledgeBaseId', value)}>
+                  <Select value={editForm.knowledgeBaseId || "none"} onValueChange={(value) => handleInputChange('knowledgeBaseId', value === "none" ? "" : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a knowledge base" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No knowledge base</SelectItem>
+                      <SelectItem value="none">No knowledge base</SelectItem>
                       {kbs.map((kb) => (
                         <SelectItem key={kb.id} value={kb.id}>
                           {kb.title} - {kb.type}

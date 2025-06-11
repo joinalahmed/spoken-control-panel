@@ -14,6 +14,7 @@ export interface Campaign {
   status: 'draft' | 'active' | 'paused' | 'completed';
   created_at: string;
   updated_at: string;
+  knowledge_base_id?: string | null;
 }
 
 export const useCampaigns = () => {
@@ -53,6 +54,7 @@ export const useCampaigns = () => {
       agentId?: string;
       contactIds: string[];
       status?: string;
+      knowledgeBaseId?: string;
     }) => {
       if (!user?.id) {
         throw new Error('User not authenticated');
@@ -68,7 +70,8 @@ export const useCampaigns = () => {
           description: campaignData.description || null,
           agent_id: campaignData.agentId || null,
           contact_ids: campaignData.contactIds,
-          status: campaignData.status || 'draft'
+          status: campaignData.status || 'draft',
+          knowledge_base_id: campaignData.knowledgeBaseId || null
         })
         .select()
         .single();
@@ -125,6 +128,7 @@ export const useCampaigns = () => {
           agent_id: campaignData.agent_id,
           contact_ids: campaignData.contact_ids,
           status: campaignData.status,
+          knowledge_base_id: campaignData.knowledge_base_id,
           updated_at: new Date().toISOString()
         })
         .eq('id', campaignData.id)
