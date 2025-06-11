@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
+import { useScripts } from '@/hooks/useScripts';
+import { useKbs } from '@/hooks/useKbs';
 
 interface CreateCampaignFormProps {
   onBack: () => void;
@@ -18,11 +20,15 @@ interface CreateCampaignFormProps {
 const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
   const { agents } = useAgents();
   const { contacts } = useContacts();
+  const { scripts } = useScripts();
+  const { kbs } = useKbs();
   
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     agentId: '',
+    scriptId: '',
+    knowledgeBaseId: '',
     contactIds: [] as string[],
     status: 'draft'
   });
@@ -41,8 +47,22 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
   };
 
   const handleSave = () => {
-    onSave(formData);
+    onSave({
+      name: formData.name,
+      description: formData.description,
+      agentId: formData.agentId,
+      scriptId: formData.scriptId,
+      knowledgeBaseId: formData.knowledgeBaseId,
+      contactIds: formData.contactIds,
+      status: formData.status
+    });
   };
+
+  const isFormValid = formData.name && 
+                     formData.agentId && 
+                     formData.scriptId && 
+                     formData.knowledgeBaseId && 
+                     formData.contactIds.length > 0;
 
   return (
     <div className="flex-1 p-6">
@@ -62,12 +82,13 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
           <CardContent className="space-y-6">
             {/* Campaign Name */}
             <div>
-              <Label htmlFor="name">Campaign Name</Label>
+              <Label htmlFor="name">Campaign Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Enter campaign name"
+                required
               />
             </div>
 
@@ -85,8 +106,8 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
 
             {/* Agent Selection */}
             <div>
-              <Label htmlFor="agent">Select Agent</Label>
-              <Select onValueChange={(value) => handleInputChange('agentId', value)}>
+              <Label htmlFor="agent">Select Agent *</Label>
+              <Select onValueChange={(value) => handleInputChange('agentId', value)} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose an agent for this campaign" />
                 </SelectTrigger>
@@ -99,18 +120,62 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
                 </SelectContent>
               </Select>
               {agents.length === 0 && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-red-500 mt-1">
                   No agents available. Create an agent first.
+                </p>
+              )}
+            </div>
+
+            {/* Script Selection */}
+            <div>
+              <Label htmlFor="script">Select Script *</Label>
+              <Select onValueChange={(value) => handleInputChange('scriptId', value)} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a script for this campaign" />
+                </SelectTrigger>
+                <SelectContent>
+                  {scripts.map((script) => (
+                    <SelectItem key={script.id} value={script.id}>
+                      {script.name} - {script.agent_type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {scripts.length === 0 && (
+                <p className="text-sm text-red-500 mt-1">
+                  No scripts available. Create a script first.
+                </p>
+              )}
+            </div>
+
+            {/* Knowledge Base Selection */}
+            <div>
+              <Label htmlFor="knowledgeBase">Select Knowledge Base *</Label>
+              <Select onValueChange={(value) => handleInputChange('knowledgeBaseId', value)} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a knowledge base for this campaign" />
+                </SelectTrigger>
+                <SelectContent>
+                  {kbs.map((kb) => (
+                    <SelectItem key={kb.id} value={kb.id}>
+                      {kb.title} - {kb.type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {kbs.length === 0 && (
+                <p className="text-sm text-red-500 mt-1">
+                  No knowledge base items available. Create a knowledge base first.
                 </p>
               )}
             </div>
 
             {/* Contact Selection */}
             <div>
-              <Label>Select Contacts</Label>
+              <Label>Select Contacts *</Label>
               <div className="mt-2 max-h-64 overflow-y-auto border rounded-md p-4">
                 {contacts.length === 0 ? (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-red-500">
                     No contacts available. Create contacts first.
                   </p>
                 ) : (
@@ -144,7 +209,7 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
               <Button 
                 onClick={handleSave} 
                 className="bg-purple-600 hover:bg-purple-700"
-                disabled={!formData.name || !formData.agentId || formData.contactIds.length === 0}
+                disabled={!isFormValid}
               >
                 Create Campaign
               </Button>

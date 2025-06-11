@@ -51,10 +51,11 @@ export const useCampaigns = () => {
     mutationFn: async (campaignData: {
       name: string;
       description?: string;
-      agentId?: string;
+      agentId: string;
+      scriptId: string;
+      knowledgeBaseId: string;
       contactIds: string[];
       status?: string;
-      knowledgeBaseId?: string;
     }) => {
       if (!user?.id) {
         throw new Error('User not authenticated');
@@ -68,10 +69,10 @@ export const useCampaigns = () => {
           user_id: user.id,
           name: campaignData.name,
           description: campaignData.description || null,
-          agent_id: campaignData.agentId || null,
+          agent_id: campaignData.agentId,
           contact_ids: campaignData.contactIds,
           status: campaignData.status || 'draft',
-          knowledge_base_id: campaignData.knowledgeBaseId || null
+          knowledge_base_id: campaignData.knowledgeBaseId
         })
         .select()
         .single();
