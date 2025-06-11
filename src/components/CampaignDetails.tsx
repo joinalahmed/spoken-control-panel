@@ -190,6 +190,10 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     setEditingStatus(false);
   };
 
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value as 'draft' | 'active' | 'paused' | 'completed');
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -228,7 +232,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             <div className="flex items-center gap-3">
               {editingStatus ? (
                 <div className="flex items-center gap-2">
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <Select value={selectedStatus} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
@@ -619,3 +623,5 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 };
 
 export default CampaignDetails;
+
+}
