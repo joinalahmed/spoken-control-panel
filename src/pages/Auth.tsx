@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -156,17 +155,22 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-purple-700 flex">
-      {/* Left side - Login Form */}
+      {/* Left side - Logo/Branding */}
+      <div className="hidden lg:flex flex-1 items-center justify-center p-8">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
+              <span className="text-purple-600 text-3xl font-bold">D</span>
+            </div>
+            <span className="text-5xl font-bold text-white">dhwani</span>
+          </div>
+          <p className="text-white/80 text-lg">Voice AI Agents Playground</p>
+        </div>
+      </div>
+
+      {/* Right side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          {/* Logo */}
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-              <span className="text-purple-600 text-lg font-bold">D</span>
-            </div>
-            <span className="text-2xl font-bold text-white">dhwani</span>
-          </div>
-
           {/* Login Card */}
           <Card className="bg-white border-0 shadow-xl">
             <CardHeader className="space-y-1 pb-6">
@@ -340,19 +344,6 @@ const Auth = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
-
-      {/* Right side - Logo/Branding */}
-      <div className="hidden lg:flex flex-1 items-center justify-center p-8">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
-              <span className="text-purple-600 text-3xl font-bold">D</span>
-            </div>
-            <span className="text-5xl font-bold text-white">dhwani</span>
-          </div>
-          <p className="text-white/80 text-lg">Voice AI Agents Playground</p>
         </div>
       </div>
     </div>
