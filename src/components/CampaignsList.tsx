@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CampaignsListProps {
   onCreateCampaign: () => void;
@@ -11,6 +14,35 @@ interface CampaignsListProps {
 
 const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProps) => {
   const { campaigns, isLoading } = useCampaigns();
+  const { user } = useAuth();
+
+  // Fetch contact counts for each campaign
+  const { data: contactCounts = {} } = useQuery({
+    queryKey: ['campaign-contact-counts', campaigns.map(c => c.id)],
+    queryFn: async () => {
+      if (!user?.id || campaigns.length === 0) return {};
+      
+      const campaignIds = campaigns.map(c => c.id);
+      const { data, error } = await supabase
+        .from('campaign_contacts')
+        .select('campaign_id')
+        .in('campaign_id', campaignIds);
+
+      if (error) {
+        console.error('Error fetching contact counts:', error);
+        return {};
+      }
+
+      // Count contacts per campaign
+      const counts: Record<string, number> = {};
+      data.forEach(item => {
+        counts[item.campaign_id] = (counts[item.campaign_id] || 0) + 1;
+      });
+
+      return counts;
+    },
+    enabled: !!user?.id && campaigns.length > 0,
+  });
 
   if (isLoading) {
     return (
@@ -125,7 +157,7 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Users className="w-4 h-4" />
-                    <span>{campaign.contact_ids.length} contacts</span>
+                    <span>{contactCounts[campaign.id] || 0} contacts</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Calendar className="w-4 h-4" />

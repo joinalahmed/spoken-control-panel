@@ -198,36 +198,36 @@ export type Database = {
       campaigns: {
         Row: {
           agent_id: string | null
-          contact_ids: string[] | null
           created_at: string
           description: string | null
           id: string
           knowledge_base_id: string | null
           name: string
+          script_id: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
           agent_id?: string | null
-          contact_ids?: string[] | null
           created_at?: string
           description?: string | null
           id?: string
           knowledge_base_id?: string | null
           name: string
+          script_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           agent_id?: string | null
-          contact_ids?: string[] | null
           created_at?: string
           description?: string | null
           id?: string
           knowledge_base_id?: string | null
           name?: string
+          script_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -238,6 +238,20 @@ export type Database = {
             columns: ["knowledge_base_id"]
             isOneToOne: false
             referencedRelation: "knowledge_base"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_campaigns_agent"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
             referencedColumns: ["id"]
           },
         ]

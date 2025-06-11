@@ -10,7 +10,7 @@ export interface Campaign {
   name: string;
   description: string | null;
   agent_id: string | null;
-  contact_ids: string[];
+  script_id: string | null;
   status: 'draft' | 'active' | 'paused' | 'completed';
   created_at: string;
   updated_at: string;
@@ -70,7 +70,7 @@ export const useCampaigns = () => {
           name: campaignData.name,
           description: campaignData.description || null,
           agent_id: campaignData.agentId,
-          contact_ids: campaignData.contactIds,
+          script_id: campaignData.scriptId,
           status: campaignData.status || 'draft',
           knowledge_base_id: campaignData.knowledgeBaseId
         })
@@ -131,7 +131,7 @@ export const useCampaigns = () => {
       if (campaignData.name !== undefined) updateData.name = campaignData.name;
       if (campaignData.description !== undefined) updateData.description = campaignData.description;
       if (campaignData.agent_id !== undefined) updateData.agent_id = campaignData.agent_id;
-      if (campaignData.contact_ids !== undefined) updateData.contact_ids = campaignData.contact_ids;
+      if (campaignData.script_id !== undefined) updateData.script_id = campaignData.script_id;
       if (campaignData.status !== undefined) updateData.status = campaignData.status;
       if (campaignData.knowledge_base_id !== undefined) updateData.knowledge_base_id = campaignData.knowledge_base_id;
 
