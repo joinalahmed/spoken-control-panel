@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -299,7 +300,10 @@ const Index = () => {
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0 z-10">
         {/* Logo - Fixed at top */}
         <div className="p-6 flex-shrink-0 border-b border-gray-100">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xl font-bold">D</span>
+            </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900">Dhwani</span>
               <span className="text-xs text-gray-500">Voice AI Agents Playground</span>
