@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -208,7 +209,9 @@ const Index = () => {
       const mappedCampaignData = {
         name: campaignData.name,
         description: campaignData.description || undefined,
-        agentId: campaignData.agentId || undefined,
+        agentId: campaignData.agentId,
+        scriptId: campaignData.scriptId,
+        knowledgeBaseId: campaignData.knowledgeBaseId,
         contactIds: campaignData.contactIds || [],
         status: campaignData.status || 'draft'
       };
