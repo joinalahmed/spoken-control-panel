@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Search, Filter, SortAsc, Plus, FileText, MoreHorizontal, Eye, Edit, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
+import ViewKbsModal from '@/components/ViewKbsModal';
 
 interface KbsListProps {
   onCreateItem: () => void;
@@ -28,6 +28,7 @@ interface KbsListProps {
 
 const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingItem, setViewingItem] = useState<KbsItem | null>(null);
   const { kbs, isLoading, deleteKbsItem } = useKbs();
 
   const filteredItems = kbs.filter(item =>
@@ -52,6 +53,11 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   const handleEdit = (item: KbsItem) => {
     console.log('Editing KBS item:', item);
     onEditItem(item);
+  };
+
+  const handleView = (item: KbsItem) => {
+    console.log('Viewing KBS item:', item);
+    setViewingItem(item);
   };
 
   if (isLoading) {
@@ -155,7 +161,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleView(item)}>
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </DropdownMenuItem>
@@ -185,6 +191,13 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
           Showing {filteredItems.length} of {kbs.length} items
         </div>
       </div>
+
+      {/* View Modal */}
+      <ViewKbsModal 
+        item={viewingItem}
+        isOpen={!!viewingItem}
+        onClose={() => setViewingItem(null)}
+      />
     </div>
   );
 };
