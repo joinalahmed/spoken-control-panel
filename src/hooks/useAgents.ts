@@ -44,7 +44,12 @@ export const useAgents = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Agent[];
+      
+      // Ensure script_id is included in the response, defaulting to null if not present
+      return (data || []).map(agent => ({
+        ...agent,
+        script_id: agent.script_id || null
+      })) as Agent[];
     },
     enabled: !!user,
   });
@@ -60,7 +65,7 @@ export const useAgents = () => {
         .single();
 
       if (error) throw error;
-      return data as Agent;
+      return { ...data, script_id: data.script_id || null } as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
@@ -81,7 +86,7 @@ export const useAgents = () => {
         .single();
 
       if (error) throw error;
-      return data as Agent;
+      return { ...data, script_id: data.script_id || null } as Agent;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });

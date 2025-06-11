@@ -75,7 +75,8 @@ const Index = () => {
         first_message: agentData.firstMessage || null,
         knowledge_base_id: null,
         company: agentData.company || null,
-        agent_type: agentData.agentType || 'outbound' as 'inbound' | 'outbound'
+        agent_type: agentData.agentType || 'outbound' as 'inbound' | 'outbound',
+        script_id: null
       };
 
       console.log('Mapped agent data:', mappedAgentData);

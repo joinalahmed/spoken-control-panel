@@ -27,24 +27,15 @@ export const useScripts = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      // Use raw SQL query since TypeScript types haven't been updated
-      const { data, error } = await supabase.rpc('get_user_scripts', { 
-        user_uuid: user.id 
-      });
+      // Use the edge function since TypeScript types don't include scripts table yet
+      const { data, error } = await supabase.functions.invoke('get-user-scripts');
 
       if (error) {
-        // Fallback to direct table query if RPC doesn't exist
-        const { data: fallbackData, error: fallbackError } = await (supabase as any)
-          .from('scripts')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        if (fallbackError) throw fallbackError;
-        return fallbackData as Script[];
+        console.error('Error fetching scripts via function:', error);
+        throw error;
       }
       
-      return data as Script[];
+      return (data || []) as Script[];
     },
     enabled: !!user,
   });
@@ -53,11 +44,9 @@ export const useScripts = () => {
     mutationFn: async (scriptData: Omit<Script, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await (supabase as any)
-        .from('scripts')
-        .insert([{ ...scriptData, user_id: user.id }])
-        .select('*')
-        .single();
+      const { data, error } = await supabase.functions.invoke('create-script', {
+        body: { ...scriptData, user_id: user.id }
+      });
 
       if (error) throw error;
       return data as Script;
@@ -73,12 +62,9 @@ export const useScripts = () => {
 
   const updateScript = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Script> & { id: string }) => {
-      const { data, error } = await (supabase as any)
-        .from('scripts')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select('*')
-        .single();
+      const { data, error } = await supabase.functions.invoke('create-script', {
+        body: { id, ...updates, updated_at: new Date().toISOString() }
+      });
 
       if (error) throw error;
       return data as Script;
@@ -94,10 +80,9 @@ export const useScripts = () => {
 
   const deleteScript = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
-        .from('scripts')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.functions.invoke('create-script', {
+        body: { id, _action: 'delete' }
+      });
 
       if (error) throw error;
     },
