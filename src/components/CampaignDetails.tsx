@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X, Loader2, FileType } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, Phone, Clock, TrendingUp, Activity, Edit, Save, X, Loader2, FileType, BookOpen } from 'lucide-react';
 import { Campaign, useCampaigns } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
+import { useKbs } from '@/hooks/useKbs';
 import { supabase } from '@/integrations/supabase/client';
 import CallAnalyticsTable from './CallAnalyticsTable';
 
@@ -38,12 +38,14 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
     status: campaign.status,
     agentId: campaign.agent_id || '',
     contactIds: campaign.contact_ids || [],
-    scriptId: campaign.agent_id || '' // Using agent_id as script_id for now
+    scriptId: campaign.agent_id || '', // Using agent_id as script_id for now
+    knowledgeBaseId: '' // Will be populated from campaign data
   });
 
   const { updateCampaign } = useCampaigns();
   const { agents } = useAgents();
   const { contacts } = useContacts();
+  const { kbs } = useKbs();
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -184,13 +186,16 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
       status: campaign.status,
       agentId: campaign.agent_id || '',
       contactIds: campaign.contact_ids || [],
-      scriptId: campaign.agent_id || ''
+      scriptId: campaign.agent_id || '',
+      knowledgeBaseId: ''
     });
     setIsEditing(false);
   };
 
   // Get the linked script/agent
   const linkedScript = agents.find(agent => agent.id === campaign.agent_id);
+  // Get the linked knowledge base (assuming we'll add this field to campaign)
+  const linkedKnowledgeBase = kbs.find(kb => kb.id === editForm.knowledgeBaseId);
 
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-y-auto">
@@ -260,6 +265,22 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                   </div>
                 </div>
                 <div>
+                  <Label htmlFor="campaign-knowledge-base">Linked Knowledge Base</Label>
+                  <Select value={editForm.knowledgeBaseId} onValueChange={(value) => handleInputChange('knowledgeBaseId', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a knowledge base" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No knowledge base</SelectItem>
+                      {kbs.map((kb) => (
+                        <SelectItem key={kb.id} value={kb.id}>
+                          {kb.title} - {kb.type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label>Select Contacts</Label>
                   <div className="mt-2 max-h-64 overflow-y-auto border rounded-md p-4 bg-white">
                     {contacts.length === 0 ? (
@@ -319,6 +340,12 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                       <span>Script: {linkedScript.name}</span>
                     </div>
                   )}
+                  {linkedKnowledgeBase && (
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <BookOpen className="w-4 h-4" />
+                      <span>KB: {linkedKnowledgeBase.title}</span>
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -334,9 +361,10 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
 
       {!isEditing && (
         <>
-          {/* Script Information Card */}
-          {linkedScript && (
-            <div className="mb-6">
+          {/* Script and Knowledge Base Information Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Script Information Card */}
+            {linkedScript && (
               <Card className="bg-white border-gray-200">
                 <CardHeader>
                   <CardTitle className="text-gray-900 flex items-center gap-2">
@@ -385,8 +413,67 @@ const CampaignDetails = ({ campaign, onBack, onCallClick }: CampaignDetailsProps
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          )}
+            )}
+
+            {/* Knowledge Base Information Card */}
+            {linkedKnowledgeBase && (
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-gray-900 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    Linked Knowledge Base
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Knowledge base that provides context for this campaign
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{linkedKnowledgeBase.title}</h3>
+                        <p className="text-sm text-gray-600">{linkedKnowledgeBase.description || 'No description available'}</p>
+                      </div>
+                      <Badge variant="outline" className={`${
+                        linkedKnowledgeBase.status === 'published' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {linkedKnowledgeBase.status}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium text-gray-700">Type:</span>
+                        <span className="ml-2 text-gray-600 capitalize">{linkedKnowledgeBase.type}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Last Modified:</span>
+                        <span className="ml-2 text-gray-600">
+                          {linkedKnowledgeBase.last_modified 
+                            ? new Date(linkedKnowledgeBase.last_modified).toLocaleDateString()
+                            : 'Never'
+                          }
+                        </span>
+                      </div>
+                    </div>
+                    {linkedKnowledgeBase.tags && linkedKnowledgeBase.tags.length > 0 && (
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-700">Tags:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {linkedKnowledgeBase.tags.map(tag => (
+                            <span key={tag} className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             {/* Metrics Cards */}
