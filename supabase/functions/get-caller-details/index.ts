@@ -86,16 +86,31 @@ Deno.serve(async (req) => {
 
     console.log(`Found contact: ${contact.name}`);
 
-    // Find campaigns where this contact is assigned
-    const { data: campaigns, error: campaignError } = await supabase
-      .from('campaigns')
-      .select('*')
-      .contains('contact_ids', [contact.id])
-      .eq('status', 'active')
-      .limit(1);
+    // Find campaigns where this contact is assigned using the campaign_contacts table
+    const { data: campaignContacts, error: campaignContactsError } = await supabase
+      .from('campaign_contacts')
+      .select(`
+        campaign_id,
+        campaigns!inner(*)
+      `)
+      .eq('contact_id', contact.id);
 
-    if (campaignError || !campaigns || campaigns.length === 0) {
-      console.log('No active campaigns found for contact:', campaignError);
+    if (campaignContactsError) {
+      console.log('Error fetching campaign contacts:', campaignContactsError);
+      return new Response(
+        JSON.stringify({ error: 'Error fetching campaign contacts' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Filter for active campaigns
+    const activeCampaigns = campaignContacts?.filter(cc => cc.campaigns.status === 'active') || [];
+
+    if (activeCampaigns.length === 0) {
+      console.log('No active campaigns found for contact');
       return new Response(
         JSON.stringify({ error: 'No active campaigns found for this contact' }),
         { 
@@ -105,16 +120,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    const campaign = campaigns[0];
-    console.log(`Found campaign: ${campaign.name}`);
+    const campaignData = activeCampaigns[0].campaigns;
+    console.log(`Found campaign: ${campaignData.name}`);
 
     // Get agent details if campaign has an agent
     let agent = null;
-    if (campaign.agent_id) {
+    if (campaignData.agent_id) {
       const { data: agentData, error: agentError } = await supabase
         .from('agents')
         .select('*')
-        .eq('id', campaign.agent_id)
+        .eq('id', campaignData.agent_id)
         .single();
 
       if (!agentError && agentData) {
@@ -135,7 +150,7 @@ Deno.serve(async (req) => {
     const { data: userProfile, error: userError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', campaign.user_id)
+      .eq('id', campaignData.user_id)
       .single();
 
     if (userError) {
@@ -146,7 +161,7 @@ Deno.serve(async (req) => {
     const { data: knowledgeBases, error: kbError } = await supabase
       .from('knowledge_base')
       .select('*')
-      .eq('user_id', campaign.user_id)
+      .eq('user_id', campaignData.user_id)
       .eq('status', 'published');
 
     if (kbError) {
@@ -157,7 +172,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        campaign_id: campaign.id,
+        campaign_id: campaignData.id,
         caller: {
           contact: {
             id: contact.id,
@@ -171,10 +186,10 @@ Deno.serve(async (req) => {
             status: contact.status
           },
           campaign: {
-            id: campaign.id,
-            name: campaign.name,
-            description: campaign.description,
-            status: campaign.status
+            id: campaignData.id,
+            name: campaignData.name,
+            description: campaignData.description,
+            status: campaignData.status
           },
           agent: agent,
           user: userProfile ? {
