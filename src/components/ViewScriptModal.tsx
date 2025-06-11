@@ -49,14 +49,16 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
 
   let sections: ScriptSection[] = [];
   let basePrompt = '';
+  let isStructuredPrompt = false;
 
   // Parse sections from system_prompt
   if (agent.system_prompt) {
     try {
       const parsed = JSON.parse(agent.system_prompt);
-      if (parsed.sections) {
+      if (parsed.sections && Array.isArray(parsed.sections)) {
         sections = parsed.sections;
         basePrompt = parsed.basePrompt || '';
+        isStructuredPrompt = true;
       } else {
         basePrompt = agent.system_prompt;
       }
@@ -115,7 +117,9 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
 
           {basePrompt && (
             <div>
-              <h3 className="font-medium mb-2">System Instructions</h3>
+              <h3 className="font-medium mb-2">
+                {isStructuredPrompt ? 'Base Instructions' : 'System Instructions'}
+              </h3>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm whitespace-pre-wrap">{basePrompt}</p>
               </div>
