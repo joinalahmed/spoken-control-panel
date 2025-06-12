@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -315,8 +316,21 @@ const Index = () => {
     
     if (script.sections && Array.isArray(script.sections)) {
       transformedSections = script.sections.map((section: any, index: number) => {
-        // If section has steps array, convert to steps format expected by form
-        const steps = section.steps ? section.steps.map((step: any) => step.content || step.title || '') : [];
+        // Handle the steps array properly
+        let steps = [];
+        
+        if (section.steps && Array.isArray(section.steps)) {
+          // Extract content from each step object
+          steps = section.steps.map((step: any) => {
+            if (typeof step === 'string') {
+              return step;
+            } else if (step && typeof step === 'object') {
+              // Try different properties that might contain the step content
+              return step.content || step.title || step.description || JSON.stringify(step);
+            }
+            return '';
+          });
+        }
         
         return {
           id: section.id || Date.now().toString() + index,
