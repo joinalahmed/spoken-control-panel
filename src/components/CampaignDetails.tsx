@@ -458,18 +458,24 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Compact Configuration Sidebar */}
-          <div className="xl:col-span-1 space-y-3">
-            {/* Compact Campaign Configuration */}
-            <div className="space-y-3">
-              {/* Campaign Type Card - Compact */}
-              <Card className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-300">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Phone className="h-3 w-3 text-gray-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Campaign Type</h3>
+          {/* Configuration & Contacts Sidebar */}
+          <div className="xl:col-span-1 space-y-6">
+            {/* Campaign Configuration Card */}
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <CardHeader className="pb-4 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <Settings className="h-5 w-5 text-white" />
+                  </div>
+                  Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-3">
+                {/* Campaign Type */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Phone className="h-4 w-4 text-gray-600" />
+                    <h4 className="font-medium text-gray-900 text-sm">Campaign Type</h4>
                   </div>
                   
                   {editingCampaignType ? (
@@ -529,17 +535,13 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Description Card - Compact */}
-              <Card className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-300">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Activity className="h-3 w-3 text-gray-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Description</h3>
+                {/* Description */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Activity className="h-4 w-4 text-gray-600" />
+                    <h4 className="font-medium text-gray-900 text-sm">Description</h4>
                   </div>
                   
                   {editingDescription ? (
@@ -578,17 +580,13 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Agent Assignment Card - Compact */}
-              <Card className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-300">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <User className="h-3 w-3 text-gray-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Agent</h3>
+                {/* Agent Assignment */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <User className="h-4 w-4 text-gray-600" />
+                    <h4 className="font-medium text-gray-900 text-sm">Agent</h4>
                   </div>
                   
                   {editingAgent ? (
@@ -642,17 +640,13 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Knowledge Base Card - Compact */}
-              <Card className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-300">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Database className="h-3 w-3 text-gray-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Knowledge Base</h3>
+                {/* Knowledge Base */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Database className="h-4 w-4 text-gray-600" />
+                    <h4 className="font-medium text-gray-900 text-sm">Knowledge Base</h4>
                   </div>
                   
                   {editingKb ? (
@@ -706,17 +700,13 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Campaign Created Date - Compact */}
-              <Card className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-300">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="h-3 w-3 text-gray-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Created</h3>
+                {/* Campaign Created Date */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-4 w-4 text-gray-600" />
+                    <h4 className="font-medium text-gray-900 text-sm">Created</h4>
                   </div>
                   <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
                     <p className="font-medium text-gray-900 text-xs">
@@ -733,9 +723,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       })}
                     </p>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Enhanced Contacts Section */}
             <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
