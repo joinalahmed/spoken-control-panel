@@ -21,3 +21,6 @@ enable_confirmations = false
 
 [functions.get-agent-by-number]
 verify_jwt = false
+
+[functions.get-outbound-call-details]
+verify_jwt = false
