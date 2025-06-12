@@ -45,36 +45,6 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
     enabled: !!user?.id && campaigns.length > 0,
   });
 
-  // Fetch agent information for campaigns
-  const { data: agentInfo = {} } = useQuery({
-    queryKey: ['campaign-agents', campaigns.map(c => c.agent_id).filter(Boolean)],
-    queryFn: async () => {
-      if (!user?.id || campaigns.length === 0) return {};
-      
-      const agentIds = campaigns.map(c => c.agent_id).filter(Boolean);
-      if (agentIds.length === 0) return {};
-
-      const { data, error } = await supabase
-        .from('agents')
-        .select('id, agent_type')
-        .in('id', agentIds);
-
-      if (error) {
-        console.error('Error fetching agent info:', error);
-        return {};
-      }
-
-      // Map agent ID to agent type
-      const agentTypes: Record<string, string> = {};
-      data.forEach(agent => {
-        agentTypes[agent.id] = agent.agent_type;
-      });
-
-      return agentTypes;
-    },
-    enabled: !!user?.id && campaigns.length > 0,
-  });
-
   if (isLoading) {
     return (
       <div className="flex-1 p-6 flex items-center justify-center">
@@ -112,15 +82,16 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
   };
 
   const getCampaignTypeInfo = (campaign: any) => {
-    const agentType = campaign.agent_id ? agentInfo[campaign.agent_id] : null;
+    // Get campaign type from settings instead of agent
+    const campaignType = campaign.settings?.campaignType || 'outbound';
     
-    if (agentType === 'outbound') {
+    if (campaignType === 'outbound') {
       return {
         icon: <PhoneOutgoing className="w-4 h-4" />,
         label: 'Outbound',
         color: 'bg-green-100 text-green-700 border-green-200'
       };
-    } else if (agentType === 'inbound') {
+    } else if (campaignType === 'inbound') {
       return {
         icon: <PhoneIncoming className="w-4 h-4" />,
         label: 'Inbound',
@@ -129,7 +100,7 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
     } else {
       return {
         icon: <BarChart3 className="w-4 h-4" />,
-        label: 'Unknown',
+        label: 'Campaign',
         color: 'bg-gray-100 text-gray-700 border-gray-200'
       };
     }

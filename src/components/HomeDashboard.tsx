@@ -160,14 +160,14 @@ const HomeDashboard = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-500 pb-2 border-b">
                     <span>Agent Name</span>
-                    <span>Type</span>
+                    <span>Voice</span>
                     <span>Status</span>
                     <span>Conversations</span>
                   </div>
                   {agents.slice(0, 5).map((agent, index) => (
                     <div key={index} className="grid grid-cols-4 gap-4 text-sm py-3 border-b border-gray-100 last:border-0">
                       <span className="font-medium text-gray-900">{agent.name}</span>
-                      <span className="text-gray-600 capitalize">{agent.agent_type}</span>
+                      <span className="text-gray-600 capitalize">{agent.voice}</span>
                       <span className={`text-sm ${agent.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>
                         <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
                           {agent.status}

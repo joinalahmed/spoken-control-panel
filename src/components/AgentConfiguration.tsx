@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Copy, Settings, Zap, ArrowLeft, BookOpen, Save, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
+import { Copy, Settings, Zap, ArrowLeft, BookOpen, Save } from 'lucide-react';
 import { Agent } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
 import { useScripts } from '@/hooks/useScripts';
@@ -28,7 +29,6 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     firstMessage: selectedAgent?.first_message || 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
     language: 'en',
-    agentType: selectedAgent?.agent_type || 'outbound' as 'inbound' | 'outbound',
     knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none',
     scriptId: selectedAgent?.script_id || 'none'
   });
@@ -51,7 +51,6 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
         description: config.description,
         systemPrompt: config.prompt,
         firstMessage: config.firstMessage,
-        agent_type: config.agentType,
         knowledgeBaseId: config.knowledgeBaseId === 'none' ? null : config.knowledgeBaseId,
         scriptId: config.scriptId === 'none' ? null : config.scriptId
       };
@@ -155,32 +154,6 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                           className="w-full"
                           placeholder="Enter agent name"
                         />
-                      </div>
-
-                      {/* Agent Type */}
-                      <div className="space-y-2">
-                        <Label htmlFor="agentType" className="text-sm font-medium text-gray-700">
-                          Agent Type
-                        </Label>
-                        <Select value={config.agentType} onValueChange={(value: 'inbound' | 'outbound') => setConfig({...config, agentType: value})}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select agent type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="outbound">
-                              <div className="flex items-center gap-2">
-                                <PhoneOutgoing className="w-4 h-4" />
-                                <span>Outbound - Makes calls to contacts</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="inbound">
-                              <div className="flex items-center gap-2">
-                                <PhoneIncoming className="w-4 h-4" />
-                                <span>Inbound - Receives incoming calls</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
 
                       {/* Description */}
