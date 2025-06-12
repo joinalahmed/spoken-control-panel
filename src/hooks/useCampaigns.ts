@@ -29,7 +29,10 @@ const parseSettings = (settings: Json | null): CampaignSettingsData | null => {
     
     // Validate the structure exists before casting
     if (parsed.callScheduling && parsed.retryLogic && parsed.callBehavior) {
-      return parsed as CampaignSettingsData;
+      return {
+        campaignType: parsed.campaignType || 'outbound',
+        ...parsed
+      } as CampaignSettingsData;
     }
     return null;
   } catch {
@@ -43,6 +46,7 @@ const stringifySettings = (settings: CampaignSettingsData | null): Json => {
   
   // Convert to a plain object that matches the Json type structure
   return {
+    campaignType: settings.campaignType,
     callScheduling: {
       startTime: settings.callScheduling.startTime,
       endTime: settings.callScheduling.endTime,
