@@ -6,6 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Function to normalize phone numbers for comparison
+const normalizePhoneNumber = (phone: string): string => {
+  // Remove all spaces, dashes, parentheses, and other non-digit characters except +
+  return phone.replace(/[\s\-\(\)\.]/g, '');
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -18,20 +24,23 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get the campaign_id from query parameters or request body
+    // Get parameters from query or request body
     let campaignId: string | null = null;
+    let phoneNumber: string | null = null;
     
     if (req.method === 'GET') {
       const url = new URL(req.url);
       campaignId = url.searchParams.get('campaign_id');
+      phoneNumber = url.searchParams.get('phone');
     } else if (req.method === 'POST') {
       const body = await req.json();
       campaignId = body.campaign_id;
+      phoneNumber = body.phone;
     }
 
-    if (!campaignId) {
+    if (!campaignId && !phoneNumber) {
       return new Response(
-        JSON.stringify({ error: 'Campaign ID is required' }),
+        JSON.stringify({ error: 'Either campaign_id or phone number is required' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -39,35 +48,120 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Looking up outbound call details for campaign: ${campaignId}`);
+    let campaign = null;
+    let contact = null;
 
-    // Get campaign details
-    const { data: campaign, error: campaignError } = await supabase
-      .from('campaigns')
-      .select('*')
-      .eq('id', campaignId)
-      .single();
+    // If phone number is provided, find the contact and campaign
+    if (phoneNumber) {
+      console.log(`Looking up outbound call details for phone: ${phoneNumber}`);
+      
+      // Normalize the input phone number
+      const normalizedInputPhone = normalizePhoneNumber(phoneNumber);
+      console.log(`Normalized input phone: ${normalizedInputPhone}`);
 
-    if (campaignError) {
-      console.log('Error fetching campaign:', campaignError);
-      return new Response(
-        JSON.stringify({ error: 'Error fetching campaign' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+      // Get all contacts and find by normalized phone number
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contacts')
+        .select('*');
+
+      if (contactsError) {
+        console.log('Error fetching contacts:', contactsError);
+        return new Response(
+          JSON.stringify({ error: 'Error fetching contacts' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // Find contact by normalized phone number
+      contact = contacts?.find(c => 
+        c.phone && normalizePhoneNumber(c.phone) === normalizedInputPhone
       );
-    }
 
-    if (!campaign) {
-      console.log('Campaign not found for ID:', campaignId);
-      return new Response(
-        JSON.stringify({ error: 'Campaign not found' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      if (!contact) {
+        console.log('Contact not found for normalized phone:', normalizedInputPhone);
+        return new Response(
+          JSON.stringify({ error: 'Contact not found' }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      console.log(`Found contact: ${contact.name}`);
+
+      // Find campaigns where this contact is assigned using the campaign_contacts table
+      const { data: campaignContacts, error: campaignContactsError } = await supabase
+        .from('campaign_contacts')
+        .select(`
+          campaign_id,
+          campaigns!inner(*)
+        `)
+        .eq('contact_id', contact.id);
+
+      if (campaignContactsError) {
+        console.log('Error fetching campaign contacts:', campaignContactsError);
+        return new Response(
+          JSON.stringify({ error: 'Error fetching campaign contacts' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // Filter for active campaigns
+      const activeCampaigns = campaignContacts?.filter(cc => cc.campaigns.status === 'active') || [];
+
+      if (activeCampaigns.length === 0) {
+        console.log('No active campaigns found for contact');
+        return new Response(
+          JSON.stringify({ error: 'No active campaigns found for this contact' }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      campaign = activeCampaigns[0].campaigns;
+      campaignId = campaign.id;
+    } else {
+      // If only campaign_id is provided, get campaign details directly
+      console.log(`Looking up outbound call details for campaign: ${campaignId}`);
+
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('id', campaignId)
+        .single();
+
+      if (campaignError) {
+        console.log('Error fetching campaign:', campaignError);
+        return new Response(
+          JSON.stringify({ error: 'Error fetching campaign' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      if (!campaignData) {
+        console.log('Campaign not found for ID:', campaignId);
+        return new Response(
+          JSON.stringify({ error: 'Campaign not found' }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      campaign = campaignData;
     }
 
     console.log(`Found campaign: ${campaign.name}`);
@@ -156,27 +250,44 @@ Deno.serve(async (req) => {
     }
 
     // Return comprehensive outbound call details
+    const response = {
+      success: true,
+      campaign_id: campaign.id,
+      outbound_call: {
+        campaign: {
+          id: campaign.id,
+          name: campaign.name,
+          description: campaign.description,
+          status: campaign.status
+        },
+        agent: agent,
+        script: script,
+        user: userProfile ? {
+          id: userProfile.id,
+          full_name: userProfile.full_name,
+          email: userProfile.email
+        } : null,
+        knowledge_bases: knowledgeBases || []
+      }
+    };
+
+    // Include contact information if found via phone number
+    if (contact) {
+      response.outbound_call.contact = {
+        id: contact.id,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        address: contact.address,
+        city: contact.city,
+        state: contact.state,
+        zip_code: contact.zip_code,
+        status: contact.status
+      };
+    }
+
     return new Response(
-      JSON.stringify({
-        success: true,
-        campaign_id: campaign.id,
-        outbound_call: {
-          campaign: {
-            id: campaign.id,
-            name: campaign.name,
-            description: campaign.description,
-            status: campaign.status
-          },
-          agent: agent,
-          script: script,
-          user: userProfile ? {
-            id: userProfile.id,
-            full_name: userProfile.full_name,
-            email: userProfile.email
-          } : null,
-          knowledge_bases: knowledgeBases || []
-        }
-      }),
+      JSON.stringify(response),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
