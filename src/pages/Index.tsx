@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -525,8 +526,9 @@ const Index = () => {
           {activeTab === 'campaigns' && campaignsView === 'details' && selectedCampaignId && (
             <div className="h-full overflow-y-auto">
               <CampaignDetails 
-                campaignId={selectedCampaignId}
+                campaign={campaigns.find(c => c.id === selectedCampaignId)!}
                 onBack={() => setCampaignsView('overview')}
+                onCallClick={handleCallClick}
               />
             </div>
           )}
