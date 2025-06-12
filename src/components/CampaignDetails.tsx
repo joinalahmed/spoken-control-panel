@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -459,26 +458,6 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Enhanced Left Content - Call Analytics */}
-          <div className="xl:col-span-2">
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-t-lg">
-                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <BarChart3 className="h-5 w-5 text-white" />
-                  </div>
-                  Call Analytics & Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <CallAnalyticsTable 
-                  campaignId={campaign.id} 
-                  onCallClick={onCallClick}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Configuration & Contacts Sidebar */}
           <div className="xl:col-span-1 space-y-6">
             {/* Campaign Configuration Card */}
@@ -845,6 +824,26 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Enhanced Right Content - Call Analytics */}
+          <div className="xl:col-span-2">
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="h-5 w-5 text-white" />
+                  </div>
+                  Call Analytics & Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <CallAnalyticsTable 
+                  campaignId={campaign.id} 
+                  onCallClick={onCallClick}
+                />
               </CardContent>
             </Card>
           </div>
