@@ -39,7 +39,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const [selectedKbId, setSelectedKbId] = useState(campaign.knowledge_base_id || '');
   const [editedDescription, setEditedDescription] = useState(campaign.description || '');
   const [selectedStatus, setSelectedStatus] = useState(campaign.status);
-  const [selectedCampaignType, setSelectedCampaignType] = useState(campaign.settings?.campaignType || 'outbound');
+  const [selectedCampaignType, setSelectedCampaignType] = useState<'inbound' | 'outbound'>(campaign.settings?.campaignType || 'outbound');
   
   const { contacts } = useContacts();
   const { agents } = useAgents();
@@ -224,6 +224,10 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
   const handleStatusChange = (value: string) => {
     setSelectedStatus(value as 'draft' | 'active' | 'paused' | 'completed');
+  };
+
+  const handleCampaignTypeChange = (value: string) => {
+    setSelectedCampaignType(value as 'inbound' | 'outbound');
   };
 
   const getStatusColor = (status: string) => {
@@ -444,7 +448,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   </label>
                   {editingCampaignType ? (
                     <div className="space-y-2">
-                      <Select value={selectedCampaignType} onValueChange={setSelectedCampaignType}>
+                      <Select value={selectedCampaignType} onValueChange={handleCampaignTypeChange}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select campaign type" />
                         </SelectTrigger>
