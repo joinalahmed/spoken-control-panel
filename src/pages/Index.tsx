@@ -316,17 +316,25 @@ const Index = () => {
     
     if (script.sections && Array.isArray(script.sections)) {
       transformedSections = script.sections.map((section: any, index: number) => {
-        // Handle the steps array properly
+        // Handle the steps array properly for editing
         let steps = [];
         
         if (section.steps && Array.isArray(section.steps)) {
-          // Extract content from each step object
+          // For editing, we need to extract the content/title from step objects
           steps = section.steps.map((step: any) => {
             if (typeof step === 'string') {
               return step;
             } else if (step && typeof step === 'object') {
-              // Try different properties that might contain the step content
-              return step.content || step.title || step.description || JSON.stringify(step);
+              // For complex step objects, combine title and content meaningfully
+              if (step.title && step.content) {
+                return `${step.title}: ${step.content}`;
+              } else if (step.content) {
+                return step.content;
+              } else if (step.title) {
+                return step.title;
+              } else {
+                return step.description || '';
+              }
             }
             return '';
           });
@@ -334,8 +342,8 @@ const Index = () => {
         
         return {
           id: section.id || Date.now().toString() + index,
-          title: section.title || '',
-          content: section.content || section.description || '',
+          title: section.title || section.description || '',
+          content: section.description || section.content || '',
           steps: steps
         };
       });
