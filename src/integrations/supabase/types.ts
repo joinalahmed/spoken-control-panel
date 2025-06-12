@@ -204,6 +204,7 @@ export type Database = {
           knowledge_base_id: string | null
           name: string
           script_id: string | null
+          settings: Json | null
           status: string
           updated_at: string
           user_id: string
@@ -216,6 +217,7 @@ export type Database = {
           knowledge_base_id?: string | null
           name: string
           script_id?: string | null
+          settings?: Json | null
           status?: string
           updated_at?: string
           user_id: string
@@ -228,6 +230,7 @@ export type Database = {
           knowledge_base_id?: string | null
           name?: string
           script_id?: string | null
+          settings?: Json | null
           status?: string
           updated_at?: string
           user_id?: string

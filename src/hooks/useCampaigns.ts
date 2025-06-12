@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { CampaignSettingsData } from '@/components/CampaignSettings';
 
 export interface Campaign {
   id: string;
@@ -15,6 +16,7 @@ export interface Campaign {
   created_at: string;
   updated_at: string;
   knowledge_base_id?: string | null;
+  settings?: CampaignSettingsData | null;
 }
 
 export const useCampaigns = () => {
@@ -56,6 +58,7 @@ export const useCampaigns = () => {
       knowledgeBaseId: string;
       contactIds: string[];
       status?: string;
+      settings?: CampaignSettingsData;
     }) => {
       if (!user?.id) {
         throw new Error('User not authenticated');
@@ -72,7 +75,8 @@ export const useCampaigns = () => {
           agent_id: campaignData.agentId,
           script_id: campaignData.scriptId,
           status: campaignData.status || 'draft',
-          knowledge_base_id: campaignData.knowledgeBaseId
+          knowledge_base_id: campaignData.knowledgeBaseId,
+          settings: campaignData.settings || null
         })
         .select()
         .single();
@@ -134,6 +138,7 @@ export const useCampaigns = () => {
       if (campaignData.script_id !== undefined) updateData.script_id = campaignData.script_id;
       if (campaignData.status !== undefined) updateData.status = campaignData.status;
       if (campaignData.knowledge_base_id !== undefined) updateData.knowledge_base_id = campaignData.knowledge_base_id;
+      if (campaignData.settings !== undefined) updateData.settings = campaignData.settings;
 
       const { data, error } = await supabase
         .from('campaigns')

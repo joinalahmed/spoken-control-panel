@@ -213,7 +213,8 @@ const Index = () => {
         scriptId: campaignData.scriptId,
         knowledgeBaseId: campaignData.knowledgeBaseId,
         contactIds: campaignData.contactIds || [],
-        status: campaignData.status || 'draft'
+        status: campaignData.status || 'draft',
+        settings: campaignData.settings || undefined
       };
 
       console.log('Mapped campaign data:', mappedCampaignData);
