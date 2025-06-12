@@ -462,9 +462,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
           <div className="xl:col-span-1 space-y-6">
             {/* Campaign Configuration Card */}
             <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-4 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-t-lg">
+              <CardHeader className="pb-4">
                 <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                  <div className="h-10 w-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
                     <Settings className="h-5 w-5 text-white" />
                   </div>
                   Configuration
@@ -474,7 +474,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 {/* Campaign Type */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <Phone className="h-4 w-4 text-gray-600" />
+                    <Phone className="h-4 w-4 text-blue-600" />
                     <h4 className="font-medium text-gray-900 text-sm">Campaign Type</h4>
                   </div>
                   
@@ -513,10 +513,14 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       <div className="flex items-center gap-2">
                         <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${
                           currentCampaignType === 'outbound' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-blue-100 text-blue-700'
+                            ? 'bg-green-100' 
+                            : 'bg-blue-100'
                         }`}>
-                          {typeInfo.icon}
+                          {currentCampaignType === 'outbound' ? (
+                            <PhoneOutgoing className="h-3 w-3 text-green-600" />
+                          ) : (
+                            <PhoneIncoming className="h-3 w-3 text-blue-600" />
+                          )}
                         </div>
                         <div>
                           <div className="font-medium text-gray-900 text-xs">{typeInfo.label}</div>
@@ -540,7 +544,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 {/* Description */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <Activity className="h-4 w-4 text-gray-600" />
+                    <Activity className="h-4 w-4 text-purple-600" />
                     <h4 className="font-medium text-gray-900 text-sm">Description</h4>
                   </div>
                   
@@ -585,7 +589,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 {/* Agent Assignment */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <User className="h-4 w-4 text-gray-600" />
+                    <User className="h-4 w-4 text-emerald-600" />
                     <h4 className="font-medium text-gray-900 text-sm">Agent</h4>
                   </div>
                   
@@ -599,7 +603,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                           {agents.map((agent) => (
                             <SelectItem key={agent.id} value={agent.id}>
                               <div className="flex items-center gap-2">
-                                <User className="h-3 w-3 text-gray-600" />
+                                <User className="h-3 w-3 text-emerald-600" />
                                 <span className="text-xs">{agent.name}</span>
                               </div>
                             </SelectItem>
@@ -618,8 +622,8 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   ) : (
                     <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <User className="h-3 w-3 text-gray-600" />
+                        <div className="h-6 w-6 bg-emerald-100 rounded-lg flex items-center justify-center">
+                          <User className="h-3 w-3 text-emerald-600" />
                         </div>
                         <div>
                           <div className="font-medium text-gray-900 text-xs">
@@ -645,7 +649,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 {/* Knowledge Base */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <Database className="h-4 w-4 text-gray-600" />
+                    <Database className="h-4 w-4 text-orange-600" />
                     <h4 className="font-medium text-gray-900 text-sm">Knowledge Base</h4>
                   </div>
                   
@@ -659,7 +663,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                           {kbs.map((kb) => (
                             <SelectItem key={kb.id} value={kb.id}>
                               <div className="flex items-center gap-2">
-                                <Database className="h-3 w-3 text-gray-600" />
+                                <Database className="h-3 w-3 text-orange-600" />
                                 <span className="text-xs">{kb.title}</span>
                               </div>
                             </SelectItem>
@@ -678,8 +682,8 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   ) : (
                     <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Database className="h-3 w-3 text-gray-600" />
+                        <div className="h-6 w-6 bg-orange-100 rounded-lg flex items-center justify-center">
+                          <Database className="h-3 w-3 text-orange-600" />
                         </div>
                         <div>
                           <div className="font-medium text-gray-900 text-xs">
@@ -705,7 +709,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 {/* Campaign Created Date */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-gray-600" />
+                    <Calendar className="h-4 w-4 text-indigo-600" />
                     <h4 className="font-medium text-gray-900 text-sm">Created</h4>
                   </div>
                   <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
