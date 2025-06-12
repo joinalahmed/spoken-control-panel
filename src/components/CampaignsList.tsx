@@ -1,8 +1,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight } from 'lucide-react';
+import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,6 +45,36 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
     enabled: !!user?.id && campaigns.length > 0,
   });
 
+  // Fetch agent information for campaigns
+  const { data: agentInfo = {} } = useQuery({
+    queryKey: ['campaign-agents', campaigns.map(c => c.agent_id).filter(Boolean)],
+    queryFn: async () => {
+      if (!user?.id || campaigns.length === 0) return {};
+      
+      const agentIds = campaigns.map(c => c.agent_id).filter(Boolean);
+      if (agentIds.length === 0) return {};
+
+      const { data, error } = await supabase
+        .from('agents')
+        .select('id, agent_type')
+        .in('id', agentIds);
+
+      if (error) {
+        console.error('Error fetching agent info:', error);
+        return {};
+      }
+
+      // Map agent ID to agent type
+      const agentTypes: Record<string, string> = {};
+      data.forEach(agent => {
+        agentTypes[agent.id] = agent.agent_type;
+      });
+
+      return agentTypes;
+    },
+    enabled: !!user?.id && campaigns.length > 0,
+  });
+
   if (isLoading) {
     return (
       <div className="flex-1 p-6 flex items-center justify-center">
@@ -77,6 +108,30 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
         return <BarChart3 className="w-4 h-4" />;
       default:
         return <BarChart3 className="w-4 h-4" />;
+    }
+  };
+
+  const getCampaignTypeInfo = (campaign: any) => {
+    const agentType = campaign.agent_id ? agentInfo[campaign.agent_id] : null;
+    
+    if (agentType === 'outbound') {
+      return {
+        icon: <PhoneOutgoing className="w-4 h-4" />,
+        label: 'Outbound',
+        color: 'bg-green-100 text-green-700 border-green-200'
+      };
+    } else if (agentType === 'inbound') {
+      return {
+        icon: <PhoneIncoming className="w-4 h-4" />,
+        label: 'Inbound',
+        color: 'bg-blue-100 text-blue-700 border-blue-200'
+      };
+    } else {
+      return {
+        icon: <BarChart3 className="w-4 h-4" />,
+        label: 'Unknown',
+        color: 'bg-gray-100 text-gray-700 border-gray-200'
+      };
     }
   };
 
@@ -133,47 +188,59 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {campaigns.map((campaign) => (
-            <Card 
-              key={campaign.id} 
-              className="bg-white border-gray-200 hover:bg-gray-50 transition-all duration-300 cursor-pointer group"
-              onClick={() => onSelectCampaign(campaign.id)}
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                    {getStatusIcon(campaign.status)}
-                    {campaign.status}
+          {campaigns.map((campaign) => {
+            const typeInfo = getCampaignTypeInfo(campaign);
+            
+            return (
+              <Card 
+                key={campaign.id} 
+                className="bg-white border-gray-200 hover:bg-gray-50 transition-all duration-300 cursor-pointer group"
+                onClick={() => onSelectCampaign(campaign.id)}
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                        {getStatusIcon(campaign.status)}
+                        {campaign.status}
+                      </div>
+                      <Badge variant="outline" className={`${typeInfo.color} border`}>
+                        <div className="flex items-center gap-1">
+                          {typeInfo.icon}
+                          {typeInfo.label}
+                        </div>
+                      </Badge>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
-                </div>
-                <CardTitle className="text-gray-900 text-lg">{campaign.name}</CardTitle>
-                <CardDescription className="text-gray-600 line-clamp-2">
-                  {campaign.description || 'No description provided'}
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Users className="w-4 h-4" />
-                    <span>{contactCounts[campaign.id] || 0} contacts</span>
+                  <CardTitle className="text-gray-900 text-lg">{campaign.name}</CardTitle>
+                  <CardDescription className="text-gray-600 line-clamp-2">
+                    {campaign.description || 'No description provided'}
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Users className="w-4 h-4" />
+                      <span>{contactCounts[campaign.id] || 0} contacts</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>{new Date(campaign.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(campaign.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
 
-                <div className="pt-2 border-t border-gray-200">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>Last updated</span>
-                    <span>{new Date(campaign.updated_at).toLocaleDateString()}</span>
+                  <div className="pt-2 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Last updated</span>
+                      <span>{new Date(campaign.updated_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
