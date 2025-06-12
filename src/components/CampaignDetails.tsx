@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,10 +34,12 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const [editingKb, setEditingKb] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [editingStatus, setEditingStatus] = useState(false);
+  const [editingCampaignType, setEditingCampaignType] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState(campaign.agent_id || '');
   const [selectedKbId, setSelectedKbId] = useState(campaign.knowledge_base_id || '');
   const [editedDescription, setEditedDescription] = useState(campaign.description || '');
   const [selectedStatus, setSelectedStatus] = useState(campaign.status);
+  const [selectedCampaignType, setSelectedCampaignType] = useState(campaign.settings?.campaignType || 'outbound');
   
   const { contacts } = useContacts();
   const { agents } = useAgents();
@@ -165,6 +167,25 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     }
   };
 
+  const handleUpdateCampaignType = async () => {
+    try {
+      const updatedSettings = {
+        ...campaign.settings,
+        campaignType: selectedCampaignType
+      };
+      
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        settings: updatedSettings
+      });
+      setEditingCampaignType(false);
+      toast.success('Campaign type updated');
+    } catch (error) {
+      console.error('Error updating campaign type:', error);
+      toast.error('Failed to update campaign type');
+    }
+  };
+
   const handleDeleteCampaign = async () => {
     try {
       await deleteCampaign.mutateAsync(campaign.id);
@@ -196,6 +217,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     setEditingStatus(false);
   };
 
+  const handleCancelCampaignTypeEdit = () => {
+    setSelectedCampaignType(campaign.settings?.campaignType || 'outbound');
+    setEditingCampaignType(false);
+  };
+
   const handleStatusChange = (value: string) => {
     setSelectedStatus(value as 'draft' | 'active' | 'paused' | 'completed');
   };
@@ -212,6 +238,31 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
+
+  const getCampaignTypeInfo = (campaignType: string) => {
+    if (campaignType === 'outbound') {
+      return {
+        icon: <PhoneOutgoing className="w-4 h-4" />,
+        label: 'Outbound',
+        color: 'bg-green-100 text-green-700 border-green-200'
+      };
+    } else if (campaignType === 'inbound') {
+      return {
+        icon: <PhoneIncoming className="w-4 h-4" />,
+        label: 'Inbound',
+        color: 'bg-blue-100 text-blue-700 border-blue-200'
+      };
+    } else {
+      return {
+        icon: <BarChart3 className="w-4 h-4" />,
+        label: 'Campaign',
+        color: 'bg-gray-100 text-gray-700 border-gray-200'
+      };
+    }
+  };
+
+  const currentCampaignType = campaign.settings?.campaignType || 'outbound';
+  const typeInfo = getCampaignTypeInfo(currentCampaignType);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -385,6 +436,57 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Campaign Type Section */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                    <Phone className="h-4 w-4" />
+                    Campaign Type
+                  </label>
+                  {editingCampaignType ? (
+                    <div className="space-y-2">
+                      <Select value={selectedCampaignType} onValueChange={setSelectedCampaignType}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select campaign type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="outbound">
+                            <div className="flex items-center gap-2">
+                              <PhoneOutgoing className="w-4 h-4" />
+                              Outbound
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="inbound">
+                            <div className="flex items-center gap-2">
+                              <PhoneIncoming className="w-4 h-4" />
+                              Inbound
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleUpdateCampaignType} className="bg-green-600 hover:bg-green-700">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelCampaignTypeEdit}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
+                      <Badge variant="outline" className={`${typeInfo.color} border`}>
+                        <div className="flex items-center gap-1">
+                          {typeInfo.icon}
+                          {typeInfo.label}
+                        </div>
+                      </Badge>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingCampaignType(true)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Description Section */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
