@@ -156,10 +156,10 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
         <Button 
           onClick={onBack}
           variant="outline" 
+          size="icon"
           className="mb-4 border-gray-300 text-gray-700 hover:bg-gray-100"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Call History
+          <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -180,10 +180,10 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
           <Button 
             onClick={onBack}
             variant="outline" 
+            size="icon"
             className="mb-6 border-gray-300 text-gray-700 hover:bg-gray-100 shadow-sm"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Call History
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
