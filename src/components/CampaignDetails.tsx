@@ -169,10 +169,31 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
   const handleUpdateCampaignType = async () => {
     try {
-      const updatedSettings = {
+      // Create a complete settings object with defaults if current settings don't exist
+      const defaultSettings = {
+        campaignType: selectedCampaignType,
+        callScheduling: {
+          startTime: '09:00',
+          endTime: '17:00',
+          timezone: 'America/New_York',
+          daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+        },
+        retryLogic: {
+          maxRetries: 3,
+          retryInterval: 60,
+          enableRetry: true
+        },
+        callBehavior: {
+          maxCallDuration: 300,
+          recordCalls: true,
+          enableVoicemail: true
+        }
+      };
+
+      const updatedSettings = campaign.settings ? {
         ...campaign.settings,
         campaignType: selectedCampaignType
-      };
+      } : defaultSettings;
       
       await updateCampaign.mutateAsync({
         id: campaign.id,
