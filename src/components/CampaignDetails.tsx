@@ -463,309 +463,301 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             {/* Redesigned Campaign Configuration */}
             <div className="space-y-4">
               {/* Campaign Type Card */}
-              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-1">
-                  <div className="bg-white rounded-t-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                        <Phone className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">Campaign Type</h3>
-                        <p className="text-sm text-gray-600">Configure how your campaign operates</p>
-                      </div>
+              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <Phone className="h-5 w-5 text-gray-600" />
                     </div>
-                    
-                    {editingCampaignType ? (
-                      <div className="space-y-4">
-                        <Select value={selectedCampaignType} onValueChange={handleCampaignTypeChange}>
-                          <SelectTrigger className="w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                            <SelectValue placeholder="Select campaign type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="outbound">
-                              <div className="flex items-center gap-3 p-2">
-                                <PhoneOutgoing className="w-5 h-5 text-green-600" />
-                                <div>
-                                  <div className="font-medium">Outbound</div>
-                                  <div className="text-xs text-gray-500">Make calls to contacts</div>
-                                </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">Campaign Type</h3>
+                      <p className="text-sm text-gray-600">Configure how your campaign operates</p>
+                    </div>
+                  </div>
+                  
+                  {editingCampaignType ? (
+                    <div className="space-y-4">
+                      <Select value={selectedCampaignType} onValueChange={handleCampaignTypeChange}>
+                        <SelectTrigger className="w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Select campaign type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="outbound">
+                            <div className="flex items-center gap-3 p-2">
+                              <PhoneOutgoing className="w-5 h-5 text-green-600" />
+                              <div>
+                                <div className="font-medium">Outbound</div>
+                                <div className="text-xs text-gray-500">Make calls to contacts</div>
                               </div>
-                            </SelectItem>
-                            <SelectItem value="inbound">
-                              <div className="flex items-center gap-3 p-2">
-                                <PhoneIncoming className="w-5 h-5 text-blue-600" />
-                                <div>
-                                  <div className="font-medium">Inbound</div>
-                                  <div className="text-xs text-gray-500">Receive calls from contacts</div>
-                                </div>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <div className="flex gap-2 pt-2">
-                          <Button size="sm" onClick={handleUpdateCampaignType} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                            <Check className="h-4 w-4 mr-2" />
-                            Save
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={handleCancelCampaignTypeEdit} className="border-gray-300">
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 p-4 rounded-xl border border-gray-200/50 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                            currentCampaignType === 'outbound' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-blue-100 text-blue-700'
-                          }`}>
-                            {typeInfo.icon}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">{typeInfo.label} Campaign</div>
-                            <div className="text-sm text-gray-600">
-                              {currentCampaignType === 'outbound' ? 'Makes calls to contacts' : 'Receives calls from contacts'}
                             </div>
-                          </div>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setEditingCampaignType(true)} 
-                          className="hover:bg-white/80 text-gray-600 hover:text-gray-900"
-                        >
-                          <Edit2 className="h-4 w-4" />
+                          </SelectItem>
+                          <SelectItem value="inbound">
+                            <div className="flex items-center gap-3 p-2">
+                              <PhoneIncoming className="w-5 h-5 text-blue-600" />
+                              <div>
+                                <div className="font-medium">Inbound</div>
+                                <div className="text-xs text-gray-500">Receive calls from contacts</div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" onClick={handleUpdateCampaignType} className="bg-gray-900 hover:bg-gray-800 text-white">
+                          <Check className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelCampaignTypeEdit} className="border-gray-300">
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
                         </Button>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
+                          currentCampaignType === 'outbound' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {typeInfo.icon}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">{typeInfo.label} Campaign</div>
+                          <div className="text-sm text-gray-600">
+                            {currentCampaignType === 'outbound' ? 'Makes calls to contacts' : 'Receives calls from contacts'}
+                          </div>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => setEditingCampaignType(true)} 
+                        className="hover:bg-white text-gray-600 hover:text-gray-900"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
               </Card>
 
               {/* Description Card */}
-              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-1">
-                  <div className="bg-white rounded-t-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-10 w-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">Description</h3>
-                        <p className="text-sm text-gray-600">Campaign purpose and details</p>
-                      </div>
+              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-gray-600" />
                     </div>
-                    
-                    {editingDescription ? (
-                      <div className="space-y-4">
-                        <Textarea
-                          value={editedDescription}
-                          onChange={(e) => setEditedDescription(e.target.value)}
-                          placeholder="Enter campaign description..."
-                          className="min-h-[100px] bg-white border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 resize-none"
-                        />
-                        <div className="flex gap-2 pt-2">
-                          <Button size="sm" onClick={handleUpdateDescription} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
-                            <Check className="h-4 w-4 mr-2" />
-                            Save
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={handleCancelDescriptionEdit} className="border-gray-300">
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gradient-to-r from-gray-50 to-emerald-50/50 p-4 rounded-xl border border-gray-200/50 flex items-start justify-between min-h-[80px]">
-                        <div className="flex-1 pr-3">
-                          <p className="text-gray-900 leading-relaxed">
-                            {campaign.description || (
-                              <span className="text-gray-500 italic">No description provided. Click edit to add campaign details.</span>
-                            )}
-                          </p>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setEditingDescription(true)} 
-                          className="flex-shrink-0 hover:bg-white/80 text-gray-600 hover:text-gray-900"
-                        >
-                          <Edit2 className="h-4 w-4" />
+                    <div>
+                      <h3 className="font-bold text-gray-900">Description</h3>
+                      <p className="text-sm text-gray-600">Campaign purpose and details</p>
+                    </div>
+                  </div>
+                  
+                  {editingDescription ? (
+                    <div className="space-y-4">
+                      <Textarea
+                        value={editedDescription}
+                        onChange={(e) => setEditedDescription(e.target.value)}
+                        placeholder="Enter campaign description..."
+                        className="min-h-[100px] bg-white border-gray-200 focus:border-gray-500 focus:ring-gray-500 resize-none"
+                      />
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" onClick={handleUpdateDescription} className="bg-gray-900 hover:bg-gray-800 text-white">
+                          <Check className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelDescriptionEdit} className="border-gray-300">
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
                         </Button>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-start justify-between min-h-[80px]">
+                      <div className="flex-1 pr-3">
+                        <p className="text-gray-900 leading-relaxed">
+                          {campaign.description || (
+                            <span className="text-gray-500 italic">No description provided. Click edit to add campaign details.</span>
+                          )}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => setEditingDescription(true)} 
+                        className="flex-shrink-0 hover:bg-white text-gray-600 hover:text-gray-900"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
               </Card>
 
               {/* Agent Assignment Card */}
-              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-1">
-                  <div className="bg-white rounded-t-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">Agent Assignment</h3>
-                        <p className="text-sm text-gray-600">AI agent handling the calls</p>
-                      </div>
+              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <User className="h-5 w-5 text-gray-600" />
                     </div>
-                    
-                    {editingAgent ? (
-                      <div className="space-y-4">
-                        <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
-                          <SelectTrigger className="w-full bg-white border-gray-200 focus:border-purple-500 focus:ring-purple-500">
-                            <SelectValue placeholder="Select an agent" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {agents.map((agent) => (
-                              <SelectItem key={agent.id} value={agent.id}>
-                                <div className="flex items-center gap-3 p-2">
-                                  <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                                    <User className="h-4 w-4 text-white" />
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">{agent.name}</div>
-                                    <div className="text-xs text-gray-500">{agent.voice}</div>
-                                  </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">Agent Assignment</h3>
+                      <p className="text-sm text-gray-600">AI agent handling the calls</p>
+                    </div>
+                  </div>
+                  
+                  {editingAgent ? (
+                    <div className="space-y-4">
+                      <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                        <SelectTrigger className="w-full bg-white border-gray-200 focus:border-gray-500 focus:ring-gray-500">
+                          <SelectValue placeholder="Select an agent" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {agents.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.id}>
+                              <div className="flex items-center gap-3 p-2">
+                                <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                  <User className="h-4 w-4 text-gray-600" />
                                 </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <div className="flex gap-2 pt-2">
-                          <Button size="sm" onClick={handleUpdateAgent} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
-                            <Check className="h-4 w-4 mr-2" />
-                            Save
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={handleCancelAgentEdit} className="border-gray-300">
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gradient-to-r from-gray-50 to-purple-50/50 p-4 rounded-xl border border-gray-200/50 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                            <User className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {campaignAgent ? campaignAgent.name : 'No agent assigned'}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {campaignAgent ? campaignAgent.voice : 'Click edit to assign an agent'}
-                            </div>
-                          </div>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setEditingAgent(true)} 
-                          className="hover:bg-white/80 text-gray-600 hover:text-gray-900"
-                        >
-                          <Edit2 className="h-4 w-4" />
+                                <div>
+                                  <div className="font-medium">{agent.name}</div>
+                                  <div className="text-xs text-gray-500">{agent.voice}</div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" onClick={handleUpdateAgent} className="bg-gray-900 hover:bg-gray-800 text-white">
+                          <Check className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelAgentEdit} className="border-gray-300">
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
                         </Button>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <User className="h-6 w-6 text-gray-600" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            {campaignAgent ? campaignAgent.name : 'No agent assigned'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {campaignAgent ? campaignAgent.voice : 'Click edit to assign an agent'}
+                          </div>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => setEditingAgent(true)} 
+                        className="hover:bg-white text-gray-600 hover:text-gray-900"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
               </Card>
 
               {/* Knowledge Base Card */}
-              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-600 to-red-600 p-1">
-                  <div className="bg-white rounded-t-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-10 w-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                        <Database className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">Knowledge Base</h3>
-                        <p className="text-sm text-gray-600">Information for agent responses</p>
-                      </div>
+              <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <Database className="h-5 w-5 text-gray-600" />
                     </div>
-                    
-                    {editingKb ? (
-                      <div className="space-y-4">
-                        <Select value={selectedKbId} onValueChange={setSelectedKbId}>
-                          <SelectTrigger className="w-full bg-white border-gray-200 focus:border-orange-500 focus:ring-orange-500">
-                            <SelectValue placeholder="Select a knowledge base" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {kbs.map((kb) => (
-                              <SelectItem key={kb.id} value={kb.id}>
-                                <div className="flex items-center gap-3 p-2">
-                                  <div className="h-8 w-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                                    <Database className="h-4 w-4 text-white" />
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">{kb.title}</div>
-                                    <div className="text-xs text-gray-500 capitalize">{kb.type}</div>
-                                  </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">Knowledge Base</h3>
+                      <p className="text-sm text-gray-600">Information for agent responses</p>
+                    </div>
+                  </div>
+                  
+                  {editingKb ? (
+                    <div className="space-y-4">
+                      <Select value={selectedKbId} onValueChange={setSelectedKbId}>
+                        <SelectTrigger className="w-full bg-white border-gray-200 focus:border-gray-500 focus:ring-gray-500">
+                          <SelectValue placeholder="Select a knowledge base" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {kbs.map((kb) => (
+                            <SelectItem key={kb.id} value={kb.id}>
+                              <div className="flex items-center gap-3 p-2">
+                                <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                  <Database className="h-4 w-4 text-gray-600" />
                                 </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <div className="flex gap-2 pt-2">
-                          <Button size="sm" onClick={handleUpdateKb} className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white">
-                            <Check className="h-4 w-4 mr-2" />
-                            Save
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={handleCancelKbEdit} className="border-gray-300">
-                            <X className="h-4 w-4 mr-2" />
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gradient-to-r from-gray-50 to-orange-50/50 p-4 rounded-xl border border-gray-200/50 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                            <Database className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {campaignKb ? campaignKb.title : 'No knowledge base assigned'}
-                            </div>
-                            <div className="text-sm text-gray-600 capitalize">
-                              {campaignKb ? campaignKb.type : 'Click edit to assign a knowledge base'}
-                            </div>
-                          </div>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setEditingKb(true)} 
-                          className="hover:bg-white/80 text-gray-600 hover:text-gray-900"
-                        >
-                          <Edit2 className="h-4 w-4" />
+                                <div>
+                                  <div className="font-medium">{kb.title}</div>
+                                  <div className="text-xs text-gray-500 capitalize">{kb.type}</div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" onClick={handleUpdateKb} className="bg-gray-900 hover:bg-gray-800 text-white">
+                          <Check className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handleCancelKbEdit} className="border-gray-300">
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
                         </Button>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                          <Database className="h-6 w-6 text-gray-600" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            {campaignKb ? campaignKb.title : 'No knowledge base assigned'}
+                          </div>
+                          <div className="text-sm text-gray-600 capitalize">
+                            {campaignKb ? campaignKb.type : 'Click edit to assign a knowledge base'}
+                          </div>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => setEditingKb(true)} 
+                        className="hover:bg-white text-gray-600 hover:text-gray-900"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
               </Card>
 
               {/* Campaign Created Date */}
               <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-10 w-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl flex items-center justify-center">
-                      <Calendar className="h-5 w-5 text-white" />
+                    <div className="h-10 w-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-gray-600" />
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900">Campaign Created</h3>
                       <p className="text-sm text-gray-600">Initial creation date</p>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl border border-gray-200/50">
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <p className="font-semibold text-gray-900">
                       {new Date(campaign.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
