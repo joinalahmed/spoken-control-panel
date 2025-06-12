@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical, FileText, HelpCircle, BookOpen, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,7 @@ interface SortableSectionProps {
     id: string;
     title: string;
     content: string;
-    steps?: string[];
+    steps?: Array<{ name: string; content: string }>;
   };
   index: number;
   onUpdate: (index: number, field: string, value: any) => void;
@@ -55,13 +54,13 @@ const SortableSection = ({ section, index, onUpdate, onRemove }: SortableSection
 
   const handleAddStep = () => {
     const currentSteps = section.steps || [];
-    onUpdate(index, 'steps', [...currentSteps, '']);
+    onUpdate(index, 'steps', [...currentSteps, { name: '', content: '' }]);
   };
 
-  const handleUpdateStep = (stepIndex: number, value: string) => {
+  const handleUpdateStep = (stepIndex: number, field: 'name' | 'content', value: string) => {
     const currentSteps = section.steps || [];
     const updatedSteps = [...currentSteps];
-    updatedSteps[stepIndex] = value;
+    updatedSteps[stepIndex] = { ...updatedSteps[stepIndex], [field]: value };
     onUpdate(index, 'steps', updatedSteps);
   };
 
@@ -123,21 +122,41 @@ const SortableSection = ({ section, index, onUpdate, onRemove }: SortableSection
           </div>
           
           {(section.steps || []).map((step, stepIndex) => (
-            <div key={stepIndex} className="flex gap-2 mb-2">
-              <Input
-                value={step}
-                onChange={(e) => handleUpdateStep(stepIndex, e.target.value)}
-                placeholder={`Step ${stepIndex + 1}`}
-                className="flex-1"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleRemoveStep(stepIndex)}
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+            <div key={stepIndex} className="border border-gray-200 rounded-lg p-4 mb-3">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-700">Step {stepIndex + 1}</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRemoveStep(stepIndex)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor={`step-name-${index}-${stepIndex}`}>Step Name</Label>
+                  <Input
+                    id={`step-name-${index}-${stepIndex}`}
+                    value={step.name}
+                    onChange={(e) => handleUpdateStep(stepIndex, 'name', e.target.value)}
+                    placeholder="Enter step name"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor={`step-content-${index}-${stepIndex}`}>Step Content</Label>
+                  <Textarea
+                    id={`step-content-${index}-${stepIndex}`}
+                    value={step.content}
+                    onChange={(e) => handleUpdateStep(stepIndex, 'content', e.target.value)}
+                    placeholder="Enter step content or description"
+                    rows={2}
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -165,7 +184,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
       id: string;
       title: string;
       content: string;
-      steps?: string[];
+      steps?: Array<{ name: string; content: string }>;
     }>
   });
 
@@ -179,6 +198,41 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
   // Populate form data when editing an existing script
   useEffect(() => {
     if (editingScript) {
+      // Transform sections to match new structure
+      const transformedSections = (editingScript.sections || []).map((section: any, index: number) => {
+        let transformedSteps: Array<{ name: string; content: string }> = [];
+        
+        if (section.steps && Array.isArray(section.steps)) {
+          transformedSteps = section.steps.map((step: any) => {
+            if (typeof step === 'string') {
+              // Parse "name: content" format back to separate fields
+              const colonIndex = step.indexOf(':');
+              if (colonIndex > 0) {
+                return {
+                  name: step.substring(0, colonIndex).trim(),
+                  content: step.substring(colonIndex + 1).trim()
+                };
+              } else {
+                return { name: step, content: '' };
+              }
+            } else if (step && typeof step === 'object') {
+              return {
+                name: step.title || step.name || '',
+                content: step.content || step.description || ''
+              };
+            }
+            return { name: '', content: '' };
+          });
+        }
+        
+        return {
+          id: section.id || Date.now().toString() + index,
+          title: section.title || section.description || '',
+          content: section.description || section.content || '',
+          steps: transformedSteps
+        };
+      });
+
       setFormData({
         name: editingScript.name || '',
         description: editingScript.description || '',
@@ -186,7 +240,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
         agent_type: editingScript.agent_type || 'outbound',
         voice: editingScript.voice || '',
         first_message: editingScript.first_message || '',
-        sections: editingScript.sections || []
+        sections: transformedSections
       });
     }
   }, [editingScript]);
