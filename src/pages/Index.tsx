@@ -526,7 +526,7 @@ const Index = () => {
           {activeTab === 'campaigns' && campaignsView === 'details' && selectedCampaignId && (
             <div className="h-full overflow-y-auto">
               <CampaignDetails 
-                campaign={campaigns.find(c => c.id === selectedCampaignId)!}
+                campaignId={selectedCampaignId}
                 onBack={() => setCampaignsView('overview')}
                 onCallClick={handleCallClick}
               />
