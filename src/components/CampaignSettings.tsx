@@ -30,7 +30,7 @@ interface CampaignSettingsProps {
   onSettingsChange: (settings: CampaignSettingsData) => void;
 }
 
-const defaultSettings: CampaignSettingsData = {
+export const defaultSettings: CampaignSettingsData = {
   callScheduling: {
     startTime: '09:00',
     endTime: '17:00',
@@ -235,5 +235,4 @@ const CampaignSettings: React.FC<CampaignSettingsProps> = ({ settings, onSetting
   );
 };
 
-export { CampaignSettings, defaultSettings };
-export type { CampaignSettingsData };
+export default CampaignSettings;

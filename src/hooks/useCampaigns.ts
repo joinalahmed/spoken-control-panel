@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CampaignSettingsData } from '@/components/CampaignSettings';
+import { Json } from '@/integrations/supabase/types';
 
 export interface Campaign {
   id: string;
@@ -18,6 +19,22 @@ export interface Campaign {
   knowledge_base_id?: string | null;
   settings?: CampaignSettingsData | null;
 }
+
+// Helper function to convert Json to CampaignSettingsData
+const parseSettings = (settings: Json | null): CampaignSettingsData | null => {
+  if (!settings || typeof settings !== 'object') return null;
+  try {
+    return settings as CampaignSettingsData;
+  } catch {
+    return null;
+  }
+};
+
+// Helper function to convert CampaignSettingsData to Json
+const stringifySettings = (settings: CampaignSettingsData | null): Json => {
+  if (!settings) return null;
+  return settings as Json;
+};
 
 export const useCampaigns = () => {
   const { user } = useAuth();
@@ -44,7 +61,11 @@ export const useCampaigns = () => {
         throw error;
       }
 
-      return data as Campaign[];
+      // Convert the data to Campaign type with proper settings parsing
+      return data.map(campaign => ({
+        ...campaign,
+        settings: parseSettings(campaign.settings)
+      })) as Campaign[];
     },
     enabled: !!user?.id,
   });
@@ -76,7 +97,7 @@ export const useCampaigns = () => {
           script_id: campaignData.scriptId,
           status: campaignData.status || 'draft',
           knowledge_base_id: campaignData.knowledgeBaseId,
-          settings: campaignData.settings || null
+          settings: stringifySettings(campaignData.settings || null)
         })
         .select()
         .single();
@@ -104,7 +125,10 @@ export const useCampaigns = () => {
       }
 
       console.log('Campaign created successfully:', data);
-      return data as Campaign;
+      return {
+        ...data,
+        settings: parseSettings(data.settings)
+      } as Campaign;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
@@ -138,7 +162,7 @@ export const useCampaigns = () => {
       if (campaignData.script_id !== undefined) updateData.script_id = campaignData.script_id;
       if (campaignData.status !== undefined) updateData.status = campaignData.status;
       if (campaignData.knowledge_base_id !== undefined) updateData.knowledge_base_id = campaignData.knowledge_base_id;
-      if (campaignData.settings !== undefined) updateData.settings = campaignData.settings;
+      if (campaignData.settings !== undefined) updateData.settings = stringifySettings(campaignData.settings);
 
       const { data, error } = await supabase
         .from('campaigns')
@@ -153,7 +177,10 @@ export const useCampaigns = () => {
       }
 
       console.log('Campaign updated successfully:', data);
-      return data as Campaign;
+      return {
+        ...data,
+        settings: parseSettings(data.settings)
+      } as Campaign;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
