@@ -705,7 +705,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                             </div>
                           </div>
                           <div className="flex items-center gap-2 ml-2">
-                            {campaign.status === 'active' && (
+                            {campaign.status === 'active' && currentCampaignType === 'outbound' && (
                               <TriggerOutboundCall
                                 contact={contact}
                                 campaignId={campaign.id}
