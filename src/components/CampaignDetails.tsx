@@ -458,7 +458,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         </div>
 
         {/* Configuration and Contacts Side by Side */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
           {/* Campaign Configuration Card */}
           <div className="xl:col-span-2">
             <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
@@ -733,7 +733,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
           </div>
 
           {/* Enhanced Contacts Section - Right Side */}
-          <div className="xl:col-span-3">
+          <div className="xl:col-span-4">
             <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-t-lg">
                 <div className="flex items-center justify-between">
