@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useCampaign } from '@/hooks/useCampaign';
 import { useContacts } from '@/hooks/useContacts';
-import { useToast } from "@/components/ui/use-toast"
-import { CallAnalyticsTable } from '@/components/CallAnalyticsTable';
+import { useToast } from "@/hooks/use-toast"
+import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -85,8 +85,8 @@ const CampaignDetails = ({ campaignId, onBack }: CampaignDetailsProps) => {
     enabled: !!campaignId,
   });
 
-  const removeContactMutation = useMutation(
-    async (contactId: string) => {
+  const removeContactMutation = useMutation({
+    mutationFn: async (contactId: string) => {
       const { data, error } = await supabase
         .from('campaign_contacts')
         .delete()
@@ -98,23 +98,21 @@ const CampaignDetails = ({ campaignId, onBack }: CampaignDetailsProps) => {
       }
       return data;
     },
-    {
-      onSuccess: () => {
-        toast({
-          title: "Success",
-          description: "Contact removed from campaign.",
-        })
-        refetchCampaignContacts();
-      },
-      onError: (error: any) => {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
-        })
-      },
-    }
-  );
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Contact removed from campaign.",
+      })
+      refetchCampaignContacts();
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      })
+    },
+  });
 
   const handleRemoveContact = async (contactId: string) => {
     try {
