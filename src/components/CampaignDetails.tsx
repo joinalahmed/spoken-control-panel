@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { useAgents } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
 import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
+import TriggerOutboundCall from '@/components/TriggerOutboundCall';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,6 +102,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
   const handleContactsAdded = () => {
     console.log('Contacts added, refreshing campaign data');
+  };
+
+  const handleCallTriggered = () => {
+    console.log('Call triggered, refreshing analytics');
+    // The CallAnalyticsTable should automatically refresh due to react-query
   };
 
   const handleUpdateAgent = async () => {
@@ -572,14 +577,23 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                               )}
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveContact(contact.id)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 ml-2"
-                          >
-                            <Trash className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-2 ml-2">
+                            {campaign.status === 'active' && (
+                              <TriggerOutboundCall
+                                contact={contact}
+                                campaignId={campaign.id}
+                                onCallTriggered={handleCallTriggered}
+                              />
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveContact(contact.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
