@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -268,9 +267,33 @@ const Index = () => {
       console.log('Mapped script data:', mappedScriptData);
       
       if (editingScript) {
+        // Transform the script sections to match the form format
+        let transformedSections = [];
+        
+        if (scriptData.sections && Array.isArray(scriptData.sections)) {
+          transformedSections = scriptData.sections.map((section: any, index: number) => {
+            // If section has steps array, convert to steps format expected by form
+            const steps = section.steps ? section.steps.map((step: any) => step.content || step.title || '') : [];
+            
+            return {
+              id: section.id || Date.now().toString() + index,
+              title: section.title || '',
+              content: section.content || section.description || '',
+              steps: steps
+            };
+          });
+        }
+        
+        // Create a transformed script object for editing
+        const transformedScript = {
+          ...scriptData,
+          sections: transformedSections
+        };
+        
+        console.log('Transformed script for editing:', transformedScript);
         const updatedScriptData = {
           id: editingScript.id,
-          ...mappedScriptData
+          ...transformedScript
         };
         await updateScript.mutateAsync(updatedScriptData);
       } else {
@@ -286,13 +309,33 @@ const Index = () => {
 
   const handleEditScript = (script: Script) => {
     console.log('Edit script:', script);
-    setEditingScript(script);
+    
+    // Transform the script sections to match the form format
+    let transformedSections = [];
+    
+    if (script.sections && Array.isArray(script.sections)) {
+      transformedSections = script.sections.map((section: any, index: number) => {
+        // If section has steps array, convert to steps format expected by form
+        const steps = section.steps ? section.steps.map((step: any) => step.content || step.title || '') : [];
+        
+        return {
+          id: section.id || Date.now().toString() + index,
+          title: section.title || '',
+          content: section.content || section.description || '',
+          steps: steps
+        };
+      });
+    }
+    
+    // Create a transformed script object for editing
+    const transformedScript = {
+      ...script,
+      sections: transformedSections
+    };
+    
+    console.log('Transformed script for editing:', transformedScript);
+    setEditingScript(transformedScript);
     setScriptView('create');
-  };
-
-  const handleViewScript = (script: Script) => {
-    console.log('View script:', script);
-    setViewingScript(script);
   };
 
   return (
