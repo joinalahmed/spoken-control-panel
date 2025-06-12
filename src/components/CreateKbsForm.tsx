@@ -111,7 +111,7 @@ const CreateKbsForm = ({ onBack, onSave, editingItem }: CreateKbsFormProps) => {
     <div className="flex-1 p-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" onClick={onBack} className="p-2">
+        <Button variant="ghost" onClick={onBack} size="sm" className="p-2">
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>

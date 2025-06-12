@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -114,7 +115,7 @@ const Auth = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowForgotPassword(false)}
-                  className="p-0 h-auto hover:bg-transparent"
+                  className="p-2 h-auto hover:bg-transparent"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
