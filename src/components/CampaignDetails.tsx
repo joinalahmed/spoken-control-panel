@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
+import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -169,31 +169,27 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
   const handleUpdateCampaignType = async () => {
     try {
-      // Create a complete settings object with defaults if current settings don't exist
-      const defaultSettings = {
-        campaignType: selectedCampaignType,
-        callScheduling: {
-          startTime: '09:00',
-          endTime: '17:00',
-          timezone: 'America/New_York',
-          daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
-        },
-        retryLogic: {
-          maxRetries: 3,
-          retryInterval: 60,
-          enableRetry: true
-        },
-        callBehavior: {
-          maxCallDuration: 300,
-          recordCalls: true,
-          enableVoicemail: true
-        }
-      };
-
-      const updatedSettings = campaign.settings ? {
-        ...campaign.settings,
+      const updatedSettings = {
+        ...(campaign.settings || {
+          callScheduling: {
+            startTime: '09:00',
+            endTime: '17:00',
+            timezone: 'America/New_York',
+            daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+          },
+          retryLogic: {
+            maxRetries: 3,
+            retryInterval: 60,
+            enableRetry: true
+          },
+          callBehavior: {
+            maxCallDuration: 300,
+            recordCalls: true,
+            enableVoicemail: true
+          }
+        }),
         campaignType: selectedCampaignType
-      } : defaultSettings;
+      };
       
       await updateCampaign.mutateAsync({
         id: campaign.id,
@@ -290,32 +286,42 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const typeInfo = getCampaignTypeInfo(currentCampaignType);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Section */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Modern Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={onBack}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 transition-all duration-200"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Campaigns
               </Button>
-              <div className="h-6 w-px bg-gray-300" />
+              <div className="h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{campaign.name}</h1>
-                <p className="text-gray-600 mt-1">Campaign Overview & Analytics</p>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                    {campaign.name}
+                  </h1>
+                  <Badge variant="outline" className={`${typeInfo.color} border px-3 py-1`}>
+                    <div className="flex items-center gap-1.5">
+                      {typeInfo.icon}
+                      <span className="font-medium">{typeInfo.label}</span>
+                    </div>
+                  </Badge>
+                </div>
+                <p className="text-gray-600 font-medium">Campaign Overview & Analytics</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {editingStatus ? (
                 <div className="flex items-center gap-2">
                   <Select value={selectedStatus} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-36 bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -325,7 +331,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button size="sm" onClick={handleUpdateStatus} className="bg-green-600 hover:bg-green-700">
+                  <Button size="sm" onClick={handleUpdateStatus} className="bg-emerald-600 hover:bg-emerald-700">
                     <Check className="h-4 w-4" />
                   </Button>
                   <Button size="sm" variant="outline" onClick={handleCancelStatusEdit}>
@@ -336,7 +342,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 <div className="flex items-center gap-2">
                   <Badge 
                     variant="outline" 
-                    className={`${getStatusColor(campaign.status)} px-3 py-1 text-sm font-medium capitalize cursor-pointer`}
+                    className={`${getStatusColor(campaign.status)} px-4 py-2 text-sm font-semibold capitalize cursor-pointer transition-all duration-200 hover:shadow-sm`}
                     onClick={() => setEditingStatus(true)}
                   >
                     {campaign.status}
@@ -345,7 +351,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={() => setEditingStatus(true)}
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
                   >
                     <Edit2 className="h-4 w-4" />
                   </Button>
@@ -357,7 +363,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
+                    className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
@@ -387,60 +393,64 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Contacts</p>
-                  <p className="text-2xl font-bold text-gray-900">{campaignContacts.length}</p>
+                  <p className="text-sm font-semibold text-blue-700 mb-1">Total Contacts</p>
+                  <p className="text-3xl font-bold text-blue-900">{campaignContacts.length}</p>
+                  <p className="text-xs text-blue-600 mt-1">Active in campaign</p>
                 </div>
-                <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Users className="h-6 w-6 text-blue-600" />
+                <div className="h-14 w-14 bg-blue-200 rounded-2xl flex items-center justify-center">
+                  <Users className="h-7 w-7 text-blue-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Calls Made</p>
-                  <p className="text-2xl font-bold text-gray-900">0</p>
+                  <p className="text-sm font-semibold text-emerald-700 mb-1">Calls Made</p>
+                  <p className="text-3xl font-bold text-emerald-900">0</p>
+                  <p className="text-xs text-emerald-600 mt-1">Total completed</p>
                 </div>
-                <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Phone className="h-6 w-6 text-green-600" />
+                <div className="h-14 w-14 bg-emerald-200 rounded-2xl flex items-center justify-center">
+                  <Phone className="h-7 w-7 text-emerald-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">0%</p>
+                  <p className="text-sm font-semibold text-purple-700 mb-1">Success Rate</p>
+                  <p className="text-3xl font-bold text-purple-900">0%</p>
+                  <p className="text-xs text-purple-600 mt-1">Conversion rate</p>
                 </div>
-                <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="h-6 w-6 text-purple-600" />
+                <div className="h-14 w-14 bg-purple-200 rounded-2xl flex items-center justify-center">
+                  <TrendingUp className="h-7 w-7 text-purple-700" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Avg Duration</p>
-                  <p className="text-2xl font-bold text-gray-900">0m</p>
+                  <p className="text-sm font-semibold text-orange-700 mb-1">Avg Duration</p>
+                  <p className="text-3xl font-bold text-orange-900">0m</p>
+                  <p className="text-xs text-orange-600 mt-1">Call duration</p>
                 </div>
-                <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-orange-600" />
+                <div className="h-14 w-14 bg-orange-200 rounded-2xl flex items-center justify-center">
+                  <Clock className="h-7 w-7 text-orange-700" />
                 </div>
               </div>
             </CardContent>
@@ -448,29 +458,29 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Left Sidebar - Campaign Info & Contacts */}
+          {/* Enhanced Left Sidebar */}
           <div className="xl:col-span-1 space-y-6">
-            {/* Campaign Information */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-blue-600" />
+            {/* Campaign Configuration */}
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <CardHeader className="pb-4 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <Settings className="h-5 w-5 text-white" />
                   </div>
-                  Campaign Details
+                  Campaign Configuration
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 p-6">
                 {/* Campaign Type Section */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                    <Phone className="h-4 w-4" />
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-gray-600" />
                     Campaign Type
                   </label>
                   {editingCampaignType ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Select value={selectedCampaignType} onValueChange={handleCampaignTypeChange}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full bg-white">
                           <SelectValue placeholder="Select campaign type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -489,7 +499,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                         </SelectContent>
                       </Select>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={handleUpdateCampaignType} className="bg-green-600 hover:bg-green-700">
+                        <Button size="sm" onClick={handleUpdateCampaignType} className="bg-emerald-600 hover:bg-emerald-700">
                           <Check className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleCancelCampaignTypeEdit}>
@@ -498,14 +508,14 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
-                      <Badge variant="outline" className={`${typeInfo.color} border`}>
-                        <div className="flex items-center gap-1">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl flex items-center justify-between border border-gray-200/50">
+                      <Badge variant="outline" className={`${typeInfo.color} border-0 px-3 py-2 font-semibold`}>
+                        <div className="flex items-center gap-2">
                           {typeInfo.icon}
                           {typeInfo.label}
                         </div>
                       </Badge>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingCampaignType(true)}>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingCampaignType(true)} className="hover:bg-white/50">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -513,18 +523,18 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 </div>
 
                 {/* Description Section */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-800">Description</label>
                   {editingDescription ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Textarea
                         value={editedDescription}
                         onChange={(e) => setEditedDescription(e.target.value)}
                         placeholder="Enter campaign description..."
-                        className="min-h-[80px]"
+                        className="min-h-[80px] bg-white"
                       />
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={handleUpdateDescription} className="bg-green-600 hover:bg-green-700">
+                        <Button size="sm" onClick={handleUpdateDescription} className="bg-emerald-600 hover:bg-emerald-700">
                           <Check className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleCancelDescriptionEdit}>
@@ -533,11 +543,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gray-50 p-3 rounded-lg flex items-start justify-between">
-                      <span className="text-sm text-gray-900 flex-1">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl flex items-start justify-between border border-gray-200/50">
+                      <span className="text-sm text-gray-900 flex-1 leading-relaxed">
                         {campaign.description || 'No description provided'}
                       </span>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingDescription(true)} className="ml-2 flex-shrink-0">
+                      <Button size="sm" variant="ghost" onClick={() => setEditingDescription(true)} className="ml-2 flex-shrink-0 hover:bg-white/50">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -545,15 +555,15 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 </div>
 
                 {/* Agent Selection */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                    <User className="h-4 w-4" />
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-600" />
                     Assigned Script/Agent
                   </label>
                   {editingAgent ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full bg-white">
                           <SelectValue placeholder="Select an agent/script" />
                         </SelectTrigger>
                         <SelectContent>
@@ -565,7 +575,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                         </SelectContent>
                       </Select>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={handleUpdateAgent} className="bg-green-600 hover:bg-green-700">
+                        <Button size="sm" onClick={handleUpdateAgent} className="bg-emerald-600 hover:bg-emerald-700">
                           <Check className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleCancelAgentEdit}>
@@ -574,11 +584,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl flex items-center justify-between border border-gray-200/50">
+                      <span className="text-sm font-semibold text-gray-900">
                         {campaignAgent ? campaignAgent.name : 'No agent assigned'}
                       </span>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingAgent(true)}>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingAgent(true)} className="hover:bg-white/50">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -586,15 +596,15 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 </div>
 
                 {/* Knowledge Base Selection */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                    <Database className="h-4 w-4" />
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <Database className="h-4 w-4 text-gray-600" />
                     Knowledge Base
                   </label>
                   {editingKb ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Select value={selectedKbId} onValueChange={setSelectedKbId}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full bg-white">
                           <SelectValue placeholder="Select a knowledge base" />
                         </SelectTrigger>
                         <SelectContent>
@@ -606,7 +616,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                         </SelectContent>
                       </Select>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={handleUpdateKb} className="bg-green-600 hover:bg-green-700">
+                        <Button size="sm" onClick={handleUpdateKb} className="bg-emerald-600 hover:bg-emerald-700">
                           <Check className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="outline" onClick={handleCancelKbEdit}>
@@ -615,20 +625,20 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl flex items-center justify-between border border-gray-200/50">
+                      <span className="text-sm font-semibold text-gray-900">
                         {campaignKb ? campaignKb.title : 'No knowledge base assigned'}
                       </span>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingKb(true)}>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingKb(true)} className="hover:bg-white/50">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Created</label>
-                  <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <div className="pt-2 border-t border-gray-200">
+                  <label className="text-sm font-semibold text-gray-800">Created</label>
+                  <p className="mt-2 text-sm text-gray-700 bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl border border-gray-200/50">
                     {new Date(campaign.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -639,39 +649,39 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
               </CardContent>
             </Card>
 
-            {/* Contacts Section */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-4">
+            {/* Enhanced Contacts Section */}
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <CardHeader className="pb-4 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Users className="h-4 w-4 text-green-600" />
+                  <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                    <div className="h-10 w-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                      <Users className="h-5 w-5 text-white" />
                     </div>
                     Contacts ({campaignContacts.length})
                   </CardTitle>
                   <Button 
                     size="sm" 
                     onClick={() => setShowAddContacts(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 {campaignContacts.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Users className="w-8 h-8 text-gray-400" />
+                  <div className="text-center py-12">
+                    <div className="h-20 w-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Users className="w-10 h-10 text-gray-400" />
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No contacts yet</h3>
-                    <p className="text-gray-500 mb-4">Add contacts to start your campaign</p>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">No contacts yet</h3>
+                    <p className="text-gray-600 mb-6 max-w-sm mx-auto">Add contacts to start your campaign and begin making calls</p>
                     <Button 
                       size="sm" 
                       variant="outline"
                       onClick={() => setShowAddContacts(true)}
-                      className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
                     >
                       Add First Contact
                     </Button>
@@ -679,32 +689,38 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                 ) : (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {campaignContacts.map((contact) => (
-                      <div key={contact.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                      <div key={contact.id} className="bg-gradient-to-r from-white to-gray-50/50 border border-gray-200/50 rounded-xl p-5 hover:shadow-md transition-all duration-200">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 mb-2">{contact.name}</h4>
-                            <div className="space-y-1">
+                            <h4 className="font-bold text-gray-900 mb-3 text-lg">{contact.name}</h4>
+                            <div className="space-y-2">
                               {contact.phone && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                                <div className="flex items-center text-sm text-gray-700">
+                                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Phone className="w-3 h-3 text-blue-600" />
+                                  </div>
                                   {contact.phone}
                                 </div>
                               )}
                               {contact.email && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                                <div className="flex items-center text-sm text-gray-700">
+                                  <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Mail className="w-3 h-3 text-green-600" />
+                                  </div>
                                   {contact.email}
                                 </div>
                               )}
                               {contact.address && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                                <div className="flex items-center text-sm text-gray-700">
+                                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                    <MapPin className="w-3 h-3 text-purple-600" />
+                                  </div>
                                   {contact.address}
                                 </div>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 ml-2">
+                          <div className="flex items-center gap-2 ml-4">
                             {campaign.status === 'active' && currentCampaignType === 'outbound' && (
                               <TriggerOutboundCall
                                 contact={contact}
@@ -716,7 +732,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveContact(contact.id)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
                             >
                               <Trash className="w-4 h-4" />
                             </Button>
@@ -730,15 +746,15 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             </Card>
           </div>
 
-          {/* Right Content - Call Analytics */}
+          {/* Enhanced Right Content - Call Analytics */}
           <div className="xl:col-span-2">
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="h-4 w-4 text-purple-600" />
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+              <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <BarChart3 className="h-5 w-5 text-white" />
                   </div>
-                  Call Analytics
+                  Call Analytics & Performance
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
