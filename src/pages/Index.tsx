@@ -338,6 +338,11 @@ const Index = () => {
     setScriptView('create');
   };
 
+  const handleViewScript = (script: Script) => {
+    console.log('View script:', script);
+    setViewingScript(script);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Sidebar - Fixed height and proper overflow handling */}
