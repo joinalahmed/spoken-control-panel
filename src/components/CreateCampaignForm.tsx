@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
 import { useScripts } from '@/hooks/useScripts';
 import { useKbs } from '@/hooks/useKbs';
-import { CampaignSettings, defaultSettings, CampaignSettingsData } from './CampaignSettings';
+import CampaignSettings, { defaultSettings, CampaignSettingsData } from './CampaignSettings';
 
 interface CreateCampaignFormProps {
   onBack: () => void;

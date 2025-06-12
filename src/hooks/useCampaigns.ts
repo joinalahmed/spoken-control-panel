@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,9 +21,17 @@ export interface Campaign {
 
 // Helper function to convert Json to CampaignSettingsData
 const parseSettings = (settings: Json | null): CampaignSettingsData | null => {
-  if (!settings || typeof settings !== 'object') return null;
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return null;
+  
   try {
-    return settings as CampaignSettingsData;
+    // Type assertion with runtime validation
+    const parsed = settings as Record<string, any>;
+    
+    // Validate the structure exists before casting
+    if (parsed.callScheduling && parsed.retryLogic && parsed.callBehavior) {
+      return parsed as CampaignSettingsData;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -33,7 +40,26 @@ const parseSettings = (settings: Json | null): CampaignSettingsData | null => {
 // Helper function to convert CampaignSettingsData to Json
 const stringifySettings = (settings: CampaignSettingsData | null): Json => {
   if (!settings) return null;
-  return settings as Json;
+  
+  // Convert to a plain object that matches the Json type structure
+  return {
+    callScheduling: {
+      startTime: settings.callScheduling.startTime,
+      endTime: settings.callScheduling.endTime,
+      timezone: settings.callScheduling.timezone,
+      daysOfWeek: settings.callScheduling.daysOfWeek
+    },
+    retryLogic: {
+      maxRetries: settings.retryLogic.maxRetries,
+      retryInterval: settings.retryLogic.retryInterval,
+      enableRetry: settings.retryLogic.enableRetry
+    },
+    callBehavior: {
+      maxCallDuration: settings.callBehavior.maxCallDuration,
+      recordCalls: settings.callBehavior.recordCalls,
+      enableVoicemail: settings.callBehavior.enableVoicemail
+    }
+  } as Json;
 };
 
 export const useCampaigns = () => {
