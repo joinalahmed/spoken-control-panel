@@ -1,458 +1,212 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Settings, Users, Plus, Phone, Mail, MoreHorizontal, UserMinus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useCampaign } from '@/hooks/useCampaign';
 import { useContacts } from '@/hooks/useContacts';
-import { useCampaigns, Campaign } from '@/hooks/useCampaigns';
-import { useAgents } from '@/hooks/useAgents';
-import { useKbs } from '@/hooks/useKbs';
-import CallAnalyticsTable from '@/components/CallAnalyticsTable';
+import { useToast } from "@/components/ui/use-toast"
+import { CallAnalyticsTable } from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
-import TriggerOutboundCall from '@/components/TriggerOutboundCall';
-import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface CampaignDetailsProps {
-  campaign: Campaign;
+  campaignId: string;
   onBack: () => void;
-  onCallClick: (callId: string) => void;
 }
 
-const CampaignDetails: React.FC<CampaignDetailsProps> = ({ 
-  campaign, 
-  onBack, 
-  onCallClick 
-}) => {
-  const [showAddContacts, setShowAddContacts] = useState(false);
-  const [editingAgent, setEditingAgent] = useState(false);
-  const [editingKb, setEditingKb] = useState(false);
-  const [editingDescription, setEditingDescription] = useState(false);
-  const [editingStatus, setEditingStatus] = useState(false);
-  const [editingCampaignType, setEditingCampaignType] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState(campaign.agent_id || '');
-  const [selectedKbId, setSelectedKbId] = useState(campaign.knowledge_base_id || '');
-  const [editedDescription, setEditedDescription] = useState(campaign.description || '');
-  const [selectedStatus, setSelectedStatus] = useState(campaign.status);
-  const [selectedCampaignType, setSelectedCampaignType] = useState<'inbound' | 'outbound'>(campaign.settings?.campaignType || 'outbound');
-  
-  const { contacts } = useContacts();
-  const { agents } = useAgents();
-  const { kbs } = useKbs();
-  const { updateCampaign, deleteCampaign } = useCampaigns();
-  const { user } = useAuth();
+interface Contact {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  status: string;
+}
 
-  // Fetch campaign contacts from the junction table
-  const { data: campaignContactIds = [] } = useQuery({
-    queryKey: ['campaign-contacts', campaign.id],
+const CampaignDetails = ({ campaignId, onBack }: CampaignDetailsProps) => {
+  const navigate = useNavigate();
+  const { campaign, isLoading, error } = useCampaign(campaignId);
+  const { contacts, isLoading: isLoadingContacts } = useContacts();
+  const [showAddContactModal, setShowAddContactModal] = useState(false);
+  const { toast } = useToast()
+
+  // Fetch contact counts for each campaign
+  const { data: contactCounts = {} } = useQuery({
+    queryKey: ['campaign-contact-counts', campaignId],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!campaignId) return {};
       
       const { data, error } = await supabase
         .from('campaign_contacts')
-        .select('contact_id')
-        .eq('campaign_id', campaign.id);
+        .select('campaign_id')
+        .eq('campaign_id', campaignId);
+
+      if (error) {
+        console.error('Error fetching contact counts:', error);
+        return {};
+      }
+
+      // Count contacts per campaign
+      const counts: Record<string, number> = {};
+      data.forEach(item => {
+        counts[item.campaign_id] = (counts[item.campaign_id] || 0) + 1;
+      });
+
+      return counts;
+    },
+    enabled: !!campaignId,
+  });
+
+  // Get all contacts currently in the campaign
+  const { data: campaignContacts = [], isLoading: isCampaignContactsLoading, refetch: refetchCampaignContacts } = useQuery({
+    queryKey: ['campaign-contacts', campaignId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('contacts')
+        .select(`*, campaign_contacts!inner(*)`)
+        .eq('campaign_contacts.campaign_id', campaignId);
 
       if (error) {
         console.error('Error fetching campaign contacts:', error);
         return [];
       }
 
-      return data.map(item => item.contact_id);
+      return data;
     },
-    enabled: !!user?.id,
+    enabled: !!campaignId,
   });
 
-  // Get campaign contacts
-  const campaignContacts = contacts.filter(contact => 
-    campaignContactIds.includes(contact.id)
-  );
-
-  // Get campaign agent
-  const campaignAgent = agents.find(agent => agent.id === campaign.agent_id);
-
-  // Get campaign knowledge base
-  const campaignKb = kbs.find(kb => kb.id === campaign.knowledge_base_id);
-
-  const handleRemoveContact = async (contactId: string) => {
-    try {
-      console.log('Removing contact from campaign:', { campaignId: campaign.id, contactId });
-      
-      const { error } = await supabase
+  const removeContactMutation = useMutation(
+    async (contactId: string) => {
+      const { data, error } = await supabase
         .from('campaign_contacts')
         .delete()
-        .eq('campaign_id', campaign.id)
+        .eq('campaign_id', campaignId)
         .eq('contact_id', contactId);
 
       if (error) {
-        console.error('Error removing contact from campaign:', error);
-        toast.error('Failed to remove contact from campaign');
-        return;
+        throw new Error(`Failed to remove contact: ${error.message}`);
       }
+      return data;
+    },
+    {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Contact removed from campaign.",
+        })
+        refetchCampaignContacts();
+      },
+      onError: (error: any) => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        })
+      },
+    }
+  );
 
-      toast.success('Contact removed from campaign');
-    } catch (error) {
-      console.error('Error removing contact from campaign:', error);
-      toast.error('Failed to remove contact from campaign');
+  const handleRemoveContact = async (contactId: string) => {
+    try {
+      await removeContactMutation.mutateAsync(contactId);
+    } catch (error: any) {
+      console.error("Error removing contact:", error.message);
     }
   };
 
   const handleContactsAdded = () => {
-    console.log('Contacts added, refreshing campaign data');
+    refetchCampaignContacts();
   };
 
-  const handleCallTriggered = () => {
-    console.log('Call triggered, refreshing analytics');
-    // The CallAnalyticsTable should automatically refresh due to react-query
+  const handleCallClick = (callId: string) => {
+    navigate(`/call-details/${callId}`);
   };
 
-  const handleUpdateAgent = async () => {
-    try {
-      await updateCampaign.mutateAsync({
-        id: campaign.id,
-        agent_id: selectedAgentId || null
-      });
-      setEditingAgent(false);
-      toast.success('Campaign agent updated');
-    } catch (error) {
-      console.error('Error updating campaign agent:', error);
-      toast.error('Failed to update campaign agent');
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
 
-  const handleUpdateKb = async () => {
-    try {
-      await updateCampaign.mutateAsync({
-        id: campaign.id,
-        knowledge_base_id: selectedKbId || null
-      });
-      setEditingKb(false);
-      toast.success('Campaign knowledge base updated');
-    } catch (error) {
-      console.error('Error updating campaign knowledge base:', error);
-      toast.error('Failed to update campaign knowledge base');
-    }
-  };
-
-  const handleUpdateDescription = async () => {
-    try {
-      await updateCampaign.mutateAsync({
-        id: campaign.id,
-        description: editedDescription || null
-      });
-      setEditingDescription(false);
-      toast.success('Campaign description updated');
-    } catch (error) {
-      console.error('Error updating campaign description:', error);
-      toast.error('Failed to update campaign description');
-    }
-  };
-
-  const handleUpdateStatus = async () => {
-    try {
-      await updateCampaign.mutateAsync({
-        id: campaign.id,
-        status: selectedStatus
-      });
-      setEditingStatus(false);
-      toast.success('Campaign status updated');
-    } catch (error) {
-      console.error('Error updating campaign status:', error);
-      toast.error('Failed to update campaign status');
-    }
-  };
-
-  const handleUpdateCampaignType = async () => {
-    try {
-      const updatedSettings = {
-        ...(campaign.settings || {
-          callScheduling: {
-            startTime: '09:00',
-            endTime: '17:00',
-            timezone: 'America/New_York',
-            daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
-          },
-          retryLogic: {
-            maxRetries: 3,
-            retryInterval: 60,
-            enableRetry: true
-          },
-          callBehavior: {
-            maxCallDuration: 300,
-            recordCalls: true,
-            enableVoicemail: true
-          }
-        }),
-        campaignType: selectedCampaignType
-      };
-      
-      await updateCampaign.mutateAsync({
-        id: campaign.id,
-        settings: updatedSettings
-      });
-      setEditingCampaignType(false);
-      toast.success('Campaign type updated');
-    } catch (error) {
-      console.error('Error updating campaign type:', error);
-      toast.error('Failed to update campaign type');
-    }
-  };
-
-  const handleDeleteCampaign = async () => {
-    try {
-      await deleteCampaign.mutateAsync(campaign.id);
-      toast.success('Campaign deleted successfully');
-      onBack();
-    } catch (error) {
-      console.error('Error deleting campaign:', error);
-      toast.error('Failed to delete campaign');
-    }
-  };
-
-  const handleCancelAgentEdit = () => {
-    setSelectedAgentId(campaign.agent_id || '');
-    setEditingAgent(false);
-  };
-
-  const handleCancelKbEdit = () => {
-    setSelectedKbId(campaign.knowledge_base_id || '');
-    setEditingKb(false);
-  };
-
-  const handleCancelDescriptionEdit = () => {
-    setEditedDescription(campaign.description || '');
-    setEditingDescription(false);
-  };
-
-  const handleCancelStatusEdit = () => {
-    setSelectedStatus(campaign.status);
-    setEditingStatus(false);
-  };
-
-  const handleCancelCampaignTypeEdit = () => {
-    setSelectedCampaignType(campaign.settings?.campaignType || 'outbound');
-    setEditingCampaignType(false);
-  };
-
-  const handleStatusChange = (value: string) => {
-    setSelectedStatus(value as 'draft' | 'active' | 'paused' | 'completed');
-  };
-
-  const handleCampaignTypeChange = (value: string) => {
-    setSelectedCampaignType(value as 'inbound' | 'outbound');
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'paused':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'completed':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-  };
-
-  const getCampaignTypeInfo = (campaignType: string) => {
-    if (campaignType === 'outbound') {
-      return {
-        icon: <PhoneOutgoing className="w-4 h-4" />,
-        label: 'Outbound',
-        color: 'bg-green-100 text-green-700 border-green-200'
-      };
-    } else if (campaignType === 'inbound') {
-      return {
-        icon: <PhoneIncoming className="w-4 h-4" />,
-        label: 'Inbound',
-        color: 'bg-blue-100 text-blue-700 border-blue-200'
-      };
-    } else {
-      return {
-        icon: <BarChart3 className="w-4 h-4" />,
-        label: 'Campaign',
-        color: 'bg-gray-100 text-gray-700 border-gray-200'
-      };
-    }
-  };
-
-  const currentCampaignType = campaign.settings?.campaignType || 'outbound';
-  const typeInfo = getCampaignTypeInfo(currentCampaignType);
+  if (error || !campaign) {
+    return (
+      <div className="flex-1 p-6">
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+          <p>Error: {error || 'Campaign not found'}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      {/* Modern Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onBack}
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 transition-all duration-200"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Campaigns
-              </Button>
-              <div className="h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    {campaign.name}
-                  </h1>
-                  <Badge variant="outline" className={`${typeInfo.color} border px-3 py-1`}>
-                    <div className="flex items-center gap-1.5">
-                      {typeInfo.icon}
-                      <span className="font-medium">{typeInfo.label}</span>
-                    </div>
-                  </Badge>
-                </div>
-                <p className="text-gray-600 font-medium">Campaign Overview & Analytics</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {editingStatus ? (
-                <div className="flex items-center gap-2">
-                  <Select value={selectedStatus} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-36 bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="paused">Paused</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" onClick={handleUpdateStatus} className="bg-emerald-600 hover:bg-emerald-700">
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={handleCancelStatusEdit}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    variant="outline" 
-                    className={`${getStatusColor(campaign.status)} px-4 py-2 text-sm font-semibold capitalize cursor-pointer transition-all duration-200 hover:shadow-sm`}
-                    onClick={() => setEditingStatus(true)}
-                  >
-                    {campaign.status}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setEditingStatus(true)}
-                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete "{campaign.name}"? This action cannot be undone and will remove all associated data including contacts and call records.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteCampaign}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Delete Campaign
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
+    <div className="flex-1 bg-gray-50/50 overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-3 flex items-center justify-between bg-white border-b border-gray-200">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <h1 className="text-2xl font-semibold text-gray-900">{campaign.name}</h1>
+        </div>
+        <div>
+          <Button variant="secondary">
+            Start Campaign
+          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Enhanced Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-blue-700 mb-1">Total Contacts</p>
-                  <p className="text-3xl font-bold text-blue-900">{campaignContacts.length}</p>
-                  <p className="text-xs text-blue-600 mt-1">Active in campaign</p>
-                </div>
-                <div className="h-14 w-14 bg-blue-200 rounded-2xl flex items-center justify-center">
-                  <Users className="h-7 w-7 text-blue-700" />
-                </div>
-              </div>
+      <div className="flex-1 p-6 overflow-y-auto">
+        {/* Performance Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-gray-900">Total Calls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">328</div>
+              <p className="text-sm text-gray-500">+12% from last week</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-emerald-700 mb-1">Calls Made</p>
-                  <p className="text-3xl font-bold text-emerald-900">0</p>
-                  <p className="text-xs text-emerald-600 mt-1">Total completed</p>
-                </div>
-                <div className="h-14 w-14 bg-emerald-200 rounded-2xl flex items-center justify-center">
-                  <Phone className="h-7 w-7 text-emerald-700" />
-                </div>
-              </div>
+          <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-gray-900">Answer Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">78%</div>
+              <p className="text-sm text-gray-500">-3% from last week</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-purple-700 mb-1">Success Rate</p>
-                  <p className="text-3xl font-bold text-purple-900">0%</p>
-                  <p className="text-xs text-purple-600 mt-1">Conversion rate</p>
-                </div>
-                <div className="h-14 w-14 bg-purple-200 rounded-2xl flex items-center justify-center">
-                  <TrendingUp className="h-7 w-7 text-purple-700" />
-                </div>
-              </div>
+          <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-gray-900">Avg. Call Duration</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">2m 34s</div>
+              <p className="text-sm text-gray-500">+5s from last week</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-orange-700 mb-1">Avg Duration</p>
-                  <p className="text-3xl font-bold text-orange-900">0m</p>
-                  <p className="text-xs text-orange-600 mt-1">Call duration</p>
-                </div>
-                <div className="h-14 w-14 bg-orange-200 rounded-2xl flex items-center justify-center">
-                  <Clock className="h-7 w-7 text-orange-700" />
-                </div>
-              </div>
+          <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-gray-900">Conversion Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">15%</div>
+              <p className="text-sm text-gray-500">+2% from last week</p>
             </CardContent>
           </Card>
         </div>
@@ -461,271 +215,38 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
           {/* Campaign Configuration Card */}
           <div className="xl:col-span-2">
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
-                    <Settings className="h-5 w-5 text-white" />
-                  </div>
-                  Configuration
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 h-[600px]">
+              <CardHeader className="pb-4 bg-gradient-to-r from-blue-50 to-indigo-100/50 rounded-t-lg">
+                <CardTitle className="text-gray-900 flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-blue-600" />
+                  Campaign Configuration
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 space-y-3">
-                {/* Campaign Type */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Phone className="h-4 w-4 text-blue-600" />
-                    <h4 className="font-medium text-gray-900 text-sm">Campaign Type</h4>
+              <CardContent className="p-6 h-[calc(100%-80px)] overflow-y-auto">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700">Name</h4>
+                    <p className="text-gray-600">{campaign.name}</p>
                   </div>
-                  
-                  {editingCampaignType ? (
-                    <div className="space-y-2">
-                      <Select value={selectedCampaignType} onValueChange={handleCampaignTypeChange}>
-                        <SelectTrigger className="w-full h-8 bg-white border-gray-200 text-xs">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="outbound">
-                            <div className="flex items-center gap-2">
-                              <PhoneOutgoing className="w-3 h-3 text-green-600" />
-                              <span className="text-xs">Outbound</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="inbound">
-                            <div className="flex items-center gap-2">
-                              <PhoneIncoming className="w-3 h-3 text-blue-600" />
-                              <span className="text-xs">Inbound</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <div className="flex gap-1">
-                        <Button size="sm" onClick={handleUpdateCampaignType} className="h-6 text-xs bg-gray-900 hover:bg-gray-800">
-                          <Check className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={handleCancelCampaignTypeEdit} className="h-6 text-xs">
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${
-                          currentCampaignType === 'outbound' 
-                            ? 'bg-green-100' 
-                            : 'bg-blue-100'
-                        }`}>
-                          {currentCampaignType === 'outbound' ? (
-                            <PhoneOutgoing className="h-3 w-3 text-green-600" />
-                          ) : (
-                            <PhoneIncoming className="h-3 w-3 text-blue-600" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">{typeInfo.label}</div>
-                          <div className="text-xs text-gray-600">
-                            {currentCampaignType === 'outbound' ? 'Outbound calls' : 'Inbound calls'}
-                          </div>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => setEditingCampaignType(true)} 
-                        className="h-6 w-6 p-0 hover:bg-white"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Activity className="h-4 w-4 text-purple-600" />
-                    <h4 className="font-medium text-gray-900 text-sm">Description</h4>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700">Description</h4>
+                    <p className="text-gray-600">{campaign.description || 'No description provided'}</p>
                   </div>
-                  
-                  {editingDescription ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={editedDescription}
-                        onChange={(e) => setEditedDescription(e.target.value)}
-                        placeholder="Campaign description..."
-                        className="min-h-[60px] text-xs bg-white border-gray-200 resize-none"
-                      />
-                      <div className="flex gap-1">
-                        <Button size="sm" onClick={handleUpdateDescription} className="h-6 text-xs bg-gray-900 hover:bg-gray-800">
-                          <Check className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={handleCancelDescriptionEdit} className="h-6 text-xs">
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-start justify-between min-h-[50px]">
-                      <div className="flex-1 pr-2">
-                        <p className="text-gray-900 text-xs leading-relaxed">
-                          {campaign.description || (
-                            <span className="text-gray-500 italic">No description</span>
-                          )}
-                        </p>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => setEditingDescription(true)} 
-                        className="h-6 w-6 p-0 hover:bg-white flex-shrink-0"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Agent Assignment */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <User className="h-4 w-4 text-emerald-600" />
-                    <h4 className="font-medium text-gray-900 text-sm">Agent</h4>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700">Agent</h4>
+                    <p className="text-gray-600">{campaign.agent_id}</p>
                   </div>
-                  
-                  {editingAgent ? (
-                    <div className="space-y-2">
-                      <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
-                        <SelectTrigger className="w-full h-8 bg-white border-gray-200 text-xs">
-                          <SelectValue placeholder="Select agent" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {agents.map((agent) => (
-                            <SelectItem key={agent.id} value={agent.id}>
-                              <div className="flex items-center gap-2">
-                                <User className="h-3 w-3 text-emerald-600" />
-                                <span className="text-xs">{agent.name}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex gap-1">
-                        <Button size="sm" onClick={handleUpdateAgent} className="h-6 text-xs bg-gray-900 hover:bg-gray-800">
-                          <Check className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={handleCancelAgentEdit} className="h-6 text-xs">
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 bg-emerald-100 rounded-lg flex items-center justify-center">
-                          <User className="h-3 w-3 text-emerald-600" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">
-                            {campaignAgent ? campaignAgent.name : 'No agent'}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {campaignAgent ? campaignAgent.voice : 'None assigned'}
-                          </div>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => setEditingAgent(true)} 
-                        className="h-6 w-6 p-0 hover:bg-white"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Knowledge Base */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Database className="h-4 w-4 text-orange-600" />
-                    <h4 className="font-medium text-gray-900 text-sm">Knowledge Base</h4>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700">Script</h4>
+                    <p className="text-gray-600">{campaign.script_id}</p>
                   </div>
-                  
-                  {editingKb ? (
-                    <div className="space-y-2">
-                      <Select value={selectedKbId} onValueChange={setSelectedKbId}>
-                        <SelectTrigger className="w-full h-8 bg-white border-gray-200 text-xs">
-                          <SelectValue placeholder="Select KB" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {kbs.map((kb) => (
-                            <SelectItem key={kb.id} value={kb.id}>
-                              <div className="flex items-center gap-2">
-                                <Database className="h-3 w-3 text-orange-600" />
-                                <span className="text-xs">{kb.title}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex gap-1">
-                        <Button size="sm" onClick={handleUpdateKb} className="h-6 text-xs bg-gray-900 hover:bg-gray-800">
-                          <Check className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={handleCancelKbEdit} className="h-6 text-xs">
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 bg-orange-100 rounded-lg flex items-center justify-center">
-                          <Database className="h-3 w-3 text-orange-600" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 text-xs">
-                            {campaignKb ? campaignKb.title : 'No KB'}
-                          </div>
-                          <div className="text-xs text-gray-600 capitalize">
-                            {campaignKb ? campaignKb.type : 'None assigned'}
-                          </div>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => setEditingKb(true)} 
-                        className="h-6 w-6 p-0 hover:bg-white"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Campaign Created Date */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-indigo-600" />
-                    <h4 className="font-medium text-gray-900 text-sm">Created</h4>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700">Knowledge Base</h4>
+                    <p className="text-gray-600">{campaign.knowledge_base_id}</p>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-                    <p className="font-medium text-gray-900 text-xs">
-                      {new Date(campaign.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {new Date(campaign.created_at).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700">Status</h4>
+                    <Badge variant="secondary">{campaign.status}</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -734,128 +255,131 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
           {/* Enhanced Contacts Section - Right Side */}
           <div className="xl:col-span-4">
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 h-[600px]">
               <CardHeader className="pb-4 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                      <Users className="h-5 w-5 text-white" />
-                    </div>
-                    Contacts ({campaignContacts.length})
+                  <CardTitle className="text-gray-900 flex items-center gap-3">
+                    <Users className="w-5 h-5 text-emerald-600" />
+                    Campaign Contacts
+                    {contactCounts[campaignId] && (
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                        {contactCounts[campaignId]} contacts
+                      </Badge>
+                    )}
                   </CardTitle>
-                  <Button 
-                    size="sm" 
-                    onClick={() => setShowAddContacts(true)}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                  <Button
+                    onClick={() => setShowAddContactModal(true)}
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add
+                    Add Contacts
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
-                {campaignContacts.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="h-20 w-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Users className="w-10 h-10 text-gray-400" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">No contacts yet</h3>
-                    <p className="text-gray-600 mb-6 max-w-sm mx-auto">Add contacts to start your campaign and begin making calls</p>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => setShowAddContacts(true)}
-                      className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                    >
-                      Add First Contact
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {campaignContacts.map((contact) => (
-                      <div key={contact.id} className="bg-gradient-to-r from-white to-gray-50/50 border border-gray-200/50 rounded-xl p-5 hover:shadow-md transition-all duration-200">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-gray-900 mb-3 text-lg">{contact.name}</h4>
-                            <div className="space-y-2">
-                              {contact.phone && (
-                                <div className="flex items-center text-sm text-gray-700">
-                                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                    <Phone className="w-3 h-3 text-blue-600" />
-                                  </div>
-                                  {contact.phone}
+              <CardContent className="p-0 h-[calc(100%-80px)]">
+                <ScrollArea className="h-full">
+                  <div className="p-6">
+                    {isLoadingContacts ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+                        <span className="ml-2 text-gray-600">Loading contacts...</span>
+                      </div>
+                    ) : campaignContacts.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No contacts assigned</h3>
+                        <p className="text-gray-600 mb-6">Add contacts to start your campaign</p>
+                        <Button
+                          onClick={() => setShowAddContactModal(true)}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Contact
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {campaignContacts.map((contact) => (
+                          <div
+                            key={contact.id}
+                            className="flex items-center justify-between p-4 bg-gradient-to-r from-white to-gray-50 rounded-lg border border-gray-200 hover:border-emerald-200 hover:shadow-md transition-all duration-200"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-medium">
+                                {contact.name.charAt(0)}
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-gray-900">{contact.name}</h4>
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  {contact.phone && (
+                                    <div className="flex items-center gap-1">
+                                      <Phone className="w-3 h-3" />
+                                      <span>{contact.phone}</span>
+                                    </div>
+                                  )}
+                                  {contact.email && (
+                                    <div className="flex items-center gap-1">
+                                      <Mail className="w-3 h-3" />
+                                      <span>{contact.email}</span>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                              {contact.email && (
-                                <div className="flex items-center text-sm text-gray-700">
-                                  <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                    <Mail className="w-3 h-3 text-green-600" />
-                                  </div>
-                                  {contact.email}
-                                </div>
-                              )}
-                              {contact.address && (
-                                <div className="flex items-center text-sm text-gray-700">
-                                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                    <MapPin className="w-3 h-3 text-purple-600" />
-                                  </div>
-                                  {contact.address}
-                                </div>
-                              )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant="outline" 
+                                className={
+                                  contact.status === 'active' 
+                                    ? 'bg-green-50 text-green-700 border-green-200' 
+                                    : 'bg-gray-50 text-gray-700 border-gray-200'
+                                }
+                              >
+                                {contact.status}
+                              </Badge>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-white border-gray-200">
+                                  <DropdownMenuItem 
+                                    onClick={() => handleRemoveContact(contact.id)}
+                                    className="text-red-600 hover:bg-red-50"
+                                    disabled={removeContactMutation.isPending}
+                                  >
+                                    <UserMinus className="w-4 h-4 mr-2" />
+                                    Remove from Campaign
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
-                            {campaign.status === 'active' && currentCampaignType === 'outbound' && (
-                              <TriggerOutboundCall
-                                contact={contact}
-                                campaignId={campaign.id}
-                                onCallTriggered={handleCallTriggered}
-                              />
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveContact(contact.id)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
-                            >
-                              <Trash className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
+                </ScrollArea>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Call Analytics at Bottom - Full Width */}
-        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-t-lg">
-            <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <BarChart3 className="h-5 w-5 text-white" />
-              </div>
-              Call Analytics & Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <CallAnalyticsTable 
-              campaignId={campaign.id} 
-              onCallClick={onCallClick}
-            />
-          </CardContent>
-        </Card>
+        {/* Call Analytics & Performance - Bottom Section */}
+        <div className="mt-8">
+          <CallAnalyticsTable campaignId={campaignId} onCallClick={handleCallClick} />
+        </div>
       </div>
 
-      {/* Add Contacts Modal */}
+      {/* Add Contact Modal */}
       <AddContactToCampaign
-        campaignId={campaign.id}
-        currentContactIds={campaignContactIds}
-        isOpen={showAddContacts}
-        onClose={() => setShowAddContacts(false)}
+        campaignId={campaignId}
+        currentContactIds={campaignContacts.map(contact => contact.id)}
+        isOpen={showAddContactModal}
+        onClose={() => setShowAddContactModal(false)}
         onContactsAdded={handleContactsAdded}
       />
     </div>
