@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -125,7 +126,7 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
                     <SelectContent>
                       {agents.map((agent) => (
                         <SelectItem key={agent.id} value={agent.id}>
-                          {agent.name} - {agent.voice} ({agent.agent_type})
+                          {agent.name} - {agent.voice}
                         </SelectItem>
                       ))}
                     </SelectContent>

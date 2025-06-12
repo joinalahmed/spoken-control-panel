@@ -16,7 +16,6 @@ export interface Agent {
   first_message: string | null;
   knowledge_base_id: string | null;
   company: string | null;
-  agent_type: 'inbound' | 'outbound';
   script_id: string | null;
   created_at: string;
   updated_at: string;
