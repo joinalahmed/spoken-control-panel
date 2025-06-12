@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -320,20 +319,19 @@ const Index = () => {
         let steps = [];
         
         if (section.steps && Array.isArray(section.steps)) {
-          // For editing, we need to extract the content/title from step objects
+          // For editing, we need to format steps as "name: content"
           steps = section.steps.map((step: any) => {
             if (typeof step === 'string') {
               return step;
             } else if (step && typeof step === 'object') {
-              // For complex step objects, combine title and content meaningfully
-              if (step.title && step.content) {
-                return `${step.title}: ${step.content}`;
-              } else if (step.content) {
-                return step.content;
-              } else if (step.title) {
-                return step.title;
+              // Format as "name: content" for better editing experience
+              const name = step.title || step.name || 'Step';
+              const content = step.content || step.description || '';
+              
+              if (content) {
+                return `${name}: ${content}`;
               } else {
-                return step.description || '';
+                return name;
               }
             }
             return '';
