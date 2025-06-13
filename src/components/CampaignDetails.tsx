@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -294,12 +295,11 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             <div className="flex items-center gap-6">
               <Button 
                 variant="ghost" 
-                size="sm" 
+                size="icon" 
                 onClick={onBack}
                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 transition-all duration-200"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Campaigns
+                <ArrowLeft className="w-4 h-4" />
               </Button>
               <div className="h-8 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
               <div>
