@@ -398,16 +398,16 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100/50 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-blue-700 mb-1">Total Contacts</p>
-                  <p className="text-3xl font-bold text-blue-900">{campaignContacts.length}</p>
-                  <p className="text-xs text-blue-600 mt-1">Active in campaign</p>
+                  <p className="text-sm font-semibold text-slate-700 mb-1">Total Contacts</p>
+                  <p className="text-3xl font-bold text-slate-900">{campaignContacts.length}</p>
+                  <p className="text-xs text-slate-600 mt-1">Active in campaign</p>
                 </div>
-                <div className="h-14 w-14 bg-blue-200 rounded-2xl flex items-center justify-center">
-                  <Users className="h-7 w-7 text-blue-700" />
+                <div className="h-14 w-14 bg-slate-200 rounded-2xl flex items-center justify-center">
+                  <Users className="h-7 w-7 text-slate-700" />
                 </div>
               </div>
             </CardContent>
@@ -463,9 +463,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
           {/* Campaign Configuration Card */}
           <div className="xl:col-span-2">
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100/50 hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-3">
                   <div className="h-10 w-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
                     <Settings className="h-5 w-5 text-white" />
                   </div>
