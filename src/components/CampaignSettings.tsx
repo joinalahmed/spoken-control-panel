@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -92,9 +91,9 @@ const CampaignSettings: React.FC<CampaignSettingsProps> = ({ settings, onSetting
   return (
     <div className="space-y-6">
       {/* Campaign Type */}
-      <Card>
+      <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200/50 shadow-sm">
         <CardHeader>
-          <CardTitle>Campaign Type</CardTitle>
+          <CardTitle className="text-purple-800">Campaign Type</CardTitle>
         </CardHeader>
         <CardContent>
           <div>
@@ -129,9 +128,9 @@ const CampaignSettings: React.FC<CampaignSettingsProps> = ({ settings, onSetting
 
       {/* Call Scheduling - Only show for outbound campaigns */}
       {settings.campaignType === 'outbound' && (
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200/50 shadow-sm">
           <CardHeader>
-            <CardTitle>Call Scheduling</CardTitle>
+            <CardTitle className="text-blue-800">Call Scheduling</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -199,9 +198,9 @@ const CampaignSettings: React.FC<CampaignSettingsProps> = ({ settings, onSetting
 
       {/* Retry Logic - Only show for outbound campaigns */}
       {settings.campaignType === 'outbound' && (
-        <Card>
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 shadow-sm">
           <CardHeader>
-            <CardTitle>Retry Logic</CardTitle>
+            <CardTitle className="text-green-800">Retry Logic</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -245,9 +244,9 @@ const CampaignSettings: React.FC<CampaignSettingsProps> = ({ settings, onSetting
       )}
 
       {/* Call Behavior */}
-      <Card>
+      <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200/50 shadow-sm">
         <CardHeader>
-          <CardTitle>Call Behavior</CardTitle>
+          <CardTitle className="text-orange-800">Call Behavior</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
