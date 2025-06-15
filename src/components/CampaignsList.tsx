@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -165,8 +164,15 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
             return (
               <Card 
                 key={campaign.id} 
-                className="bg-white border-gray-200 hover:bg-gray-50 transition-all duration-300 cursor-pointer group"
+                className="bg-white border-gray-200 hover:bg-gray-50 transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
                 onClick={() => onSelectCampaign(campaign.id)}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectCampaign(campaign.id);
+                  }
+                }}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between mb-3">

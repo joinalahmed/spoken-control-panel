@@ -82,7 +82,18 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {agents.map((agent) => (
-            <Card key={agent.id} className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col">
+            <Card
+              key={agent.id}
+              className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+              onClick={() => onSelectAgent(agent)}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectAgent(agent);
+                }
+              }}
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
@@ -100,17 +111,17 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                         <MoreHorizontal className="h-4 w-4 text-gray-600" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-white border-gray-200">
-                      <DropdownMenuItem onClick={() => onSelectAgent(agent)} className="text-gray-700 hover:bg-gray-100">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onSelectAgent(agent); }} className="text-gray-700 hover:bg-gray-100">
                         <Settings className="w-4 h-4 mr-2" />
                         Configure
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => handleToggleStatus(agent)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleStatus(agent); }}
                         className="text-gray-700 hover:bg-gray-100"
                         disabled={updateAgent.isPending}
                       >
@@ -127,7 +138,7 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                         )}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => deleteAgent.mutate(agent.id)}
+                        onClick={(e) => { e.stopPropagation(); deleteAgent.mutate(agent.id); }}
                         className="text-red-600 hover:bg-red-50"
                         disabled={deleteAgent.isPending}
                       >
@@ -187,7 +198,7 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
               </CardContent>
               <CardFooter>
                 <Button 
-                  onClick={() => onSelectAgent(agent)}
+                  onClick={(e) => { e.stopPropagation(); onSelectAgent(agent); }}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all"
                 >
                   Configure Agent
