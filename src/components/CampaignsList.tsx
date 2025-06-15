@@ -165,7 +165,7 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
             return (
               <Card 
                 key={campaign.id} 
-                className="bg-white hover:bg-gray-50 transition-all duration-300 cursor-pointer group focus:outline-none border-2 border-gray-200 focus:border-purple-400"
+                className="bg-white hover:bg-gray-50 transition-all duration-300 cursor-pointer group focus:outline-none border-2 border-gray-200 focus:border-purple-600"
                 onClick={() => onSelectCampaign(campaign.id)}
                 tabIndex={0}
                 onKeyDown={(e) => {

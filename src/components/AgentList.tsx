@@ -84,7 +84,7 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
           {agents.map((agent) => (
             <Card
               key={agent.id}
-              className="shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col focus:outline-none border-2 border-transparent focus:border-purple-400"
+              className="shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col focus:outline-none border-2 border-transparent focus:border-purple-600"
               onClick={() => onSelectAgent(agent)}
               tabIndex={0}
               onKeyDown={(e) => {
