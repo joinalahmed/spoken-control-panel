@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Search, Filter, SortAsc, Plus, FileText, MoreHorizontal, Eye, Edit, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -116,7 +117,11 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredItems.map((item) => (
-            <Card key={item.id} className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
+            <Card 
+              key={item.id} 
+              className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group flex flex-col cursor-pointer"
+              onClick={() => handleView(item)}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -133,22 +138,27 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreHorizontal className="h-4 w-4 text-gray-600" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleView(item)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleView(item); }}>
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEdit(item)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(item); }}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         className="text-red-600 hover:bg-red-50"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
                       >
                         <Trash className="w-4 h-4 mr-2" />
                         Delete
