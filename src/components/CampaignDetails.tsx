@@ -22,9 +22,10 @@ import { formatDistanceToNow } from 'date-fns';
 interface CampaignDetailsProps {
   campaignId: string;
   onBack: () => void;
+  onCallClick: (callId: string) => void;
 }
 
-const CampaignDetails = ({ campaignId, onBack }: CampaignDetailsProps) => {
+const CampaignDetails = ({ campaignId, onBack, onCallClick }: CampaignDetailsProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { campaigns, updateCampaign } = useCampaigns();
