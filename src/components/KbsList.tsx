@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Search, Filter, SortAsc, Plus, FileText, MoreHorizontal, Eye, Edit, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -51,12 +51,10 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   };
 
   const handleEdit = (item: KbsItem) => {
-    console.log('Editing KBS item:', item);
     onEditItem(item);
   };
 
   const handleView = (item: KbsItem) => {
-    console.log('Viewing KBS item:', item);
     setViewingItem(item);
   };
 
@@ -69,14 +67,14 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   }
 
   return (
-    <div className="flex-1 p-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Knowledge Bases</h1>
-          <p className="text-gray-600">Manage your knowledge base content</p>
+          <h1 className="text-3xl font-bold text-gray-900">Knowledge Bases</h1>
+          <p className="text-gray-600 mt-1">Manage your knowledge base content</p>
         </div>
-        <Button onClick={onCreateItem} className="bg-purple-600 hover:bg-purple-700">
+        <Button onClick={onCreateItem} className="bg-purple-600 hover:bg-purple-700 text-white shadow-md">
           <Plus className="w-4 h-4 mr-2" />
           Add New Item
         </Button>
@@ -103,61 +101,40 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
         </Button>
       </div>
 
-      {/* Knowledge Base Table */}
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Last Modified</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-gray-600" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{item.title}</div>
-                      <div className="text-sm text-gray-500">
-                        {item.tags && item.tags.map(tag => (
-                          <span key={tag} className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs mr-1">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+      {/* Knowledge Base Card Grid */}
+      {filteredItems.length === 0 ? (
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm">
+          <CardContent className="flex flex-col items-center justify-center py-24 text-center">
+            <FileText className="w-16 h-16 text-purple-300 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No knowledge base items yet</h3>
+            <p className="text-gray-600 mb-6 max-w-sm">Create your first KBS item to build up your agent's knowledge. Click the button to get started.</p>
+            <Button onClick={onCreateItem} className="bg-purple-600 hover:bg-purple-700 text-white shadow-md">
+              Create Your First Item
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredItems.map((item) => (
+            <Card key={item.id} className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-gray-900 text-xl font-bold mb-2 line-clamp-2">{item.title}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge className={getTypeColor(item.type)}>{item.type}</Badge>
+                      <Badge 
+                        variant={item.status === 'published' ? 'default' : 'secondary'}
+                        className={item.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}
+                      >
+                        {item.status}
+                      </Badge>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getTypeColor(item.type)}>
-                    {item.type}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-gray-600 max-w-xs truncate">{item.description || 'No description'}</TableCell>
-                <TableCell className="text-gray-600">
-                  {item.last_modified ? new Date(item.last_modified).toLocaleDateString() : 'Never'}
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={item.status === 'published' ? 'default' : 'secondary'}
-                    className={item.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}
-                  >
-                    {item.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4" />
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="h-4 w-4 text-gray-600" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -170,7 +147,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        className="text-red-600"
+                        className="text-red-600 hover:bg-red-50"
                         onClick={() => handleDelete(item.id)}
                       >
                         <Trash className="w-4 h-4 mr-2" />
@@ -178,12 +155,30 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 flex-1 flex flex-col">
+                <p className="text-gray-600 text-sm line-clamp-3 min-h-[60px] flex-1">
+                  {item.description || 'No description provided.'}
+                </p>
+                {item.tags && item.tags.length > 0 && (
+                  <div className="pt-2">
+                    <div className="flex flex-wrap gap-2">
+                      {item.tags.map(tag => (
+                        <Badge key={tag} variant="outline" className="font-normal">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="text-xs text-gray-500 border-t border-black/10 pt-4">
+                Last updated: {item.last_modified ? new Date(item.last_modified).toLocaleDateString() : 'Never'}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+
 
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4">
