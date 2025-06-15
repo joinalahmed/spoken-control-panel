@@ -396,9 +396,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Enhanced Stats Cards */}
+        {/* Enhanced Stats Cards - All with same styling */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -413,7 +413,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100/50 hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -428,7 +428,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -443,7 +443,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -461,7 +461,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
         {/* Configuration and Contacts Side by Side */}
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
-          {/* Campaign Configuration Card */}
+          {/* Campaign Configuration Card - Same styling as stats cards */}
           <div className="xl:col-span-2">
             <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-4">
@@ -734,10 +734,10 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             </Card>
           </div>
 
-          {/* Enhanced Contacts Section - Right Side */}
+          {/* Enhanced Contacts Section - Same styling as other cards */}
           <div className="xl:col-span-4">
             <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-4 bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-t-lg">
+              <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
                     <div className="h-10 w-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
@@ -833,9 +833,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
           </div>
         </div>
 
-        {/* Call Analytics at Bottom - Full Width */}
+        {/* Call Analytics at Bottom - Same styling as other cards */}
         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-t-lg">
+          <CardHeader className="pb-4">
             <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
               <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-white" />
