@@ -464,7 +464,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
           {/* Campaign Configuration Card */}
           <div className="xl:col-span-2">
             <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100/50 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-t-lg">
                 <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-3">
                   <div className="h-10 w-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
                     <Settings className="h-5 w-5 text-white" />
