@@ -773,16 +773,16 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
                     {campaignContacts.map((contact) => (
-                      <div key={contact.id} className="bg-gradient-to-r from-white to-gray-50/50 border border-gray-200/50 rounded-xl p-5 hover:shadow-md transition-all duration-200">
-                        <div className="flex items-start justify-between">
+                      <div key={contact.id} className="bg-gradient-to-r from-white to-gray-50/50 border border-gray-200/50 rounded-lg p-3 hover:shadow-md transition-all duration-200">
+                        <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="font-bold text-gray-900 mb-3 text-lg">{contact.name}</h4>
-                            <div className="space-y-2">
+                            <h4 className="font-semibold text-gray-900 mb-2 text-base">{contact.name}</h4>
+                            <div className="space-y-1">
                               {contact.phone && (
                                 <div className="flex items-center text-sm text-gray-700">
-                                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                  <div className="w-5 h-5 bg-blue-100 rounded-md flex items-center justify-center mr-2">
                                     <Phone className="w-3 h-3 text-blue-600" />
                                   </div>
                                   {contact.phone}
@@ -790,7 +790,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                               )}
                               {contact.email && (
                                 <div className="flex items-center text-sm text-gray-700">
-                                  <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                  <div className="w-5 h-5 bg-green-100 rounded-md flex items-center justify-center mr-2">
                                     <Mail className="w-3 h-3 text-green-600" />
                                   </div>
                                   {contact.email}
@@ -798,7 +798,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                               )}
                               {contact.address && (
                                 <div className="flex items-center text-sm text-gray-700">
-                                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                  <div className="w-5 h-5 bg-purple-100 rounded-md flex items-center justify-center mr-2">
                                     <MapPin className="w-3 h-3 text-purple-600" />
                                   </div>
                                   {contact.address}
@@ -806,7 +806,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
+                          <div className="flex items-center gap-1 ml-2">
                             {campaign.status === 'active' && currentCampaignType === 'outbound' && (
                               <TriggerOutboundCall
                                 contact={contact}
@@ -816,9 +816,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                             )}
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
                               onClick={() => handleRemoveContact(contact.id)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 h-8 w-8"
                             >
                               <Trash className="w-4 h-4" />
                             </Button>
