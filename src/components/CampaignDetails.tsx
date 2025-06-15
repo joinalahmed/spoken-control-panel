@@ -113,7 +113,6 @@ const CampaignDetails = ({ campaignId, onBack }: CampaignDetailsProps) => {
             id,
             contact_id,
             campaign_id,
-            status,
             contacts (*)
           `)
           .eq('campaign_id', campaignId);
@@ -124,7 +123,7 @@ const CampaignDetails = ({ campaignId, onBack }: CampaignDetailsProps) => {
           const contactsWithDetails = data.map(item => ({
             ...item.contacts,
             campaign_contact_id: item.id,
-            campaign_contact_status: item.status
+            campaign_contact_status: 'pending'
           }));
           
           setContactsData(contactsWithDetails);
