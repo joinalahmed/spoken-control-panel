@@ -119,7 +119,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
           {filteredItems.map((item) => (
             <Card 
               key={item.id} 
-              className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+              className="shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group flex flex-col cursor-pointer focus:outline-none border-2 border-transparent focus:border-purple-400"
               onClick={() => handleView(item)}
               tabIndex={0}
               onKeyDown={(e) => {
