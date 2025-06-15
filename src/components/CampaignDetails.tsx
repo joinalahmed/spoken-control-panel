@@ -463,7 +463,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         <div className="grid grid-cols-1 xl:grid-cols-6 gap-8">
           {/* Campaign Configuration Card - Same styling as stats cards */}
           <div className="xl:col-span-2">
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
               <CardHeader className="pb-4">
                 <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
                   <div className="h-10 w-10 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
@@ -472,7 +472,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   Configuration
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 space-y-3">
+              <CardContent className="p-4 space-y-3 flex-1">
                 {/* Campaign Type */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-1">
@@ -736,7 +736,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
           {/* Enhanced Contacts Section - Same styling as other cards */}
           <div className="xl:col-span-4">
-            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+            <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
@@ -755,9 +755,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex-1 flex flex-col">
                 {campaignContacts.length === 0 ? (
-                  <div className="text-center py-12">
+                  <div className="text-center flex-1 flex flex-col justify-center items-center">
                     <div className="h-20 w-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Users className="w-10 h-10 text-gray-400" />
                     </div>
@@ -773,7 +773,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="space-y-2 overflow-y-auto flex-1">
                     {campaignContacts.map((contact) => (
                       <div key={contact.id} className="bg-gradient-to-r from-white to-gray-50/50 border border-gray-200/50 rounded-lg p-3 hover:shadow-md transition-all duration-200">
                         <div className="flex items-center justify-between">
