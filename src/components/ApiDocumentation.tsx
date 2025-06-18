@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Copy, CheckCircle } from 'lucide-react';
@@ -16,860 +17,466 @@ const ApiDocumentation = () => {
   const baseUrl = "https://vegryoncdzcxmornresu.supabase.co/functions/v1";
   const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3J5b25jZHpjeG1vcm5yZXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0NDQ2NzgsImV4cCI6MjA2NTAyMDY3OH0.5XnZzQzxL1ffFRmGrIjwe5NpAKQZloJ7yHd8w9uX1PI";
 
-  const curlGetExample = `curl -X GET "${baseUrl}/get-caller-details?phone=%2B1234567890&campaign_type=inbound" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json"`;
-
-  const curlPostExample = `curl -X POST "${baseUrl}/get-caller-details" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"phone": "+1234567890", "campaign_type": "inbound"}'`;
-
-  const jsExample = `const response = await fetch('${baseUrl}/get-caller-details', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ${authToken}',
-    'apikey': '${authToken}',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    phone: '+1234567890',
-    campaign_type: 'inbound'
-  })
-});
-
-const data = await response.json();
-console.log(data);`;
-
-  const responseExample = `{
-  "success": true,
-  "campaign_id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
-  "caller": {
-    "contact": {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
-      "name": "John Doe",
-      "email": "john.doe@example.com",
-      "phone": "+1234567890",
-      "address": "123 Main St",
-      "city": "Anytown",
-      "state": "CA",
-      "zip_code": "12345",
-      "status": "active"
+  const apiEndpoints = [
+    {
+      name: "Get Caller Details",
+      methods: ["GET", "POST"],
+      path: "/get-caller-details",
+      description: "Retrieve caller information including contact details, campaign, agent, and user information based on phone number.",
+      parameters: [
+        { name: "phone", type: "string", required: true, description: "Phone number of the caller" },
+        { name: "campaign_type", type: "string", required: false, description: "Filter campaigns by type (inbound/outbound)" }
+      ]
     },
-    "campaign": {
-      "id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
-      "name": "Summer Campaign 2024",
-      "description": "Promotional campaign for summer products",
-      "status": "active",
-      "settings": {
-        "campaignType": "inbound"
+    {
+      name: "Receive Call Data",
+      methods: ["POST"],
+      path: "/receive-call-data",
+      description: "Endpoint for external systems to submit call-related data and update contact records.",
+      parameters: [
+        { name: "phone", type: "string", required: true, description: "Phone number of the caller" },
+        { name: "campaign_id", type: "string", required: false, description: "Campaign ID associated with the call" },
+        { name: "duration", type: "number", required: false, description: "Call duration in seconds" },
+        { name: "status", type: "string", required: false, description: "Call status (completed, missed, busy, failed)" },
+        { name: "direction", type: "string", required: false, description: "Call direction (inbound, outbound)" },
+        { name: "recording_url", type: "string", required: false, description: "URL to the call recording" },
+        { name: "transcript", type: "string", required: false, description: "Call transcript" },
+        { name: "call_id", type: "string", required: false, description: "External call ID" },
+        { name: "started_at", type: "string", required: false, description: "Call start time (ISO 8601)" },
+        { name: "ended_at", type: "string", required: false, description: "Call end time (ISO 8601)" },
+        { name: "notes", type: "string", required: false, description: "Additional notes about the call" }
+      ]
+    },
+    {
+      name: "Create Agent",
+      methods: ["POST"],
+      path: "/create-agent",
+      description: "Create a new AI agent with specified configuration.",
+      parameters: [
+        { name: "name", type: "string", required: true, description: "Agent name" },
+        { name: "voice", type: "string", required: false, description: "Voice type (default: nova)" },
+        { name: "status", type: "string", required: false, description: "Agent status (default: inactive)" },
+        { name: "description", type: "string", required: false, description: "Agent description" },
+        { name: "system_prompt", type: "string", required: false, description: "System prompt for the agent" },
+        { name: "first_message", type: "string", required: false, description: "Agent's first message" },
+        { name: "agent_type", type: "string", required: false, description: "Agent type (inbound/outbound)" },
+        { name: "company", type: "string", required: false, description: "Company name" }
+      ]
+    },
+    {
+      name: "Create Contact",
+      methods: ["POST"],
+      path: "/create-contact",
+      description: "Create a new contact in the system.",
+      parameters: [
+        { name: "name", type: "string", required: true, description: "Contact name" },
+        { name: "email", type: "string", required: false, description: "Contact email" },
+        { name: "phone", type: "string", required: false, description: "Contact phone number" },
+        { name: "address", type: "string", required: false, description: "Contact address" },
+        { name: "city", type: "string", required: false, description: "Contact city" },
+        { name: "state", type: "string", required: false, description: "Contact state" },
+        { name: "zip_code", type: "string", required: false, description: "Contact zip code" },
+        { name: "status", type: "string", required: false, description: "Contact status (default: active)" }
+      ]
+    },
+    {
+      name: "Create Knowledge Base",
+      methods: ["POST"],
+      path: "/create-knowledge-base",
+      description: "Create a new knowledge base entry.",
+      parameters: [
+        { name: "title", type: "string", required: true, description: "Knowledge base title" },
+        { name: "type", type: "string", required: false, description: "Knowledge base type (default: document)" },
+        { name: "description", type: "string", required: false, description: "Knowledge base description" },
+        { name: "content", type: "string", required: false, description: "Knowledge base content" },
+        { name: "tags", type: "array", required: false, description: "Tags for categorization" },
+        { name: "status", type: "string", required: false, description: "Status (default: draft)" }
+      ]
+    },
+    {
+      name: "Create Campaign",
+      methods: ["POST"],
+      path: "/create-campaign",
+      description: "Create a new campaign with associated agents and contacts.",
+      parameters: [
+        { name: "name", type: "string", required: true, description: "Campaign name" },
+        { name: "description", type: "string", required: false, description: "Campaign description" },
+        { name: "agent_id", type: "string", required: false, description: "Associated agent ID" },
+        { name: "contact_ids", type: "array", required: false, description: "Array of contact IDs" },
+        { name: "status", type: "string", required: false, description: "Campaign status" },
+        { name: "knowledge_base_id", type: "string", required: false, description: "Associated knowledge base ID" }
+      ]
+    },
+    {
+      name: "Create Script",
+      methods: ["POST"],
+      path: "/create-script",
+      description: "Create a new call script with sections and configuration.",
+      parameters: [
+        { name: "name", type: "string", required: true, description: "Script name" },
+        { name: "description", type: "string", required: false, description: "Script description" },
+        { name: "company", type: "string", required: false, description: "Company name" },
+        { name: "agent_type", type: "string", required: false, description: "Agent type (default: outbound)" },
+        { name: "voice", type: "string", required: false, description: "Voice type (default: Sarah)" },
+        { name: "first_message", type: "string", required: false, description: "Opening message" },
+        { name: "sections", type: "array", required: false, description: "Script sections" }
+      ]
+    },
+    {
+      name: "Get User Scripts",
+      methods: ["GET"],
+      path: "/get-user-scripts",
+      description: "Retrieve all scripts for the authenticated user.",
+      parameters: []
+    },
+    {
+      name: "Get Agent by Number",
+      methods: ["GET", "POST"],
+      path: "/get-agent-by-number",
+      description: "Retrieve agent information by phone number.",
+      parameters: [
+        { name: "phone", type: "string", required: true, description: "Phone number to lookup" }
+      ]
+    },
+    {
+      name: "Get Outbound Call Details",
+      methods: ["GET", "POST"],
+      path: "/get-outbound-call-details",
+      description: "Retrieve details for outbound call configuration.",
+      parameters: [
+        { name: "phone", type: "string", required: true, description: "Target phone number" },
+        { name: "campaign_id", type: "string", required: false, description: "Campaign ID for the call" }
+      ]
+    },
+    {
+      name: "Create Entity",
+      methods: ["POST"],
+      path: "/create-entity",
+      description: "Universal endpoint for creating various entity types.",
+      parameters: [
+        { name: "entityType", type: "string", required: true, description: "Type of entity (agent, contact, knowledge_base, campaign)" },
+        { name: "data", type: "object", required: true, description: "Entity data object" }
+      ]
+    }
+  ];
+
+  const generateCurlExample = (endpoint: any) => {
+    const method = endpoint.methods.includes('POST') ? 'POST' : 'GET';
+    const hasBody = method === 'POST';
+    
+    let curl = `curl -X ${method} "${baseUrl}${endpoint.path}"`;
+    curl += ` \\\n  -H "Authorization: Bearer ${authToken}"`;
+    curl += ` \\\n  -H "apikey: ${authToken}"`;
+    curl += ` \\\n  -H "Content-Type: application/json"`;
+    
+    if (hasBody && endpoint.parameters.length > 0) {
+      const sampleData: any = {};
+      endpoint.parameters.forEach((param: any) => {
+        if (param.required) {
+          switch (param.type) {
+            case 'string':
+              sampleData[param.name] = param.name.includes('phone') ? '+1234567890' : `sample_${param.name}`;
+              break;
+            case 'number':
+              sampleData[param.name] = 180;
+              break;
+            case 'array':
+              sampleData[param.name] = ['tag1', 'tag2'];
+              break;
+            case 'object':
+              sampleData[param.name] = { key: 'value' };
+              break;
+          }
+        }
+      });
+      
+      if (Object.keys(sampleData).length > 0) {
+        curl += ` \\\n  -d '${JSON.stringify(sampleData, null, 2).replace(/\n/g, '\\n')}'`;
       }
-    },
-    "agent": {
-      "id": "456e7890-a12b-34c5-d678-901234567890",
-      "name": "AI Assistant",
-      "voice": "nova",
-      "status": "active",
-      "description": "Customer service AI agent",
-      "system_prompt": "You are a helpful customer service agent...",
-      "first_message": "Hello! How can I help you today?",
-      "company": "Your Company"
-    },
-    "user": {
-      "id": "789a0123-b45c-67d8-e901-234567890123",
-      "full_name": "Campaign Manager",
-      "email": "manager@example.com"
     }
-  }
-}`;
+    
+    return curl;
+  };
 
-  // New endpoint examples
-  const callDataPostExample = `curl -X POST "${baseUrl}/receive-call-data" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "phone": "+1234567890",
-    "campaign_id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
-    "duration": 180,
-    "status": "completed",
-    "direction": "outbound",
-    "recording_url": "https://example.com/recording.mp3",
-    "transcript": "Hello, this is a call transcript...",
-    "call_id": "ext_call_123456",
-    "started_at": "2024-01-15T10:30:00Z",
-    "ended_at": "2024-01-15T10:33:00Z",
-    "notes": "Customer was interested in our services"
-  }'`;
-
-  const callDataJsExample = `const response = await fetch('${baseUrl}/receive-call-data', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ${authToken}',
-    'apikey': '${authToken}',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    phone: '+1234567890',
-    campaign_id: '987fcdeb-51a2-43d7-8b5c-123456789abc',
-    duration: 180,
-    status: 'completed',
-    direction: 'outbound',
-    recording_url: 'https://example.com/recording.mp3',
-    transcript: 'Hello, this is a call transcript...',
-    call_id: 'ext_call_123456',
-    started_at: '2024-01-15T10:30:00Z',
-    ended_at: '2024-01-15T10:33:00Z',
-    notes: 'Customer was interested in our services'
-  })
-});
-
-const data = await response.json();
-console.log(data);`;
-
-  const callDataResponseExample = `{
-  "success": true,
-  "message": "Call data received successfully",
-  "campaign_id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
-  "contact": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "name": "John Doe",
-    "phone": "+1234567890"
-  }
-}`;
-
-  // New endpoint examples for creation APIs
-  const createAgentExample = `curl -X POST "${baseUrl}/create-agent" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "name": "Customer Service Agent",
-    "voice": "nova",
-    "status": "active",
-    "description": "Handles customer inquiries",
-    "system_prompt": "You are a helpful customer service agent...",
-    "first_message": "Hello! How can I help you today?",
-    "agent_type": "inbound",
-    "company": "My Company"
-  }'`;
-
-  const createContactExample = `curl -X POST "${baseUrl}/create-contact" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "name": "John Doe",
-    "email": "john.doe@example.com",
-    "phone": "+1234567890",
-    "address": "123 Main St",
-    "city": "Anytown",
-    "state": "CA",
-    "zip_code": "12345",
-    "status": "active"
-  }'`;
-
-  const createKnowledgeBaseExample = `curl -X POST "${baseUrl}/create-knowledge-base" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "title": "Product FAQ",
-    "type": "faq",
-    "description": "Frequently asked questions about our products",
-    "content": "Q: What is your return policy?\\nA: We offer 30-day returns...",
-    "tags": ["faq", "products", "returns"],
-    "status": "published"
-  }'`;
-
-  const createCampaignExample = `curl -X POST "${baseUrl}/create-campaign" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "name": "Summer Campaign 2024",
-    "description": "Promotional campaign for summer products",
-    "agent_id": "agent-uuid-here",
-    "contact_ids": ["contact-uuid-1", "contact-uuid-2"],
-    "status": "active",
-    "knowledge_base_id": "kb-uuid-here"
-  }'`;
-
-  const createEntityExample = `curl -X POST "${baseUrl}/create-entity" \\
-  -H "Authorization: Bearer ${authToken}" \\
-  -H "apikey: ${authToken}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "entityType": "agent",
-    "data": {
-      "name": "AI Assistant",
-      "voice": "nova",
-      "status": "active"
+  const generateJsExample = (endpoint: any) => {
+    const method = endpoint.methods.includes('POST') ? 'POST' : 'GET';
+    const hasBody = method === 'POST';
+    
+    let js = `const response = await fetch('${baseUrl}${endpoint.path}', {\n`;
+    js += `  method: '${method}',\n`;
+    js += `  headers: {\n`;
+    js += `    'Authorization': 'Bearer ${authToken}',\n`;
+    js += `    'apikey': '${authToken}',\n`;
+    js += `    'Content-Type': 'application/json'\n`;
+    js += `  }`;
+    
+    if (hasBody && endpoint.parameters.length > 0) {
+      const sampleData: any = {};
+      endpoint.parameters.slice(0, 3).forEach((param: any) => {
+        if (param.required) {
+          switch (param.type) {
+            case 'string':
+              sampleData[param.name] = param.name.includes('phone') ? '+1234567890' : `sample_${param.name}`;
+              break;
+            case 'number':
+              sampleData[param.name] = 180;
+              break;
+            case 'array':
+              sampleData[param.name] = ['item1', 'item2'];
+              break;
+          }
+        }
+      });
+      
+      if (Object.keys(sampleData).length > 0) {
+        js += `,\n  body: JSON.stringify(${JSON.stringify(sampleData, null, 4).replace(/^/gm, '    ')})`;
+      }
     }
-  }'`;
+    
+    js += `\n});\n\nconst data = await response.json();\nconsole.log(data);`;
+    
+    return js;
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">API Documentation</h1>
-        <p className="text-gray-600">
-          Documentation for the Dhwani Voice AI API endpoints
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Dhwani Voice AI API Documentation</h1>
+        <p className="text-lg text-gray-600 mb-4">
+          Complete REST API documentation for the Dhwani Voice AI platform
         </p>
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <h3 className="font-semibold text-blue-800 mb-2">Base URL</h3>
+          <code className="text-blue-700 bg-blue-100 px-2 py-1 rounded">{baseUrl}</code>
+        </div>
       </div>
 
-      {/* Get Caller Details Endpoint */}
+      {/* Authentication */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">Get Caller Details</CardTitle>
-            <div className="flex gap-2">
-              <Badge variant="secondary">GET</Badge>
-              <Badge variant="secondary">POST</Badge>
-            </div>
-          </div>
-          <p className="text-gray-600">
-            Retrieve caller information including contact details, campaign, agent, and user information based on phone number. 
-            Supports filtering by campaign type and automatically prioritizes inbound campaigns for incoming calls.
-          </p>
+          <CardTitle className="text-2xl">Authentication</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Endpoint URL */}
-          <div>
-            <h3 className="font-semibold mb-2">Endpoint URL</h3>
-            <div className="bg-gray-100 p-3 rounded-lg font-mono text-sm">
-              {baseUrl}/get-caller-details
-            </div>
-          </div>
-
-          {/* Authentication */}
-          <div>
-            <h3 className="font-semibold mb-2">Authentication</h3>
-            <p className="text-gray-600 mb-3">
-              This API requires authentication using a Bearer token in the Authorization header and API key.
-            </p>
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Required Headers:</strong>
-              </p>
-              <ul className="text-sm text-yellow-800 mt-1 list-disc list-inside">
-                <li><code>Authorization: Bearer YOUR_TOKEN</code></li>
-                <li><code>apikey: YOUR_API_KEY</code></li>
-                <li><code>Content-Type: application/json</code></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Parameters */}
-          <div>
-            <h3 className="font-semibold mb-2">Parameters</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left border-b">Parameter</th>
-                    <th className="px-4 py-2 text-left border-b">Type</th>
-                    <th className="px-4 py-2 text-left border-b">Required</th>
-                    <th className="px-4 py-2 text-left border-b">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">phone</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="destructive">Yes</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      Phone number of the caller (can be passed as query parameter for GET or in request body for POST)
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">campaign_type</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      Filter campaigns by type ("inbound" or "outbound"). If not specified, inbound campaigns are prioritized for incoming calls.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Campaign Type Behavior */}
-          <div>
-            <h3 className="font-semibold mb-2">Campaign Type Behavior</h3>
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-2">Smart Campaign Selection</h4>
-              <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-                <li><strong>With campaign_type specified:</strong> Only returns campaigns matching the specified type</li>
-                <li><strong>Without campaign_type:</strong> Automatically prioritizes inbound campaigns if multiple active campaigns exist</li>
-                <li><strong>Inbound priority:</strong> Designed for incoming call scenarios where inbound campaigns should take precedence</li>
-                <li><strong>Campaign settings:</strong> Campaign type is determined from the campaign's settings.campaignType field</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Examples */}
-          <div>
-            <h3 className="font-semibold mb-4">Examples</h3>
-            
-            {/* GET Request */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">GET Request with Campaign Type Filter</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(curlGetExample, 'curl-get')}
-                >
-                  {copiedCode === 'curl-get' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
+        <CardContent>
+          <p className="text-gray-600 mb-4">
+            All API endpoints require authentication using Bearer token and API key headers.
+          </p>
+          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+            <h4 className="font-semibold text-yellow-800 mb-2">Required Headers</h4>
+            <div className="space-y-2 text-sm">
+              <div className="font-mono bg-yellow-100 p-2 rounded">
+                <span className="text-yellow-700">Authorization:</span> Bearer YOUR_TOKEN
               </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {curlGetExample}
-              </pre>
-            </div>
-
-            {/* POST Request */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">POST Request with Campaign Type</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(curlPostExample, 'curl-post')}
-                >
-                  {copiedCode === 'curl-post' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
+              <div className="font-mono bg-yellow-100 p-2 rounded">
+                <span className="text-yellow-700">apikey:</span> YOUR_API_KEY
               </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {curlPostExample}
-              </pre>
-            </div>
-
-            {/* JavaScript Example */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">JavaScript Example</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(jsExample, 'js')}
-                >
-                  {copiedCode === 'js' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {jsExample}
-              </pre>
-            </div>
-          </div>
-
-          {/* Response */}
-          <div>
-            <h3 className="font-semibold mb-2">Response</h3>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium">Success Response (200)</h4>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(responseExample, 'response')}
-              >
-                {copiedCode === 'response' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
-            <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
-              {responseExample}
-            </pre>
-            <p className="text-sm text-gray-600 mt-2">
-              <strong>Note:</strong> The response now includes campaign settings which contain the campaign type and other configuration options.
-            </p>
-          </div>
-
-          {/* Error Responses */}
-          <div>
-            <h3 className="font-semibold mb-2">Error Responses</h3>
-            <div className="space-y-3">
-              <div className="border border-red-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="destructive">400</Badge>
-                  <span className="font-medium">Bad Request</span>
-                </div>
-                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Phone number is required\" }"}</pre>
-              </div>
-              
-              <div className="border border-yellow-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline">404</Badge>
-                  <span className="font-medium">Not Found</span>
-                </div>
-                <pre className="text-sm bg-yellow-50 p-2 rounded">{"{ \"error\": \"Contact not found\" }"}</pre>
-                <pre className="text-sm bg-yellow-50 p-2 rounded mt-1">{"{ \"error\": \"No active campaigns found for this contact\" }"}</pre>
-              </div>
-              
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="secondary">500</Badge>
-                  <span className="font-medium">Internal Server Error</span>
-                </div>
-                <pre className="text-sm bg-gray-50 p-2 rounded">{"{ \"error\": \"Internal server error\" }"}</pre>
+              <div className="font-mono bg-yellow-100 p-2 rounded">
+                <span className="text-yellow-700">Content-Type:</span> application/json
               </div>
             </div>
-          </div>
-
-          {/* Rate Limiting */}
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-            <h4 className="font-medium text-blue-800 mb-2">Rate Limiting</h4>
-            <p className="text-sm text-blue-700">
-              This API is subject to rate limiting. Please ensure you don't exceed reasonable request rates to maintain service availability.
-            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* New: Creation APIs */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">Entity Creation APIs</CardTitle>
-            <Badge variant="secondary">POST</Badge>
-          </div>
-          <p className="text-gray-600">
-            APIs for creating agents, contacts, knowledge bases, campaigns, and other entities.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Authentication */}
-          <div>
-            <h3 className="font-semibold mb-2">Authentication</h3>
-            <p className="text-gray-600 mb-3">
-              All creation APIs require authentication using a Bearer token.
-            </p>
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Required Headers:</strong>
-              </p>
-              <ul className="text-sm text-yellow-800 mt-1 list-disc list-inside">
-                <li><code>Authorization: Bearer YOUR_TOKEN</code></li>
-                <li><code>apikey: YOUR_API_KEY</code></li>
-                <li><code>Content-Type: application/json</code></li>
-              </ul>
-            </div>
-          </div>
+      {/* API Endpoints */}
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold text-gray-900">API Endpoints</h2>
+        
+        {apiEndpoints.map((endpoint, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">{endpoint.name}</CardTitle>
+                <div className="flex gap-2">
+                  {endpoint.methods.map(method => (
+                    <Badge key={method} variant={method === 'GET' ? 'secondary' : 'default'}>
+                      {method}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <p className="text-gray-600">{endpoint.description}</p>
+              <div className="bg-gray-100 p-3 rounded-lg font-mono text-sm">
+                {endpoint.methods.join(' | ')} {baseUrl}{endpoint.path}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Parameters */}
+              {endpoint.parameters.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-3">Parameters</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border border-gray-200 rounded-lg">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left border-b">Parameter</th>
+                          <th className="px-4 py-2 text-left border-b">Type</th>
+                          <th className="px-4 py-2 text-left border-b">Required</th>
+                          <th className="px-4 py-2 text-left border-b">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {endpoint.parameters.map((param: any, paramIndex: number) => (
+                          <tr key={paramIndex}>
+                            <td className="px-4 py-2 border-b font-mono text-sm">{param.name}</td>
+                            <td className="px-4 py-2 border-b">{param.type}</td>
+                            <td className="px-4 py-2 border-b">
+                              <Badge variant={param.required ? "destructive" : "outline"}>
+                                {param.required ? "Yes" : "No"}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-2 border-b">{param.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
-          {/* Available Endpoints */}
-          <div>
-            <h3 className="font-semibold mb-2">Available Endpoints</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <code className="text-sm font-mono">/create-agent</code>
-                <p className="text-xs text-gray-600 mt-1">Create AI agents</p>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <code className="text-sm font-mono">/create-contact</code>
-                <p className="text-xs text-gray-600 mt-1">Create contacts</p>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <code className="text-sm font-mono">/create-knowledge-base</code>
-                <p className="text-xs text-gray-600 mt-1">Create knowledge bases</p>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <code className="text-sm font-mono">/create-campaign</code>
-                <p className="text-xs text-gray-600 mt-1">Create campaigns</p>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <code className="text-sm font-mono">/create-entity</code>
-                <p className="text-xs text-gray-600 mt-1">Universal creation endpoint</p>
-              </div>
-            </div>
-          </div>
+              {/* Examples */}
+              <div>
+                <h3 className="font-semibold mb-4">Examples</h3>
+                
+                {/* cURL Example */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium">cURL</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(generateCurlExample(endpoint), `curl-${index}`)}
+                    >
+                      {copiedCode === `curl-${index}` ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                    {generateCurlExample(endpoint)}
+                  </pre>
+                </div>
 
-          {/* Examples */}
-          <div>
-            <h3 className="font-semibold mb-4">Examples</h3>
-            
-            {/* Create Agent */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Create Agent</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(createAgentExample, 'create-agent')}
-                >
-                  {copiedCode === 'create-agent' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
+                {/* JavaScript Example */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium">JavaScript</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(generateJsExample(endpoint), `js-${index}`)}
+                    >
+                      {copiedCode === `js-${index}` ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
+                    {generateJsExample(endpoint)}
+                  </pre>
+                </div>
               </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {createAgentExample}
-              </pre>
-            </div>
 
-            {/* Create Contact */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Create Contact</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(createContactExample, 'create-contact')}
-                >
-                  {copiedCode === 'create-contact' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {createContactExample}
-              </pre>
-            </div>
-
-            {/* Create Knowledge Base */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Create Knowledge Base</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(createKnowledgeBaseExample, 'create-kb')}
-                >
-                  {copiedCode === 'create-kb' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {createKnowledgeBaseExample}
-              </pre>
-            </div>
-
-            {/* Create Campaign */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Create Campaign</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(createCampaignExample, 'create-campaign')}
-                >
-                  {copiedCode === 'create-campaign' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {createCampaignExample}
-              </pre>
-            </div>
-
-            {/* Universal Create Entity */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">Universal Create Entity</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(createEntityExample, 'create-entity')}
-                >
-                  {copiedCode === 'create-entity' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {createEntityExample}
-              </pre>
-              <p className="text-sm text-gray-600 mt-2">
-                The universal endpoint accepts <code>entityType</code> values: "agent", "contact", "knowledge_base", "campaign"
-              </p>
-            </div>
-          </div>
-
-          {/* Response Format */}
-          <div>
-            <h3 className="font-semibold mb-2">Response Format</h3>
-            <p className="text-gray-600 mb-3">All creation endpoints return the same response format:</p>
-            <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
-{`{
+              {/* Response Format */}
+              <div>
+                <h3 className="font-semibold mb-2">Response Format</h3>
+                <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
+{endpoint.name.includes('Get Caller Details') ? 
+`{
+  "success": true,
+  "campaign_id": "uuid",
+  "caller": {
+    "contact": { /* contact details */ },
+    "campaign": { /* campaign details */ },
+    "agent": { /* agent details */ },
+    "user": { /* user details */ }
+  }
+}` :
+endpoint.name.includes('Get') ? 
+`{
+  "success": true,
+  "data": {
+    /* endpoint specific data */
+  }
+}` :
+`{
   "success": true,
   "data": {
     "id": "generated-uuid",
     "user_id": "user-uuid",
-    "name": "Entity Name",
     "created_at": "2024-01-15T10:30:00Z",
-    "updated_at": "2024-01-15T10:30:00Z",
-    // ... other entity-specific fields
+    "updated_at": "2024-01-15T10:30:00Z"
+    /* other entity fields */
   }
 }`}
-            </pre>
-          </div>
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-          {/* Error Responses */}
-          <div>
-            <h3 className="font-semibold mb-2">Error Responses</h3>
-            <div className="space-y-3">
-              <div className="border border-red-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="destructive">401</Badge>
-                  <span className="font-medium">Unauthorized</span>
-                </div>
-                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Unauthorized\" }"}</pre>
+      {/* Error Responses */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Error Responses</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="destructive">400</Badge>
+                <span className="font-medium">Bad Request</span>
               </div>
-              
-              <div className="border border-red-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="destructive">400</Badge>
-                  <span className="font-medium">Bad Request</span>
-                </div>
-                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Field 'name' is required\" }"}</pre>
+              <pre className="text-sm bg-red-50 p-3 rounded">{"{ \"error\": \"Validation error message\" }"}</pre>
+            </div>
+            
+            <div className="border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="destructive">401</Badge>
+                <span className="font-medium">Unauthorized</span>
               </div>
-              
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="secondary">500</Badge>
-                  <span className="font-medium">Internal Server Error</span>
-                </div>
-                <pre className="text-sm bg-gray-50 p-2 rounded">{"{ \"error\": \"Internal server error\" }"}</pre>
+              <pre className="text-sm bg-red-50 p-3 rounded">{"{ \"error\": \"Unauthorized\" }"}</pre>
+            </div>
+            
+            <div className="border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline">404</Badge>
+                <span className="font-medium">Not Found</span>
               </div>
+              <pre className="text-sm bg-yellow-50 p-3 rounded">{"{ \"error\": \"Resource not found\" }"}</pre>
+            </div>
+            
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary">500</Badge>
+                <span className="font-medium">Internal Server Error</span>
+              </div>
+              <pre className="text-sm bg-gray-50 p-3 rounded">{"{ \"error\": \"Internal server error\" }"}</pre>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* New: Receive Call Data Endpoint */}
+      {/* Rate Limiting */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">Receive Call Data</CardTitle>
-            <Badge variant="secondary">POST</Badge>
-          </div>
-          <p className="text-gray-600">
-            Endpoint for external systems to submit call-related data and update contact records.
-          </p>
+          <CardTitle className="text-2xl">Rate Limiting & Best Practices</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Endpoint URL */}
-          <div>
-            <h3 className="font-semibold mb-2">Endpoint URL</h3>
-            <div className="bg-gray-100 p-3 rounded-lg font-mono text-sm">
-              {baseUrl}/receive-call-data
-            </div>
-          </div>
-
-          {/* Authentication */}
-          <div>
-            <h3 className="font-semibold mb-2">Authentication</h3>
-            <p className="text-gray-600 mb-3">
-              This API requires authentication using a Bearer token in the Authorization header and API key.
-            </p>
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Required Headers:</strong>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-800 mb-2">Rate Limiting</h4>
+              <p className="text-sm text-blue-700">
+                All APIs are subject to rate limiting. Please implement appropriate retry logic and respect rate limits to maintain service availability.
               </p>
-              <ul className="text-sm text-yellow-800 mt-1 list-disc list-inside">
-                <li><code>Authorization: Bearer YOUR_TOKEN</code></li>
-                <li><code>apikey: YOUR_API_KEY</code></li>
-                <li><code>Content-Type: application/json</code></li>
-              </ul>
             </div>
-          </div>
-
-          {/* Parameters */}
-          <div>
-            <h3 className="font-semibold mb-2">Parameters</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left border-b">Parameter</th>
-                    <th className="px-4 py-2 text-left border-b">Type</th>
-                    <th className="px-4 py-2 text-left border-b">Required</th>
-                    <th className="px-4 py-2 text-left border-b">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">phone</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="destructive">Yes</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Phone number of the caller</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">campaign_id</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Campaign ID associated with the call</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">duration</td>
-                    <td className="px-4 py-2 border-b">number</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Call duration in seconds</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">status</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Call status (completed, missed, busy, failed)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">direction</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Call direction (inbound, outbound)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">recording_url</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">URL to the call recording</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">transcript</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Call transcript</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">call_id</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">External call ID</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">started_at</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Call start time (ISO 8601)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">ended_at</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Call end time (ISO 8601)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">notes</td>
-                    <td className="px-4 py-2 border-b">string</td>
-                    <td className="px-4 py-2 border-b">
-                      <Badge variant="outline">No</Badge>
-                    </td>
-                    <td className="px-4 py-2 border-b">Additional notes about the call</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Examples */}
-          <div>
-            <h3 className="font-semibold mb-4">Examples</h3>
             
-            {/* cURL Example */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">cURL Example</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(callDataPostExample, 'call-curl')}
-                >
-                  {copiedCode === 'call-curl' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {callDataPostExample}
-              </pre>
-            </div>
-
-            {/* JavaScript Example */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">JavaScript Example</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(callDataJsExample, 'call-js')}
-                >
-                  {copiedCode === 'call-js' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-              <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-                {callDataJsExample}
-              </pre>
-            </div>
-          </div>
-
-          {/* Response */}
-          <div>
-            <h3 className="font-semibold mb-2">Response</h3>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium">Success Response (200)</h4>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(callDataResponseExample, 'call-response')}
-              >
-                {copiedCode === 'call-response' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
-            <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
-              {callDataResponseExample}
-            </pre>
-          </div>
-
-          {/* Error Responses */}
-          <div>
-            <h3 className="font-semibold mb-2">Error Responses</h3>
-            <div className="space-y-3">
-              <div className="border border-red-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="destructive">400</Badge>
-                  <span className="font-medium">Bad Request</span>
-                </div>
-                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Phone number is required\" }"}</pre>
-              </div>
-              
-              <div className="border border-yellow-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline">404</Badge>
-                  <span className="font-medium">Not Found</span>
-                </div>
-                <pre className="text-sm bg-yellow-50 p-2 rounded">{"{ \"error\": \"Contact not found\" }"}</pre>
-              </div>
-              
-              <div className="border border-red-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline">405</Badge>
-                  <span className="font-medium">Method Not Allowed</span>
-                </div>
-                <pre className="text-sm bg-red-50 p-2 rounded">{"{ \"error\": \"Method not allowed\" }"}</pre>
-              </div>
-              
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="secondary">500</Badge>
-                  <span className="font-medium">Internal Server Error</span>
-                </div>
-                <pre className="text-sm bg-gray-50 p-2 rounded">{"{ \"error\": \"Internal server error\" }"}</pre>
-              </div>
+            <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+              <h4 className="font-medium text-green-800 mb-2">Best Practices</h4>
+              <ul className="text-sm text-green-700 space-y-1 list-disc list-inside">
+                <li>Always include proper authentication headers</li>
+                <li>Handle error responses gracefully</li>
+                <li>Implement retry logic for transient failures</li>
+                <li>Cache responses when appropriate</li>
+                <li>Use HTTPS for all API calls</li>
+              </ul>
             </div>
           </div>
         </CardContent>
