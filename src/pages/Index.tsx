@@ -430,6 +430,11 @@ const Index = () => {
               <button
                 key={item.id}
                 onClick={() => {
+                  if (item.id === 'settings') {
+                    window.location.href = '/settings';
+                    return;
+                  }
+                  
                   setActiveTab(item.id);
                   if (item.id === 'contacts') {
                     setContactsView('list');
@@ -448,9 +453,6 @@ const Index = () => {
                   if (item.id === 'script') {
                     setScriptView('list');
                     setEditingScript(null);
-                  }
-                  if (item.id === 'settings') {
-                    
                   }
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
@@ -513,9 +515,7 @@ const Index = () => {
             <HomeDashboard />
           )}
 
-          {activeTab === 'settings' && (
-            <Settings />
-          )}
+          {/* Remove the settings tab handling since it now navigates to separate page */}
 
           {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
             <div className="relative h-full overflow-y-auto">
@@ -673,7 +673,7 @@ const Index = () => {
           )}
 
           {/* Default content for other tabs */}
-          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script', 'settings'].includes(activeTab) && (
+          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script'].includes(activeTab) && (
             <div className="h-full overflow-y-auto p-6">
               <Card>
                 <CardHeader>
