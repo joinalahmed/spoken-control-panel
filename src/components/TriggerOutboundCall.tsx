@@ -53,20 +53,26 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
         api_url: apiUrl
       });
 
+      // Enhanced fetch with better error handling and CORS headers
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          'ngrok-skip-browser-warning': 'true',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
         },
+        mode: 'cors',
         body: JSON.stringify({
           to_number: contact.phone,
           campaign_id: campaignId,
-          custom_webhook: 'https://7263-49-207-61-173.ngrok-free.app/twilio_webhook'
+          custom_webhook: apiUrl.replace('/outbound_call', '/twilio_webhook')
         })
       });
 
       console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (response.ok) {
         const responseData = await response.text();
@@ -76,12 +82,19 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
       } else {
         const errorData = await response.text();
         console.error('Call failed with status:', response.status, 'Error:', errorData);
-        toast.error(`Failed to initiate call: ${response.status} ${response.statusText}`);
+        toast.error(`Failed to initiate call: ${response.status} ${response.statusText}${errorData ? ` - ${errorData}` : ''}`);
       }
     } catch (error) {
       console.error('Error triggering call:', error);
-      if (error instanceof TypeError && error.message.includes('NetworkError')) {
-        toast.error('Network error: Unable to reach the call service. Please check if the service is active and the API URL is correct.');
+      
+      if (error instanceof TypeError) {
+        if (error.message.includes('Failed to fetch')) {
+          toast.error(`Network error: Cannot reach ${apiUrl}. Please check if the API server is running and accessible.`);
+        } else if (error.message.includes('NetworkError')) {
+          toast.error('Network error: CORS or connectivity issue. Check if the API server allows cross-origin requests.');
+        } else {
+          toast.error(`Network error: ${error.message}`);
+        }
       } else {
         toast.error('Failed to initiate call: ' + (error as Error).message);
       }
