@@ -18,7 +18,7 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
   onCallTriggered
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [apiUrl, setApiUrl] = useState('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+  const [apiUrl, setApiUrl] = useState('http://34.205.140.255:7860/outbound_call');
   const { getSetting } = useSystemSettings();
 
   useEffect(() => {
@@ -53,17 +53,19 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
         api_url: apiUrl
       });
 
-      // Enhanced fetch with better error handling and CORS headers
+      // Check if we're on HTTPS trying to call HTTP
+      const isHttpsToHttp = window.location.protocol === 'https:' && apiUrl.startsWith('http:');
+      if (isHttpsToHttp) {
+        console.warn('Mixed content warning: HTTPS page trying to call HTTP endpoint');
+        toast.error('Mixed content error: Cannot call HTTP endpoint from HTTPS page. Please use HTTPS for your API endpoint.');
+        return;
+      }
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type'
         },
-        mode: 'cors',
         body: JSON.stringify({
           to_number: contact.phone,
           campaign_id: campaignId,
@@ -89,7 +91,13 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
       
       if (error instanceof TypeError) {
         if (error.message.includes('Failed to fetch')) {
-          toast.error(`Network error: Cannot reach ${apiUrl}. Please check if the API server is running and accessible.`);
+          // Check if it's a mixed content issue
+          const isHttpsToHttp = window.location.protocol === 'https:' && apiUrl.startsWith('http:');
+          if (isHttpsToHttp) {
+            toast.error('Mixed Content Error: Cannot call HTTP API from HTTPS page. Please use HTTPS for your API endpoint or access this app via HTTP.');
+          } else {
+            toast.error(`Network error: Cannot reach ${apiUrl}. This could be due to CORS restrictions. Please ensure your API server includes proper CORS headers.`);
+          }
         } else if (error.message.includes('NetworkError')) {
           toast.error('Network error: CORS or connectivity issue. Check if the API server allows cross-origin requests.');
         } else {
