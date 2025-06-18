@@ -24,15 +24,18 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get the phone number from query parameters or request body
+    // Get the phone number and campaign type from query parameters or request body
     let phoneNumber: string | null = null;
+    let campaignType: string | null = null;
     
     if (req.method === 'GET') {
       const url = new URL(req.url);
       phoneNumber = url.searchParams.get('phone');
+      campaignType = url.searchParams.get('campaign_type');
     } else if (req.method === 'POST') {
       const body = await req.json();
       phoneNumber = body.phone;
+      campaignType = body.campaign_type;
     }
 
     if (!phoneNumber) {
@@ -45,7 +48,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Looking up caller with phone: ${phoneNumber}`);
+    console.log(`Looking up caller with phone: ${phoneNumber}, campaign type: ${campaignType || 'any'}`);
     
     // Normalize the input phone number
     const normalizedInputPhone = normalizePhoneNumber(phoneNumber);
@@ -106,8 +109,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Filter for active campaigns
-    const activeCampaigns = campaignContacts?.filter(cc => cc.campaigns.status === 'active') || [];
+    // Filter for active campaigns and optionally by campaign type
+    let activeCampaigns = campaignContacts?.filter(cc => cc.campaigns.status === 'active') || [];
+    
+    // If campaign type is specified, filter by it
+    if (campaignType) {
+      activeCampaigns = activeCampaigns.filter(cc => {
+        const settings = cc.campaigns.settings;
+        if (!settings || typeof settings !== 'object') return false;
+        const parsedSettings = settings as any;
+        return parsedSettings.campaignType === campaignType;
+      });
+      console.log(`Filtered campaigns by type '${campaignType}':`, activeCampaigns.length);
+    }
+
+    // If no campaign type specified, prioritize inbound campaigns for incoming calls
+    if (!campaignType && activeCampaigns.length > 1) {
+      const inboundCampaigns = activeCampaigns.filter(cc => {
+        const settings = cc.campaigns.settings;
+        if (!settings || typeof settings !== 'object') return false;
+        const parsedSettings = settings as any;
+        return parsedSettings.campaignType === 'inbound';
+      });
+      
+      if (inboundCampaigns.length > 0) {
+        activeCampaigns = inboundCampaigns;
+        console.log('Prioritizing inbound campaigns for incoming call');
+      }
+    }
 
     if (activeCampaigns.length === 0) {
       console.log('No active campaigns found for contact');
@@ -213,7 +242,8 @@ Deno.serve(async (req) => {
             id: campaignData.id,
             name: campaignData.name,
             description: campaignData.description,
-            status: campaignData.status
+            status: campaignData.status,
+            settings: campaignData.settings
           },
           agent: agent,
           script: script,
