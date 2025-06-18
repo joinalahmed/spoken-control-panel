@@ -53,45 +53,6 @@ const Index = () => {
   const [editingScript, setEditingScript] = useState<Script | null>(null);
   const [viewingScript, setViewingScript] = useState<Script | null>(null);
   
-  // Settings state - System level settings
-  const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
-  const [outboundCallUrl, setOutboundCallUrl] = useState(() => {
-    // Load from localStorage on component initialization
-    return localStorage.getItem('system_outbound_call_api_url') || defaultUrl;
-  });
-
-  const handleSaveSettings = async () => {
-    if (!outboundCallUrl.trim()) {
-      toast.error('API URL cannot be empty');
-      return;
-    }
-
-    // Basic URL validation
-    try {
-      new URL(outboundCallUrl);
-    } catch (error) {
-      toast.error('Please enter a valid URL');
-      return;
-    }
-
-    console.log('Saving system setting:', outboundCallUrl);
-    
-    try {
-      // Save to localStorage as a system-level setting
-      localStorage.setItem('system_outbound_call_api_url', outboundCallUrl);
-      toast.success('Settings saved successfully');
-      console.log('System settings saved successfully');
-    } catch (error) {
-      console.error('Failed to save system settings:', error);
-      toast.error('Failed to save settings');
-    }
-  };
-
-  const resetToDefault = () => {
-    setOutboundCallUrl(defaultUrl);
-    toast.info('Reset to default URL');
-  };
-
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'agents', label: 'Agents', icon: Users },
