@@ -57,6 +57,7 @@ const Index = () => {
     { id: 'files', label: 'Knowledge Bases', icon: FileText },
     { id: 'script', label: 'Script', icon: FileType },
     { id: 'campaigns', label: 'Campaigns', icon: BarChart3 },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const handleAgentCreated = async (agentData: any) => {
@@ -467,6 +468,10 @@ const Index = () => {
             <HomeDashboard />
           )}
 
+          {activeTab === 'settings' && (
+            <Settings />
+          )}
+
           {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
             <div className="relative h-full overflow-y-auto">
               {/* Background Gradient */}
@@ -623,7 +628,7 @@ const Index = () => {
           )}
 
           {/* Default content for other tabs */}
-          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script'].includes(activeTab) && (
+          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script', 'settings'].includes(activeTab) && (
             <div className="h-full overflow-y-auto p-6">
               <Card>
                 <CardHeader>

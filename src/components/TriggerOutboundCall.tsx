@@ -18,6 +18,11 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
+  const getApiUrl = () => {
+    const savedUrl = localStorage.getItem('outbound_call_api_url');
+    return savedUrl || 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+  };
+
   const triggerCall = async () => {
     if (!contact.phone) {
       toast.error('Contact has no phone number');
@@ -27,13 +32,16 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
     setIsLoading(true);
 
     try {
+      const apiUrl = getApiUrl();
+      
       console.log('Triggering outbound call:', {
         to_number: contact.phone,
         campaign_id: campaignId,
-        contact_name: contact.name
+        contact_name: contact.name,
+        api_url: apiUrl
       });
 
-      const response = await fetch('https://7263-49-207-61-173.ngrok-free.app/outbound_call', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +69,7 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
     } catch (error) {
       console.error('Error triggering call:', error);
       if (error instanceof TypeError && error.message.includes('NetworkError')) {
-        toast.error('Network error: Unable to reach the call service. Please check if the ngrok tunnel is active.');
+        toast.error('Network error: Unable to reach the call service. Please check if the service is active and the API URL is correct.');
       } else {
         toast.error('Failed to initiate call: ' + (error as Error).message);
       }
