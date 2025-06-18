@@ -77,14 +77,13 @@ export const useCampaigns = () => {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['campaigns', user?.id],
+    queryKey: ['campaigns'],
     queryFn: async () => {
       if (!user?.id) return [];
       
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {

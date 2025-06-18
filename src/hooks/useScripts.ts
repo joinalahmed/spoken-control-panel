@@ -30,7 +30,6 @@ export const useScripts = () => {
       const { data, error } = await supabase
         .from('scripts')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
