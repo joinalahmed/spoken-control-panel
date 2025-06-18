@@ -15,12 +15,19 @@ const Settings = () => {
 
   useEffect(() => {
     console.log('Settings page mounted');
+    let isMounted = true;
+    
     const loadSettings = async () => {
+      if (!isMounted) return;
+      
       setIsLoadingData(true);
       try {
         console.log('Loading settings...');
         const savedUrl = await getSetting('outbound_call_api_url');
         console.log('Loaded saved URL:', savedUrl);
+        
+        if (!isMounted) return;
+        
         if (savedUrl) {
           setOutboundCallUrl(savedUrl);
         } else {
@@ -31,16 +38,24 @@ const Settings = () => {
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
-        setOutboundCallUrl(defaultUrl);
-        toast.error('Failed to load settings, using default values');
+        if (isMounted) {
+          const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+          setOutboundCallUrl(defaultUrl);
+          toast.error('Failed to load settings, using default values');
+        }
       } finally {
-        setIsLoadingData(false);
-        console.log('Settings loading complete');
+        if (isMounted) {
+          setIsLoadingData(false);
+          console.log('Settings loading complete');
+        }
       }
     };
 
     loadSettings();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [getSetting]);
 
   const handleSave = async () => {
