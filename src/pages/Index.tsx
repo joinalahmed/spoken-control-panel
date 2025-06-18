@@ -13,6 +13,7 @@ import { Contact, useContacts } from '@/hooks/useContacts';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useScripts, Script } from '@/hooks/useScripts';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
@@ -37,6 +38,7 @@ const Index = () => {
   const { createContact } = useContacts();
   const { createCampaign, campaigns } = useCampaigns();
   const { createScript, updateScript } = useScripts();
+  const { getSetting, setSetting, isLoading: settingsLoading } = useSystemSettings();
   
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -52,6 +54,66 @@ const Index = () => {
   const [scriptView, setScriptView] = useState<'list' | 'create'>('list');
   const [editingScript, setEditingScript] = useState<Script | null>(null);
   const [viewingScript, setViewingScript] = useState<Script | null>(null);
+  
+  // Settings state
+  const [outboundCallUrl, setOutboundCallUrl] = useState('');
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Load settings when settings tab is active
+  React.useEffect(() => {
+    if (activeTab === 'settings' && !settingsLoaded) {
+      const loadSettings = async () => {
+        try {
+          const savedUrl = await getSetting('outbound_call_api_url');
+          if (savedUrl) {
+            setOutboundCallUrl(savedUrl);
+          } else {
+            const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+            setOutboundCallUrl(defaultUrl);
+          }
+          setSettingsLoaded(true);
+        } catch (error) {
+          console.error('Error loading system settings:', error);
+          const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+          setOutboundCallUrl(defaultUrl);
+          setSettingsLoaded(true);
+          toast.error('Failed to load settings, using default values');
+        }
+      };
+      loadSettings();
+    }
+  }, [activeTab, getSetting, settingsLoaded]);
+
+  const handleSaveSettings = async () => {
+    if (!outboundCallUrl.trim()) {
+      toast.error('API URL cannot be empty');
+      return;
+    }
+
+    try {
+      new URL(outboundCallUrl);
+    } catch (error) {
+      toast.error('Please enter a valid URL');
+      return;
+    }
+
+    console.log('Saving system setting:', outboundCallUrl);
+    const success = await setSetting('outbound_call_api_url', outboundCallUrl);
+    
+    if (success) {
+      toast.success('Settings saved successfully');
+      console.log('System settings saved successfully');
+    } else {
+      toast.error('Failed to save settings');
+      console.error('Failed to save system settings');
+    }
+  };
+
+  const resetToDefault = () => {
+    const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+    setOutboundCallUrl(defaultUrl);
+    toast.info('Reset to default URL');
+  };
   
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -391,11 +453,6 @@ const Index = () => {
               <button
                 key={item.id}
                 onClick={() => {
-                  if (item.id === 'settings') {
-                    window.location.href = '/settings';
-                    return;
-                  }
-                  
                   setActiveTab(item.id);
                   if (item.id === 'contacts') {
                     setContactsView('list');
@@ -414,6 +471,9 @@ const Index = () => {
                   if (item.id === 'script') {
                     setScriptView('list');
                     setEditingScript(null);
+                  }
+                  if (item.id === 'settings') {
+                    setSettingsLoaded(false); // Reset to reload settings
                   }
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
@@ -476,7 +536,101 @@ const Index = () => {
             <HomeDashboard />
           )}
 
-          {/* Remove the settings tab handling since it now navigates to separate page */}
+          {activeTab === 'settings' && (
+            <div className="h-full overflow-y-auto">
+              <div className="min-h-screen bg-gray-50">
+                {/* Header */}
+                <div className="bg-white border-b border-gray-200">
+                  <div className="max-w-7xl mx-auto px-6 py-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <Settings className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+                        <p className="text-gray-600">Configure your application settings</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="max-w-4xl mx-auto px-6 py-8">
+                  <div className="space-y-6">
+                    {/* API Configuration Card */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Globe className="w-5 h-5" />
+                          API Configuration
+                        </CardTitle>
+                        <CardDescription>
+                          Configure the endpoints for external API services (System-wide settings)
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="outbound-call-url">Outbound Call API URL</Label>
+                          <Input
+                            id="outbound-call-url"
+                            type="url"
+                            placeholder="https://your-api-endpoint.com/outbound_call"
+                            value={outboundCallUrl}
+                            onChange={(e) => setOutboundCallUrl(e.target.value)}
+                            className="font-mono text-sm"
+                          />
+                          <p className="text-sm text-gray-500">
+                            The URL endpoint used for triggering outbound calls. This should point to your call service API.
+                          </p>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <Button 
+                            onClick={handleSaveSettings} 
+                            disabled={settingsLoading}
+                            className="bg-purple-600 hover:bg-purple-700"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {settingsLoading ? 'Saving...' : 'Save Settings'}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={resetToDefault}
+                            disabled={settingsLoading}
+                          >
+                            Reset to Default
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Additional Settings Cards can be added here */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>About</CardTitle>
+                        <CardDescription>
+                          Application information and version details
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-600">
+                            <strong>Application:</strong> Dhwani Voice AI Agents
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <strong>Version:</strong> 1.0.0
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <strong>Build:</strong> {new Date().toLocaleDateString()}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {activeTab === 'agents' && !showCreateAgent && !selectedAgent && (
             <div className="relative h-full overflow-y-auto">
@@ -634,7 +788,7 @@ const Index = () => {
           )}
 
           {/* Default content for other tabs */}
-          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script'].includes(activeTab) && (
+          {!['agents', 'home', 'campaigns', 'contacts', 'files', 'script', 'settings'].includes(activeTab) && (
             <div className="h-full overflow-y-auto p-6">
               <Card>
                 <CardHeader>
