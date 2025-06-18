@@ -1,12 +1,12 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
+import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight, PhoneIncoming, PhoneOutgoing, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CampaignsListProps {
   onCreateCampaign: () => void;
@@ -106,6 +106,12 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
     }
   };
 
+  // Check if there's already an active inbound campaign
+  const activeInboundCampaign = campaigns.find(c => 
+    c.status === 'active' && 
+    c.settings?.campaignType === 'inbound'
+  );
+
   return (
     <div className="flex-1 bg-gray-50 p-6 overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
@@ -120,6 +126,17 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
           Create New Campaign
         </Button>
       </div>
+
+      {/* Alert for active inbound campaign */}
+      {activeInboundCampaign && (
+        <Alert className="mb-6 border-blue-200 bg-blue-50">
+          <AlertTriangle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            <strong>Active Inbound Campaign:</strong> "{activeInboundCampaign.name}" is currently active. 
+            Only one inbound campaign can be active at a time. Pause this campaign to activate another inbound campaign.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {campaigns.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

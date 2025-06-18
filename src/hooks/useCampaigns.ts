@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -117,6 +118,20 @@ export const useCampaigns = () => {
 
       console.log('Creating campaign with data:', campaignData);
 
+      // Check if trying to create an active inbound campaign when one already exists
+      if (campaignData.status === 'active' && 
+          campaignData.settings?.campaignType === 'inbound') {
+        
+        const activeInboundCampaigns = campaigns.filter(c => 
+          c.status === 'active' && 
+          c.settings?.campaignType === 'inbound'
+        );
+
+        if (activeInboundCampaigns.length > 0) {
+          throw new Error('Only one inbound campaign can be active at a time. Please pause the existing active inbound campaign first.');
+        }
+      }
+
       const { data, error } = await supabase
         .from('campaigns')
         .insert({
@@ -171,7 +186,7 @@ export const useCampaigns = () => {
       console.error('Campaign creation failed:', error);
       toast({
         title: "Error",
-        description: "Failed to create campaign. Please try again.",
+        description: error.message || "Failed to create campaign. Please try again.",
         variant: "destructive",
       });
     },
@@ -180,6 +195,25 @@ export const useCampaigns = () => {
   const updateCampaign = useMutation({
     mutationFn: async (campaignData: Partial<Campaign> & { id: string }) => {
       console.log('Updating campaign with data:', campaignData);
+      
+      // Check if trying to activate an inbound campaign when one is already active
+      if (campaignData.status === 'active') {
+        const currentCampaign = campaigns.find(c => c.id === campaignData.id);
+        const isInboundCampaign = campaignData.settings?.campaignType === 'inbound' || 
+                                 currentCampaign?.settings?.campaignType === 'inbound';
+        
+        if (isInboundCampaign) {
+          const activeInboundCampaigns = campaigns.filter(c => 
+            c.id !== campaignData.id && // Exclude current campaign
+            c.status === 'active' && 
+            c.settings?.campaignType === 'inbound'
+          );
+
+          if (activeInboundCampaigns.length > 0) {
+            throw new Error('Only one inbound campaign can be active at a time. Please pause the existing active inbound campaign first.');
+          }
+        }
+      }
       
       const updateData: any = {
         updated_at: new Date().toISOString()
@@ -223,7 +257,7 @@ export const useCampaigns = () => {
       console.error('Campaign update failed:', error);
       toast({
         title: "Error",
-        description: "Failed to update campaign. Please try again.",
+        description: error.message || "Failed to update campaign. Please try again.",
         variant: "destructive",
       });
     },
