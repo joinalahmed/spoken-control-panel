@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     let campaign = null;
     let contact = null;
 
-    // If phone number is provided, find the contact and campaign
+    // If phone number is provided, find the contact and outbound campaign
     if (phoneNumber) {
       console.log(`Looking up outbound call details for phone: ${phoneNumber}`);
       
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
       console.log(`Found contact: ${contact.name}`);
 
-      // Find campaigns where this contact is assigned using the campaign_contacts table
+      // Find outbound campaigns where this contact is assigned using the campaign_contacts table
       const { data: campaignContacts, error: campaignContactsError } = await supabase
         .from('campaign_contacts')
         .select(`
@@ -113,13 +113,17 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Filter for active campaigns
-      const activeCampaigns = campaignContacts?.filter(cc => cc.campaigns.status === 'active') || [];
+      // Filter for active outbound campaigns only
+      const activeOutboundCampaigns = campaignContacts?.filter(cc => 
+        cc.campaigns.status === 'active' && 
+        (cc.campaigns.settings?.campaign_type === 'outbound' || 
+         (!cc.campaigns.settings?.campaign_type && true)) // Default to outbound if not specified
+      ) || [];
 
-      if (activeCampaigns.length === 0) {
-        console.log('No active campaigns found for contact');
+      if (activeOutboundCampaigns.length === 0) {
+        console.log('No active outbound campaigns found for contact');
         return new Response(
-          JSON.stringify({ error: 'No active campaigns found for this contact' }),
+          JSON.stringify({ error: 'No active outbound campaigns found for this contact' }),
           { 
             status: 404, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -127,10 +131,10 @@ Deno.serve(async (req) => {
         );
       }
 
-      campaign = activeCampaigns[0].campaigns;
+      campaign = activeOutboundCampaigns[0].campaigns;
       campaignId = campaign.id;
     } else {
-      // If only campaign_id is provided, get campaign details directly
+      // If only campaign_id is provided, get campaign details directly and verify it's outbound
       console.log(`Looking up outbound call details for campaign: ${campaignId}`);
 
       const { data: campaignData, error: campaignError } = await supabase
@@ -161,10 +165,23 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Check if campaign is outbound
+      const campaignType = campaignData.settings?.campaign_type || 'outbound'; // Default to outbound
+      if (campaignType === 'inbound') {
+        console.log('Campaign is inbound, not outbound:', campaignId);
+        return new Response(
+          JSON.stringify({ error: 'Campaign is not an outbound campaign' }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
       campaign = campaignData;
     }
 
-    console.log(`Found campaign: ${campaign.name}`);
+    console.log(`Found outbound campaign: ${campaign.name}`);
 
     // Get agent details if campaign has an agent
     let agent = null;
@@ -195,7 +212,7 @@ Deno.serve(async (req) => {
     if (!agent) {
       console.log('No agent found for campaign');
       return new Response(
-        JSON.stringify({ error: 'No agent assigned to this campaign' }),
+        JSON.stringify({ error: 'No agent assigned to this outbound campaign' }),
         { 
           status: 404, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -258,7 +275,8 @@ Deno.serve(async (req) => {
           id: campaign.id,
           name: campaign.name,
           description: campaign.description,
-          status: campaign.status
+          status: campaign.status,
+          campaign_type: campaign.settings?.campaign_type || 'outbound'
         },
         agent: agent,
         script: script,
