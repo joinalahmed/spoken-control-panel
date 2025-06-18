@@ -56,7 +56,7 @@ const Settings = () => {
     return () => {
       isMounted = false;
     };
-  }, [getSetting]);
+  }, []); // Remove getSetting dependency to prevent infinite loop
 
   const handleSave = async () => {
     if (!outboundCallUrl.trim()) {
