@@ -8,9 +8,13 @@ export const useUserSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const getSetting = async (key: string): Promise<string | null> => {
-    if (!user) return null;
+    if (!user) {
+      console.log('No user found, cannot get setting');
+      return null;
+    }
 
     try {
+      console.log('Getting setting:', key, 'for user:', user.id);
       const { data, error } = await supabase
         .from('user_settings')
         .select('setting_value')
@@ -23,6 +27,7 @@ export const useUserSettings = () => {
         return null;
       }
 
+      console.log('Retrieved setting data:', data);
       return data?.setting_value || null;
     } catch (error) {
       console.error('Error fetching setting:', error);
@@ -31,10 +36,14 @@ export const useUserSettings = () => {
   };
 
   const setSetting = async (key: string, value: string): Promise<boolean> => {
-    if (!user) return false;
+    if (!user) {
+      console.log('No user found, cannot set setting');
+      return false;
+    }
 
     setIsLoading(true);
     try {
+      console.log('Setting:', key, 'to:', value, 'for user:', user.id);
       const { error } = await supabase
         .from('user_settings')
         .upsert({
@@ -51,6 +60,7 @@ export const useUserSettings = () => {
         return false;
       }
 
+      console.log('Setting saved successfully');
       return true;
     } catch (error) {
       console.error('Error saving setting:', error);

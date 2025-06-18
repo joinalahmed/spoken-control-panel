@@ -14,21 +14,29 @@ const Settings = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
+    console.log('Settings page mounted');
     const loadSettings = async () => {
       setIsLoadingData(true);
       try {
+        console.log('Loading settings...');
         const savedUrl = await getSetting('outbound_call_api_url');
+        console.log('Loaded saved URL:', savedUrl);
         if (savedUrl) {
           setOutboundCallUrl(savedUrl);
         } else {
           // Set default value
-          setOutboundCallUrl('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+          const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+          setOutboundCallUrl(defaultUrl);
+          console.log('Set default URL:', defaultUrl);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        setOutboundCallUrl('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+        const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+        setOutboundCallUrl(defaultUrl);
+        toast.error('Failed to load settings, using default values');
       } finally {
         setIsLoadingData(false);
+        console.log('Settings loading complete');
       }
     };
 
@@ -49,12 +57,15 @@ const Settings = () => {
       return;
     }
 
+    console.log('Saving setting:', outboundCallUrl);
     const success = await setSetting('outbound_call_api_url', outboundCallUrl);
     
     if (success) {
       toast.success('Settings saved successfully');
+      console.log('Settings saved successfully');
     } else {
       toast.error('Failed to save settings');
+      console.error('Failed to save settings');
     }
   };
 
@@ -63,6 +74,8 @@ const Settings = () => {
     setOutboundCallUrl(defaultUrl);
     toast.info('Reset to default URL');
   };
+
+  console.log('Settings page render - isLoadingData:', isLoadingData, 'outboundCallUrl:', outboundCallUrl);
 
   if (isLoadingData) {
     return (
