@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PhoneOutgoing, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Contact } from '@/hooks/useContacts';
+import { useUserSettings } from '@/hooks/useUserSettings';
 
 interface TriggerOutboundCallProps {
   contact: Contact;
@@ -17,11 +18,23 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
   onCallTriggered
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [apiUrl, setApiUrl] = useState('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+  const { getSetting } = useUserSettings();
 
-  const getApiUrl = () => {
-    const savedUrl = localStorage.getItem('outbound_call_api_url');
-    return savedUrl || 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
-  };
+  useEffect(() => {
+    const loadApiUrl = async () => {
+      try {
+        const savedUrl = await getSetting('outbound_call_api_url');
+        if (savedUrl) {
+          setApiUrl(savedUrl);
+        }
+      } catch (error) {
+        console.error('Error loading API URL:', error);
+      }
+    };
+
+    loadApiUrl();
+  }, [getSetting]);
 
   const triggerCall = async () => {
     if (!contact.phone) {
@@ -32,8 +45,6 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
     setIsLoading(true);
 
     try {
-      const apiUrl = getApiUrl();
-      
       console.log('Triggering outbound call:', {
         to_number: contact.phone,
         campaign_id: campaignId,

@@ -6,21 +6,34 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save, Settings as SettingsIcon, Globe } from 'lucide-react';
+import { useUserSettings } from '@/hooks/useUserSettings';
 
 const Settings = () => {
   const [outboundCallUrl, setOutboundCallUrl] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { getSetting, setSetting, isLoading } = useUserSettings();
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
-    // Load saved setting from localStorage
-    const savedUrl = localStorage.getItem('outbound_call_api_url');
-    if (savedUrl) {
-      setOutboundCallUrl(savedUrl);
-    } else {
-      // Set default value
-      setOutboundCallUrl('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
-    }
-  }, []);
+    const loadSettings = async () => {
+      setIsLoadingData(true);
+      try {
+        const savedUrl = await getSetting('outbound_call_api_url');
+        if (savedUrl) {
+          setOutboundCallUrl(savedUrl);
+        } else {
+          // Set default value
+          setOutboundCallUrl('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        setOutboundCallUrl('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadSettings();
+  }, [getSetting]);
 
   const handleSave = async () => {
     if (!outboundCallUrl.trim()) {
@@ -36,17 +49,12 @@ const Settings = () => {
       return;
     }
 
-    setIsLoading(true);
+    const success = await setSetting('outbound_call_api_url', outboundCallUrl);
     
-    try {
-      // Save to localStorage
-      localStorage.setItem('outbound_call_api_url', outboundCallUrl);
+    if (success) {
       toast.success('Settings saved successfully');
-    } catch (error) {
-      console.error('Error saving settings:', error);
+    } else {
       toast.error('Failed to save settings');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -55,6 +63,17 @@ const Settings = () => {
     setOutboundCallUrl(defaultUrl);
     toast.info('Reset to default URL');
   };
+
+  if (isLoadingData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
