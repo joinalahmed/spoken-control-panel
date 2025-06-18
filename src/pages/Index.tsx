@@ -13,7 +13,6 @@ import { Contact, useContacts } from '@/hooks/useContacts';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useScripts, Script } from '@/hooks/useScripts';
-import { useUserSettings } from '@/hooks/useUserSettings';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
@@ -38,7 +37,6 @@ const Index = () => {
   const { createContact } = useContacts();
   const { createCampaign, campaigns } = useCampaigns();
   const { createScript, updateScript } = useScripts();
-  const { getSetting, setSetting, isLoading: settingsLoading } = useUserSettings();
   
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -55,42 +53,11 @@ const Index = () => {
   const [editingScript, setEditingScript] = useState<Script | null>(null);
   const [viewingScript, setViewingScript] = useState<Script | null>(null);
   
-  // Settings state
+  // Settings state - System level settings
   const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
-  const [outboundCallUrl, setOutboundCallUrl] = useState(defaultUrl);
-  const [isLoadingSettings, setIsLoadingSettings] = useState(false);
-
-  // Load settings when settings tab is active
-  const loadSettings = async () => {
-    if (activeTab !== 'settings') return;
-    
-    setIsLoadingSettings(true);
-    try {
-      console.log('Loading settings...');
-      const savedUrl = await getSetting('outbound_call_api_url');
-      console.log('Loaded saved URL:', savedUrl);
-      
-      if (savedUrl) {
-        setOutboundCallUrl(savedUrl);
-      } else {
-        // Keep the default value that's already set
-        console.log('Using default URL:', defaultUrl);
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-      setOutboundCallUrl(defaultUrl);
-      toast.error('Failed to load settings, using default values');
-    } finally {
-      setIsLoadingSettings(false);
-      console.log('Settings loading complete');
-    }
-  };
-
-  // Load settings when settings tab becomes active
-  useState(() => {
-    if (activeTab === 'settings') {
-      loadSettings();
-    }
+  const [outboundCallUrl, setOutboundCallUrl] = useState(() => {
+    // Load from localStorage on component initialization
+    return localStorage.getItem('system_outbound_call_api_url') || defaultUrl;
   });
 
   const handleSaveSettings = async () => {
@@ -107,15 +74,16 @@ const Index = () => {
       return;
     }
 
-    console.log('Saving setting:', outboundCallUrl);
-    const success = await setSetting('outbound_call_api_url', outboundCallUrl);
+    console.log('Saving system setting:', outboundCallUrl);
     
-    if (success) {
+    try {
+      // Save to localStorage as a system-level setting
+      localStorage.setItem('system_outbound_call_api_url', outboundCallUrl);
       toast.success('Settings saved successfully');
-      console.log('Settings saved successfully');
-    } else {
+      console.log('System settings saved successfully');
+    } catch (error) {
+      console.error('Failed to save system settings:', error);
       toast.error('Failed to save settings');
-      console.error('Failed to save settings');
     }
   };
 
@@ -482,7 +450,7 @@ const Index = () => {
                     setEditingScript(null);
                   }
                   if (item.id === 'settings') {
-                    loadSettings();
+                    
                   }
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
@@ -564,86 +532,75 @@ const Index = () => {
 
               {/* Content */}
               <div className="max-w-4xl mx-auto px-6 py-8">
-                {isLoadingSettings ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                      <p className="text-gray-600">Loading settings...</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* API Configuration Card */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Globe className="w-5 h-5" />
-                          API Configuration
-                        </CardTitle>
-                        <CardDescription>
-                          Configure the endpoints for external API services
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="outbound-call-url">Outbound Call API URL</Label>
-                          <Input
-                            id="outbound-call-url"
-                            type="url"
-                            placeholder="https://your-api-endpoint.com/outbound_call"
-                            value={outboundCallUrl}
-                            onChange={(e) => setOutboundCallUrl(e.target.value)}
-                            className="font-mono text-sm"
-                          />
-                          <p className="text-sm text-gray-500">
-                            The URL endpoint used for triggering outbound calls. This should point to your call service API.
-                          </p>
-                        </div>
+                <div className="space-y-6">
+                  {/* API Configuration Card */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Globe className="w-5 h-5" />
+                        API Configuration
+                      </CardTitle>
+                      <CardDescription>
+                        Configure the endpoints for external API services (System-wide settings)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="outbound-call-url">Outbound Call API URL</Label>
+                        <Input
+                          id="outbound-call-url"
+                          type="url"
+                          placeholder="https://your-api-endpoint.com/outbound_call"
+                          value={outboundCallUrl}
+                          onChange={(e) => setOutboundCallUrl(e.target.value)}
+                          className="font-mono text-sm"
+                        />
+                        <p className="text-sm text-gray-500">
+                          The URL endpoint used for triggering outbound calls. This should point to your call service API.
+                        </p>
+                      </div>
 
-                        <div className="flex gap-3">
-                          <Button 
-                            onClick={handleSaveSettings} 
-                            disabled={settingsLoading}
-                            className="bg-purple-600 hover:bg-purple-700"
-                          >
-                            <Save className="w-4 h-4 mr-2" />
-                            {settingsLoading ? 'Saving...' : 'Save Settings'}
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            onClick={resetToDefault}
-                            disabled={settingsLoading}
-                          >
-                            Reset to Default
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      <div className="flex gap-3">
+                        <Button 
+                          onClick={handleSaveSettings} 
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Settings
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={resetToDefault}
+                        >
+                          Reset to Default
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                    {/* Additional Settings Cards can be added here */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>About</CardTitle>
-                        <CardDescription>
-                          Application information and version details
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <p className="text-sm text-gray-600">
-                            <strong>Application:</strong> Dhwani Voice AI Agents
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <strong>Version:</strong> 1.0.0
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <strong>Build:</strong> {new Date().toLocaleDateString()}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
+                  {/* Additional Settings Cards can be added here */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>About</CardTitle>
+                      <CardDescription>
+                        Application information and version details
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600">
+                          <strong>Application:</strong> Dhwani Voice AI Agents
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <strong>Version:</strong> 1.0.0
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <strong>Build:</strong> {new Date().toLocaleDateString()}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           )}
