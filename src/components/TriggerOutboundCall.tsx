@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { PhoneOutgoing, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Contact } from '@/hooks/useContacts';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 interface TriggerOutboundCallProps {
   contact: Contact;
@@ -18,14 +19,23 @@ const TriggerOutboundCall: React.FC<TriggerOutboundCallProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiUrl, setApiUrl] = useState('https://7263-49-207-61-173.ngrok-free.app/outbound_call');
+  const { getSetting } = useSystemSettings();
 
   useEffect(() => {
-    // Load system-level setting from localStorage
-    const savedUrl = localStorage.getItem('system_outbound_call_api_url');
-    if (savedUrl) {
-      setApiUrl(savedUrl);
-    }
-  }, []);
+    // Load system-level setting from Supabase
+    const loadSystemSetting = async () => {
+      try {
+        const savedUrl = await getSetting('outbound_call_api_url');
+        if (savedUrl) {
+          setApiUrl(savedUrl);
+        }
+      } catch (error) {
+        console.error('Error loading system setting:', error);
+      }
+    };
+
+    loadSystemSetting();
+  }, [getSetting]);
 
   const triggerCall = async () => {
     if (!contact.phone) {

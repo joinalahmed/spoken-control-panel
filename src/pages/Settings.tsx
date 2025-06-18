@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save, Settings as SettingsIcon, Globe } from 'lucide-react';
-import { useUserSettings } from '@/hooks/useUserSettings';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 const Settings = () => {
   const [outboundCallUrl, setOutboundCallUrl] = useState('');
-  const { getSetting, setSetting, isLoading } = useUserSettings();
+  const { getSetting, setSetting, isLoading } = useSystemSettings();
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const Settings = () => {
       
       setIsLoadingData(true);
       try {
-        console.log('Loading settings...');
+        console.log('Loading system settings...');
         const savedUrl = await getSetting('outbound_call_api_url');
         console.log('Loaded saved URL:', savedUrl);
         
@@ -37,7 +37,7 @@ const Settings = () => {
           console.log('Set default URL:', defaultUrl);
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
+        console.error('Error loading system settings:', error);
         if (isMounted) {
           const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
           setOutboundCallUrl(defaultUrl);
@@ -56,7 +56,7 @@ const Settings = () => {
     return () => {
       isMounted = false;
     };
-  }, []); // Remove getSetting dependency to prevent infinite loop
+  }, [getSetting]);
 
   const handleSave = async () => {
     if (!outboundCallUrl.trim()) {
@@ -72,15 +72,15 @@ const Settings = () => {
       return;
     }
 
-    console.log('Saving setting:', outboundCallUrl);
+    console.log('Saving system setting:', outboundCallUrl);
     const success = await setSetting('outbound_call_api_url', outboundCallUrl);
     
     if (success) {
       toast.success('Settings saved successfully');
-      console.log('Settings saved successfully');
+      console.log('System settings saved successfully');
     } else {
       toast.error('Failed to save settings');
-      console.error('Failed to save settings');
+      console.error('Failed to save system settings');
     }
   };
 
@@ -131,7 +131,7 @@ const Settings = () => {
                 API Configuration
               </CardTitle>
               <CardDescription>
-                Configure the endpoints for external API services
+                Configure the endpoints for external API services (System-wide settings)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
