@@ -56,7 +56,8 @@ const Index = () => {
   const [viewingScript, setViewingScript] = useState<Script | null>(null);
   
   // Settings state
-  const [outboundCallUrl, setOutboundCallUrl] = useState('');
+  const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
+  const [outboundCallUrl, setOutboundCallUrl] = useState(defaultUrl);
   const [isLoadingSettings, setIsLoadingSettings] = useState(false);
 
   // Load settings when settings tab is active
@@ -72,14 +73,11 @@ const Index = () => {
       if (savedUrl) {
         setOutboundCallUrl(savedUrl);
       } else {
-        // Set default value
-        const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
-        setOutboundCallUrl(defaultUrl);
-        console.log('Set default URL:', defaultUrl);
+        // Keep the default value that's already set
+        console.log('Using default URL:', defaultUrl);
       }
     } catch (error) {
       console.error('Error loading settings:', error);
-      const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
       setOutboundCallUrl(defaultUrl);
       toast.error('Failed to load settings, using default values');
     } finally {
@@ -122,7 +120,6 @@ const Index = () => {
   };
 
   const resetToDefault = () => {
-    const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
     setOutboundCallUrl(defaultUrl);
     toast.info('Reset to default URL');
   };
