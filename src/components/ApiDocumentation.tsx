@@ -16,7 +16,7 @@ const ApiDocumentation = () => {
   const baseUrl = "https://vegryoncdzcxmornresu.supabase.co/functions/v1";
   const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3J5b25jZHpjeG1vcm5yZXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0NDQ2NzgsImV4cCI6MjA2NTAyMDY3OH0.5XnZzQzxL1ffFRmGrIjwe5NpAKQZloJ7yHd8w9uX1PI";
 
-  const curlGetExample = `curl -X GET "${baseUrl}/get-caller-details?phone=%2B1234567890" \\
+  const curlGetExample = `curl -X GET "${baseUrl}/get-caller-details?phone=%2B1234567890&campaign_type=inbound" \\
   -H "Authorization: Bearer ${authToken}" \\
   -H "apikey: ${authToken}" \\
   -H "Content-Type: application/json"`;
@@ -25,7 +25,7 @@ const ApiDocumentation = () => {
   -H "Authorization: Bearer ${authToken}" \\
   -H "apikey: ${authToken}" \\
   -H "Content-Type: application/json" \\
-  -d '{"phone": "+1234567890"}'`;
+  -d '{"phone": "+1234567890", "campaign_type": "inbound"}'`;
 
   const jsExample = `const response = await fetch('${baseUrl}/get-caller-details', {
   method: 'POST',
@@ -35,7 +35,8 @@ const ApiDocumentation = () => {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    phone: '+1234567890'
+    phone: '+1234567890',
+    campaign_type: 'inbound'
   })
 });
 
@@ -61,7 +62,10 @@ console.log(data);`;
       "id": "987fcdeb-51a2-43d7-8b5c-123456789abc",
       "name": "Summer Campaign 2024",
       "description": "Promotional campaign for summer products",
-      "status": "active"
+      "status": "active",
+      "settings": {
+        "campaignType": "inbound"
+      }
     },
     "agent": {
       "id": "456e7890-a12b-34c5-d678-901234567890",
@@ -226,7 +230,8 @@ console.log(data);`;
             </div>
           </div>
           <p className="text-gray-600">
-            Retrieve caller information including contact details, campaign, agent, and user information based on phone number.
+            Retrieve caller information including contact details, campaign, agent, and user information based on phone number. 
+            Supports filtering by campaign type and automatically prioritizes inbound campaigns for incoming calls.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -281,15 +286,31 @@ console.log(data);`;
                     </td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-2 border-b font-mono text-sm">campaign_id</td>
+                    <td className="px-4 py-2 border-b font-mono text-sm">campaign_type</td>
                     <td className="px-4 py-2 border-b">string</td>
                     <td className="px-4 py-2 border-b">
                       <Badge variant="outline">No</Badge>
                     </td>
-                    <td className="px-4 py-2 border-b">Campaign ID associated with the call</td>
+                    <td className="px-4 py-2 border-b">
+                      Filter campaigns by type ("inbound" or "outbound"). If not specified, inbound campaigns are prioritized for incoming calls.
+                    </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Campaign Type Behavior */}
+          <div>
+            <h3 className="font-semibold mb-2">Campaign Type Behavior</h3>
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-800 mb-2">Smart Campaign Selection</h4>
+              <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                <li><strong>With campaign_type specified:</strong> Only returns campaigns matching the specified type</li>
+                <li><strong>Without campaign_type:</strong> Automatically prioritizes inbound campaigns if multiple active campaigns exist</li>
+                <li><strong>Inbound priority:</strong> Designed for incoming call scenarios where inbound campaigns should take precedence</li>
+                <li><strong>Campaign settings:</strong> Campaign type is determined from the campaign's settings.campaignType field</li>
+              </ul>
             </div>
           </div>
 
@@ -300,7 +321,7 @@ console.log(data);`;
             {/* GET Request */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">GET Request (Query Parameter)</h4>
+                <h4 className="font-medium">GET Request with Campaign Type Filter</h4>
                 <Button
                   variant="outline"
                   size="sm"
@@ -317,7 +338,7 @@ console.log(data);`;
             {/* POST Request */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">POST Request (JSON Body)</h4>
+                <h4 className="font-medium">POST Request with Campaign Type</h4>
                 <Button
                   variant="outline"
                   size="sm"
@@ -365,6 +386,9 @@ console.log(data);`;
             <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
               {responseExample}
             </pre>
+            <p className="text-sm text-gray-600 mt-2">
+              <strong>Note:</strong> The response now includes campaign settings which contain the campaign type and other configuration options.
+            </p>
           </div>
 
           {/* Error Responses */}
