@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -84,12 +83,12 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
             contactPhone: call.contacts?.phone || call.phone || 'Unknown',
             timestamp: new Date(call.started_at),
             duration: call.duration ? formatDuration(call.duration) : 'N/A',
-            status: call.status as any,
-            outcome: call.outcome as any,
+            status: call.status as Call['status'],
+            outcome: call.outcome as Call['outcome'],
             sentiment: call.sentiment,
             hasRecording: !!call.recording_url,
             hasTranscript: !!call.transcript,
-            callStatus: call.call_status || 'completed',
+            callStatus: (call.call_status || 'completed') as Call['callStatus'],
             rescheduledFor: call.rescheduled_for ? new Date(call.rescheduled_for) : null,
             objectiveMet: call.objective_met
           };
