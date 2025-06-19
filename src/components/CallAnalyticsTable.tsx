@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Clock, TrendingUp, TrendingDown, Play, Loader2 } from 'lucide-react';
+import { Phone, Clock, TrendingUp, TrendingDown, Play, Loader2, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Call {
@@ -17,6 +17,9 @@ interface Call {
   sentiment: number | null;
   hasRecording: boolean;
   hasTranscript: boolean;
+  callStatus: 'completed' | 'rescheduled';
+  rescheduledFor: Date | null;
+  objectiveMet: boolean | null;
 }
 
 interface CallAnalyticsTableProps {
@@ -52,6 +55,9 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
             started_at,
             ended_at,
             contact_id,
+            call_status,
+            rescheduled_for,
+            objective_met,
             contacts!inner(
               name,
               phone
@@ -82,7 +88,10 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
             outcome: call.outcome as any,
             sentiment: call.sentiment,
             hasRecording: !!call.recording_url,
-            hasTranscript: !!call.transcript
+            hasTranscript: !!call.transcript,
+            callStatus: call.call_status || 'completed',
+            rescheduledFor: call.rescheduled_for ? new Date(call.rescheduled_for) : null,
+            objectiveMet: call.objective_met
           };
         });
 
@@ -124,11 +133,31 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
     }
   };
 
+  const getCallStatusColor = (callStatus: string) => {
+    switch (callStatus) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'rescheduled':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const getOutcomeIcon = (outcome: string | null, sentiment: number | null) => {
     if (outcome === 'positive' || (sentiment !== null && sentiment > 0.3)) {
       return <TrendingUp className="w-4 h-4 text-green-600" />;
     } else if (outcome === 'negative' || (sentiment !== null && sentiment < -0.3)) {
       return <TrendingDown className="w-4 h-4 text-red-600" />;
+    }
+    return <div className="w-4 h-4 rounded-full bg-gray-400" />;
+  };
+
+  const getObjectiveIcon = (objectiveMet: boolean | null) => {
+    if (objectiveMet === true) {
+      return <CheckCircle className="w-4 h-4 text-green-600" />;
+    } else if (objectiveMet === false) {
+      return <XCircle className="w-4 h-4 text-red-600" />;
     }
     return <div className="w-4 h-4 rounded-full bg-gray-400" />;
   };
@@ -189,7 +218,9 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
               <TableHead className="text-gray-700">Date & Time</TableHead>
               <TableHead className="text-gray-700">Duration</TableHead>
               <TableHead className="text-gray-700">Status</TableHead>
+              <TableHead className="text-gray-700">Call Status</TableHead>
               <TableHead className="text-gray-700">Outcome</TableHead>
+              <TableHead className="text-gray-700">Objective</TableHead>
               <TableHead className="text-gray-700">Recording</TableHead>
               <TableHead className="text-gray-700">Actions</TableHead>
             </TableRow>
@@ -221,10 +252,31 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
                   </Badge>
                 </TableCell>
                 <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <Badge variant="outline" className={getCallStatusColor(call.callStatus)}>
+                      {call.callStatus}
+                    </Badge>
+                    {call.callStatus === 'rescheduled' && call.rescheduledFor && (
+                      <div className="flex items-center gap-1 text-xs text-blue-600">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formatDate(call.rescheduledFor)}</span>
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center gap-2">
                     {getOutcomeIcon(call.outcome, call.sentiment)}
                     <span className="text-gray-700 capitalize">
                       {call.outcome || 'Unknown'}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {getObjectiveIcon(call.objectiveMet)}
+                    <span className="text-gray-700 text-sm">
+                      {call.objectiveMet === true ? 'Met' : call.objectiveMet === false ? 'Not Met' : 'N/A'}
                     </span>
                   </div>
                 </TableCell>

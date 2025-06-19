@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, Pause, Download, Phone, Clock, TrendingUp, User, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Download, Phone, Clock, TrendingUp, User, MessageSquare, Loader2, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,6 +25,10 @@ interface CallData {
   notes: string | null;
   contact_id: string;
   campaign_id: string | null;
+  extracted_data: any | null;
+  call_status: string;
+  rescheduled_for: string | null;
+  objective_met: boolean | null;
 }
 
 interface ContactData {
@@ -99,6 +103,17 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
     }
   };
 
+  const getCallStatusColor = (callStatus: string) => {
+    switch (callStatus) {
+      case 'completed':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'rescheduled':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      default:
+        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    }
+  };
+
   const getSentimentColor = (sentiment: number | null) => {
     if (!sentiment) return 'text-slate-400';
     if (sentiment > 0.3) return 'text-green-400';
@@ -137,6 +152,42 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
     }
     
     return [];
+  };
+
+  const renderExtractedDataTable = (extractedData: any) => {
+    if (!extractedData || typeof extractedData !== 'object') {
+      return <p className="text-gray-500 text-sm">No extracted data available.</p>;
+    }
+
+    const entries = Object.entries(extractedData);
+    if (entries.length === 0) {
+      return <p className="text-gray-500 text-sm">No extracted data available.</p>;
+    }
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-200 rounded-lg">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="border border-gray-200 px-4 py-2 text-left font-medium text-gray-700">Field</th>
+              <th className="border border-gray-200 px-4 py-2 text-left font-medium text-gray-700">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map(([key, value], index) => (
+              <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="border border-gray-200 px-4 py-2 font-medium text-gray-700 capitalize">
+                  {key.replace(/_/g, ' ')}
+                </td>
+                <td className="border border-gray-200 px-4 py-2 text-gray-900">
+                  {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -197,6 +248,9 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
                   <Badge variant="outline" className={getStatusColor(callData.status)}>
                     {callData.status}
                   </Badge>
+                  <Badge variant="outline" className={getCallStatusColor(callData.call_status)}>
+                    {callData.call_status}
+                  </Badge>
                   <div className="flex items-center gap-2 text-gray-600 text-sm">
                     <Clock className="w-4 h-4" />
                     <span>{formatDuration(callData.duration)}</span>
@@ -230,6 +284,10 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
                 <span className="text-gray-900 font-medium capitalize">{callData.status}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-600">Call Status</span>
+                <span className="text-gray-900 font-medium capitalize">{callData.call_status}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-600">Outcome</span>
                 <span className="text-gray-900 font-medium">{callData.outcome || 'N/A'}</span>
               </div>
@@ -237,6 +295,44 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
                 <span className="text-gray-600">Direction</span>
                 <span className="text-gray-900 font-medium">Outbound</span>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Objective & Reschedule Status */}
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-purple-500" />
+                Call Outcome
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Objective Met</span>
+                <div className="flex items-center gap-2">
+                  {callData.objective_met === true ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : callData.objective_met === false ? (
+                    <XCircle className="w-4 h-4 text-red-500" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full bg-gray-400" />
+                  )}
+                  <span className="text-gray-900 font-medium">
+                    {callData.objective_met === true ? 'Yes' : callData.objective_met === false ? 'No' : 'N/A'}
+                  </span>
+                </div>
+              </div>
+              {callData.call_status === 'rescheduled' && callData.rescheduled_for && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Calendar className="w-4 h-4" />
+                    <span className="font-medium">Rescheduled For</span>
+                  </div>
+                  <p className="text-blue-600 text-sm mt-1">
+                    {new Date(callData.rescheduled_for).toLocaleString()}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -259,51 +355,64 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Recording Player */}
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-gray-900 text-lg">Call Recording</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {callData.recording_url ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsPlaying(!isPlaying)}
-                    >
-                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      {isPlaying ? 'Pause' : 'Play'}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                      onClick={() => window.open(callData.recording_url!, '_blank')}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </Button>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>1:58</span>
-                    <span>{formatDuration(callData.duration)}</span>
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm">No recording available</p>
-              )}
-            </CardContent>
-          </Card>
         </div>
 
+        {/* Recording Player */}
+        <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-gray-900 text-lg">Call Recording</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {callData.recording_url ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    onClick={() => setIsPlaying(!isPlaying)}
+                  >
+                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {isPlaying ? 'Pause' : 'Play'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    onClick={() => window.open(callData.recording_url!, '_blank')}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>1:58</span>
+                  <span>{formatDuration(callData.duration)}</span>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-500 text-sm">No recording available</p>
+            )}
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Extracted Data Table */}
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-gray-900">Extracted Call Data</CardTitle>
+              <CardDescription className="text-gray-600">
+                Key information extracted from the call
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderExtractedDataTable(callData.extracted_data)}
+            </CardContent>
+          </Card>
+
           {/* Transcript */}
           <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader>
@@ -343,26 +452,26 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
               )}
             </CardContent>
           </Card>
-
-          {/* Notes */}
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-gray-900">Call Notes</CardTitle>
-              <CardDescription className="text-gray-600">
-                Additional notes and observations from the call
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {callData.notes ? (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-700 text-sm leading-relaxed">{callData.notes}</p>
-                </div>
-              ) : (
-                <p className="text-gray-500 text-sm">No notes available for this call.</p>
-              )}
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Notes */}
+        <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow mt-6">
+          <CardHeader>
+            <CardTitle className="text-gray-900">Call Notes</CardTitle>
+            <CardDescription className="text-gray-600">
+              Additional notes and observations from the call
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {callData.notes ? (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-gray-700 text-sm leading-relaxed">{callData.notes}</p>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">No notes available for this call.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

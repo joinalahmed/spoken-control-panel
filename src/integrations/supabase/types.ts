@@ -80,6 +80,7 @@ export type Database = {
       }
       calls: {
         Row: {
+          call_status: string | null
           campaign_id: string | null
           contact_id: string
           created_at: string
@@ -87,11 +88,14 @@ export type Database = {
           duration: number | null
           ended_at: string | null
           external_call_id: string | null
+          extracted_data: Json | null
           id: string
           notes: string | null
+          objective_met: boolean | null
           outcome: string | null
           phone: string
           recording_url: string | null
+          rescheduled_for: string | null
           sentiment: number | null
           started_at: string
           status: string
@@ -100,6 +104,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          call_status?: string | null
           campaign_id?: string | null
           contact_id: string
           created_at?: string
@@ -107,11 +112,14 @@ export type Database = {
           duration?: number | null
           ended_at?: string | null
           external_call_id?: string | null
+          extracted_data?: Json | null
           id?: string
           notes?: string | null
+          objective_met?: boolean | null
           outcome?: string | null
           phone: string
           recording_url?: string | null
+          rescheduled_for?: string | null
           sentiment?: number | null
           started_at?: string
           status?: string
@@ -120,6 +128,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          call_status?: string | null
           campaign_id?: string | null
           contact_id?: string
           created_at?: string
@@ -127,11 +136,14 @@ export type Database = {
           duration?: number | null
           ended_at?: string | null
           external_call_id?: string | null
+          extracted_data?: Json | null
           id?: string
           notes?: string | null
+          objective_met?: boolean | null
           outcome?: string | null
           phone?: string
           recording_url?: string | null
+          rescheduled_for?: string | null
           sentiment?: number | null
           started_at?: string
           status?: string

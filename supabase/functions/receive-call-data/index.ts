@@ -59,7 +59,11 @@ Deno.serve(async (req) => {
       campaign_id,
       outcome,
       sentiment,
-      user_id
+      user_id,
+      extracted_data, // New field for JSON object
+      call_status, // New field for 'completed' or 'rescheduled'
+      rescheduled_for, // New field for reschedule datetime
+      objective_met // New field for boolean objective status
     } = callData;
 
     // Find the contact by phone number
@@ -117,7 +121,7 @@ Deno.serve(async (req) => {
       console.log('Error updating contact:', updateError);
     }
 
-    // Store the call record in the new calls table
+    // Store the call record in the calls table with new fields
     const callRecord = {
       contact_id: contact.id,
       campaign_id: campaign_id || null,
@@ -133,7 +137,11 @@ Deno.serve(async (req) => {
       notes: notes || null,
       outcome: outcome || null,
       sentiment: sentiment || null,
-      user_id: user_id || contact.user_id, // Use provided user_id or fall back to contact's user_id
+      user_id: user_id || contact.user_id,
+      extracted_data: extracted_data || null, // Store the JSON object
+      call_status: call_status || 'completed', // Default to 'completed'
+      rescheduled_for: rescheduled_for || null, // Reschedule datetime
+      objective_met: objective_met !== undefined ? objective_met : null, // Boolean objective status
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
