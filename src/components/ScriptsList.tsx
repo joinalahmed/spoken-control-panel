@@ -2,7 +2,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useScripts, Script } from '@/hooks/useScripts';
 
 interface ScriptsListProps {
@@ -16,7 +17,25 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
   onEditScript,
   onViewScript
 }) => {
+  const { toast } = useToast();
   const { scripts, isLoading, deleteScript } = useScripts();
+
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      toast({
+        title: "Copied!",
+        description: "Script ID copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy ID to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDeleteScript = async (scriptId: string, scriptName: string) => {
     if (window.confirm(`Are you sure you want to delete the script "${scriptName}"?`)) {
@@ -73,16 +92,27 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
         ) : (
           <div className="grid gap-4">
             {scripts.map((script) => (
-              <Card key={script.id}>
+              <Card key={script.id} className="group">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex-1">
                       <CardTitle>
                         {script.name}
                       </CardTitle>
                       <CardDescription>
                         {script.description || 'No description available'}
                       </CardDescription>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+                        <span>ID: {script.id.slice(0, 8)}...</span>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="p-1 h-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => handleCopyId(script.id, e)}
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button

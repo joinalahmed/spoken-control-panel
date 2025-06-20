@@ -1,6 +1,9 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { KbsItem } from '@/hooks/useKbs';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -11,7 +14,27 @@ interface ViewKbsModalProps {
 }
 
 const ViewKbsModal = ({ item, isOpen, onClose }: ViewKbsModalProps) => {
+  const { toast } = useToast();
+
   if (!item) return null;
+
+  const handleCopyId = async () => {
+    if (item?.id) {
+      try {
+        await navigator.clipboard.writeText(item.id);
+        toast({
+          title: "Copied!",
+          description: "Knowledge base ID copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy ID to clipboard",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   const formatLastModified = (lastModified: string | null) => {
     if (!lastModified) return 'Never';
@@ -37,7 +60,20 @@ const ViewKbsModal = ({ item, isOpen, onClose }: ViewKbsModalProps) => {
                 {item.title.charAt(0)}
               </span>
             </div>
-            {item.title}
+            <div>
+              <div>{item.title}</div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-normal">
+                <span>ID: {item.id.slice(0, 8)}...</span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="p-1 h-auto"
+                  onClick={handleCopyId}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
           </DialogTitle>
         </DialogHeader>
         

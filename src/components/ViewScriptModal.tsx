@@ -7,6 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Script } from '@/hooks/useScripts';
 
@@ -21,6 +24,26 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
   isOpen,
   onClose
 }) => {
+  const { toast } = useToast();
+
+  const handleCopyId = async () => {
+    if (script?.id) {
+      try {
+        await navigator.clipboard.writeText(script.id);
+        toast({
+          title: "Copied!",
+          description: "Script ID copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy ID to clipboard",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   if (!script) return null;
 
   return (
@@ -28,7 +51,20 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {script.name}
+            <div>
+              <div>{script.name}</div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-normal">
+                <span>ID: {script.id.slice(0, 8)}...</span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="p-1 h-auto"
+                  onClick={handleCopyId}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
           </DialogTitle>
           <DialogDescription>
             {script.description || 'No description available'}

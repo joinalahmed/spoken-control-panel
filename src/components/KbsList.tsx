@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Search, Filter, SortAsc, Plus, FileText, MoreHorizontal, Eye, Edit, Trash } from 'lucide-react';
+import { Search, Filter, SortAsc, Plus, FileText, MoreHorizontal, Eye, Edit, Trash, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
 import { useKbs, KbsItem } from '@/hooks/useKbs';
 import ViewKbsModal from '@/components/ViewKbsModal';
 
@@ -30,6 +31,7 @@ interface KbsListProps {
 const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingItem, setViewingItem] = useState<KbsItem | null>(null);
+  const { toast } = useToast();
   const { kbs, isLoading, deleteKbsItem } = useKbs();
 
   const filteredItems = kbs.filter(item =>
@@ -44,6 +46,23 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
       case 'faq': return 'bg-green-100 text-green-700';
       case 'guide': return 'bg-purple-100 text-purple-700';
       default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      toast({
+        title: "Copied!",
+        description: "Knowledge base ID copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy ID to clipboard",
+        variant: "destructive",
+      });
     }
   };
 
@@ -133,7 +152,7 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-gray-900 text-xl font-bold mb-2 line-clamp-2">{item.title}</CardTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-2">
                       <Badge className={getTypeColor(item.type)}>{item.type}</Badge>
                       <Badge 
                         variant={item.status === 'published' ? 'default' : 'secondary'}
@@ -141,6 +160,17 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
                       >
                         {item.status}
                       </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <span>ID: {item.id.slice(0, 8)}...</span>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="p-1 h-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handleCopyId(item.id, e)}
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -195,7 +225,6 @@ const KbsList = ({ onCreateItem, onEditItem }: KbsListProps) => {
           ))}
         </div>
       )}
-
 
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4">

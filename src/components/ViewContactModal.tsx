@@ -1,6 +1,9 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Contact } from '@/hooks/useContacts';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -11,6 +14,26 @@ interface ViewContactModalProps {
 }
 
 const ViewContactModal = ({ contact, isOpen, onClose }: ViewContactModalProps) => {
+  const { toast } = useToast();
+
+  const handleCopyId = async () => {
+    if (contact?.id) {
+      try {
+        await navigator.clipboard.writeText(contact.id);
+        toast({
+          title: "Copied!",
+          description: "Contact ID copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy ID to clipboard",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   if (!contact) return null;
 
   const formatLastCalled = (lastCalled: string | null) => {
@@ -28,7 +51,20 @@ const ViewContactModal = ({ contact, isOpen, onClose }: ViewContactModalProps) =
                 {contact.name.charAt(0)}
               </span>
             </div>
-            Contact Details
+            <div>
+              <div>Contact Details</div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-normal">
+                <span>ID: {contact.id.slice(0, 8)}...</span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="p-1 h-auto"
+                  onClick={handleCopyId}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
           </DialogTitle>
         </DialogHeader>
         
