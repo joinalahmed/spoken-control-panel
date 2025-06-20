@@ -197,6 +197,7 @@ Deno.serve(async (req) => {
           id: agentData.id,
           name: agentData.name,
           voice: agentData.voice,
+          voice_id: agentData.voice, // Add voice_id parameter
           status: agentData.status,
           description: agentData.description,
           system_prompt: agentData.system_prompt,
@@ -270,6 +271,7 @@ Deno.serve(async (req) => {
     const response = {
       success: true,
       campaign_id: campaign.id,
+      voice_id: agent.voice_id, // Add voice_id to top level response
       outbound_call: {
         campaign: {
           id: campaign.id,

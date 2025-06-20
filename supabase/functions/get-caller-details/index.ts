@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get the phone number and campaign type from query parameters or request body
+    // Get parameters from query or request body
     let phoneNumber: string | null = null;
     let campaignType: string | null = null;
     
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Looking up caller with phone: ${phoneNumber}, campaign type: ${campaignType || 'any'}`);
+    console.log(`Looking up caller details for phone: ${phoneNumber}`);
     
     // Normalize the input phone number
     const normalizedInputPhone = normalizePhoneNumber(phoneNumber);
@@ -77,7 +77,6 @@ Deno.serve(async (req) => {
 
     if (!contact) {
       console.log('Contact not found for normalized phone:', normalizedInputPhone);
-      console.log('Available contacts:', contacts?.map(c => ({ id: c.id, phone: c.phone, normalized: c.phone ? normalizePhoneNumber(c.phone) : null })));
       return new Response(
         JSON.stringify({ error: 'Contact not found' }),
         { 
@@ -89,19 +88,17 @@ Deno.serve(async (req) => {
 
     console.log(`Found contact: ${contact.name}`);
 
-    // Find campaigns where this contact is assigned using the campaign_contacts table
-    const { data: campaignContacts, error: campaignContactsError } = await supabase
-      .from('campaign_contacts')
-      .select(`
-        campaign_id,
-        campaigns!inner(*)
-      `)
-      .eq('contact_id', contact.id);
+    // Get campaigns for this user (contact's user)
+    const { data: campaigns, error: campaignsError } = await supabase
+      .from('campaigns')
+      .select('*')
+      .eq('user_id', contact.user_id)
+      .eq('status', 'active');
 
-    if (campaignContactsError) {
-      console.log('Error fetching campaign contacts:', campaignContactsError);
+    if (campaignsError) {
+      console.log('Error fetching campaigns:', campaignsError);
       return new Response(
-        JSON.stringify({ error: 'Error fetching campaign contacts' }),
+        JSON.stringify({ error: 'Error fetching campaigns' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -109,37 +106,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Filter for active campaigns and optionally by campaign type
-    let activeCampaigns = campaignContacts?.filter(cc => cc.campaigns.status === 'active') || [];
-    
-    // If campaign type is specified, filter by it
+    // Filter campaigns by type if specified
+    let filteredCampaigns = campaigns || [];
     if (campaignType) {
-      activeCampaigns = activeCampaigns.filter(cc => {
-        const settings = cc.campaigns.settings;
-        if (!settings || typeof settings !== 'object') return false;
-        const parsedSettings = settings as any;
-        return parsedSettings.campaignType === campaignType;
-      });
-      console.log(`Filtered campaigns by type '${campaignType}':`, activeCampaigns.length);
+      filteredCampaigns = campaigns?.filter(c => {
+        const cType = c.settings?.campaign_type || 'outbound';
+        return cType === campaignType;
+      }) || [];
     }
 
-    // If no campaign type specified, prioritize inbound campaigns for incoming calls
-    if (!campaignType && activeCampaigns.length > 1) {
-      const inboundCampaigns = activeCampaigns.filter(cc => {
-        const settings = cc.campaigns.settings;
-        if (!settings || typeof settings !== 'object') return false;
-        const parsedSettings = settings as any;
-        return parsedSettings.campaignType === 'inbound';
-      });
-      
-      if (inboundCampaigns.length > 0) {
-        activeCampaigns = inboundCampaigns;
-        console.log('Prioritizing inbound campaigns for incoming call');
-      }
+    // For inbound calls, prioritize inbound campaigns, otherwise use any active campaign
+    let selectedCampaign = null;
+    if (!campaignType || campaignType === 'inbound') {
+      // Look for active inbound campaigns first
+      const inboundCampaigns = filteredCampaigns.filter(c => 
+        (c.settings?.campaign_type === 'inbound')
+      );
+      selectedCampaign = inboundCampaigns[0] || filteredCampaigns[0];
+    } else {
+      selectedCampaign = filteredCampaigns[0];
     }
 
-    if (activeCampaigns.length === 0) {
-      console.log('No active campaigns found for contact');
+    if (!selectedCampaign) {
+      console.log('No active campaigns found for contact user');
       return new Response(
         JSON.stringify({ error: 'No active campaigns found for this contact' }),
         { 
@@ -149,16 +138,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    const campaignData = activeCampaigns[0].campaigns;
-    console.log(`Found campaign: ${campaignData.name}`);
+    console.log(`Found campaign: ${selectedCampaign.name}`);
 
     // Get agent details if campaign has an agent
     let agent = null;
-    if (campaignData.agent_id) {
+    if (selectedCampaign.agent_id) {
       const { data: agentData, error: agentError } = await supabase
         .from('agents')
         .select('*')
-        .eq('id', campaignData.agent_id)
+        .eq('id', selectedCampaign.agent_id)
         .single();
 
       if (!agentError && agentData) {
@@ -166,22 +154,25 @@ Deno.serve(async (req) => {
           id: agentData.id,
           name: agentData.name,
           voice: agentData.voice,
+          voice_id: agentData.voice, // Add voice_id parameter
           status: agentData.status,
           description: agentData.description,
           system_prompt: agentData.system_prompt,
           first_message: agentData.first_message,
-          company: agentData.company
+          company: agentData.company,
+          agent_type: agentData.agent_type
         };
+        console.log(`Found agent: ${agent.name}`);
       }
     }
 
     // Get script details if campaign has a script
     let script = null;
-    if (campaignData.script_id) {
+    if (selectedCampaign.script_id) {
       const { data: scriptData, error: scriptError } = await supabase
         .from('scripts')
         .select('*')
-        .eq('id', campaignData.script_id)
+        .eq('id', selectedCampaign.script_id)
         .single();
 
       if (!scriptError && scriptData) {
@@ -199,11 +190,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get user details (campaign owner)
+    // Get user details (contact's user)
     const { data: userProfile, error: userError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', campaignData.user_id)
+      .eq('id', contact.user_id)
       .single();
 
     if (userError) {
@@ -214,47 +205,50 @@ Deno.serve(async (req) => {
     const { data: knowledgeBases, error: kbError } = await supabase
       .from('knowledge_base')
       .select('*')
-      .eq('user_id', campaignData.user_id)
+      .eq('user_id', contact.user_id)
       .eq('status', 'published');
 
     if (kbError) {
       console.log('Error fetching knowledge bases:', kbError);
     }
 
-    // Return comprehensive caller details
+    // Return caller details
+    const response = {
+      success: true,
+      campaign_id: selectedCampaign.id,
+      voice_id: agent?.voice_id || null, // Add voice_id to top level response
+      caller: {
+        contact: {
+          id: contact.id,
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          address: contact.address,
+          city: contact.city,
+          state: contact.state,
+          zip_code: contact.zip_code,
+          status: contact.status
+        },
+        campaign: {
+          id: selectedCampaign.id,
+          name: selectedCampaign.name,
+          description: selectedCampaign.description,
+          status: selectedCampaign.status,
+          campaign_type: selectedCampaign.settings?.campaign_type || 'outbound'
+        },
+        agent: agent,
+        script: script,
+        user: userProfile ? {
+          id: userProfile.id,
+          full_name: userProfile.full_name,
+          email: userProfile.email
+        } : null,
+        knowledge_bases: knowledgeBases || []
+      }
+    };
+
     return new Response(
-      JSON.stringify({
-        success: true,
-        campaign_id: campaignData.id,
-        caller: {
-          contact: {
-            id: contact.id,
-            name: contact.name,
-            email: contact.email,
-            phone: contact.phone,
-            address: contact.address,
-            city: contact.city,
-            state: contact.state,
-            zip_code: contact.zip_code,
-            status: contact.status
-          },
-          campaign: {
-            id: campaignData.id,
-            name: campaignData.name,
-            description: campaignData.description,
-            status: campaignData.status,
-            settings: campaignData.settings
-          },
-          agent: agent,
-          script: script,
-          user: userProfile ? {
-            id: userProfile.id,
-            full_name: userProfile.full_name,
-            email: userProfile.email
-          } : null,
-          knowledge_bases: knowledgeBases || []
-        }
-      }),
+      JSON.stringify(response),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
