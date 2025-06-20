@@ -271,86 +271,20 @@ const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
           </Card>
         </div>
 
-        {/* Additional Stats Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="bg-white shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-teal-50">
-                    <Users className="h-4 w-4 text-teal-600" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-gray-900">{totalContacts}</div>
-                    <div className="text-xs text-gray-600">Total Contacts</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-indigo-50">
-                    <Activity className="h-4 w-4 text-indigo-600" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-semibold text-gray-900">{customVoices?.length || 0}</div>
-                    <div className="text-xs text-gray-600">Custom Voices</div>
-                  </div>
-                </div>
-              </div>
+        {/* Getting Started Card */}
+        {totalAgents === 0 && (
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 shadow-sm">
+            <CardContent className="p-6">
+              <h3 className="font-semibold text-gray-900 mb-2">Getting Started</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Create your first agent to start making calls and managing conversations.
+              </p>
+              <Button size="sm" className="w-full" onClick={() => onNavigateToTab?.('agents')}>
+                Create Agent
+              </Button>
             </CardContent>
           </Card>
-
-          {/* Recent Activity Card */}
-          <Card className="bg-white shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-900">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${activeCampaigns > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                  <span className={activeCampaigns > 0 ? 'text-gray-600' : 'text-gray-500'}>
-                    {activeCampaigns > 0 ? `${activeCampaigns} of ${totalCampaigns} campaigns active` : 'No active campaigns'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-3 p-2 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${activeAgents > 0 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
-                  <span className={activeAgents > 0 ? 'text-gray-600' : 'text-gray-500'}>
-                    {activeAgents > 0 ? `${activeAgents} of ${totalAgents} agents active` : 'No active agents'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-3 p-2 text-sm">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-gray-600">Last updated {new Date().toLocaleDateString()}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Getting Started Card */}
-          {totalAgents === 0 && (
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 shadow-sm">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Getting Started</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Create your first agent to start making calls and managing conversations.
-                </p>
-                <Button size="sm" className="w-full" onClick={() => onNavigateToTab?.('agents')}>
-                  Create Agent
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
