@@ -105,31 +105,6 @@ const HomeDashboard = () => {
     }
   ];
 
-  // Quick stats for sidebar
-  const quickStats = [
-    {
-      label: 'Total Contacts',
-      value: totalContacts,
-      icon: Users,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50'
-    },
-    {
-      label: 'Success Rate',
-      value: `${callStats?.successRate || 0}%`,
-      icon: TrendingUp,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50'
-    },
-    {
-      label: 'Custom Voices',
-      value: customVoices?.length || 0,
-      icon: Activity,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50'
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="p-6 space-y-8">
@@ -235,30 +210,40 @@ const HomeDashboard = () => {
             </Card>
           </div>
 
-          {/* Quick Stats Sidebar - Takes up 1 column */}
+          {/* Sidebar with additional info */}
           <div className="space-y-6">
-            {/* Quick Stats Card */}
+            {/* Additional Stats Card */}
             <Card className="bg-white shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Activity className="w-5 h-5" />
-                  Quick Stats
+                  Overview
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {quickStats.map((stat, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                        <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                      </div>
-                      <div>
-                        <div className="text-lg font-semibold text-gray-900">{stat.value}</div>
-                        <div className="text-xs text-gray-600">{stat.label}</div>
-                      </div>
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-teal-50">
+                      <Users className="h-4 w-4 text-teal-600" />
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold text-gray-900">{totalContacts}</div>
+                      <div className="text-xs text-gray-600">Total Contacts</div>
                     </div>
                   </div>
-                ))}
+                </div>
+                
+                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-indigo-50">
+                      <Activity className="h-4 w-4 text-indigo-600" />
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold text-gray-900">{customVoices?.length || 0}</div>
+                      <div className="text-xs text-gray-600">Custom Voices</div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -295,7 +280,7 @@ const HomeDashboard = () => {
                   
                   <div className="flex items-center gap-3 p-2 text-sm">
                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-gray-600">{totalContacts} contacts available</span>
+                    <span className="text-gray-600">Last updated {new Date().toLocaleDateString()}</span>
                   </div>
                 </div>
               </CardContent>
