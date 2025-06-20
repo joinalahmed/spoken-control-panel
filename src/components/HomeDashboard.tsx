@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,16 +11,18 @@ import { useCustomVoices } from '@/hooks/useCustomVoices';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
-const HomeDashboard = () => {
+interface HomeDashboardProps {
+  onNavigateToTab?: (tab: string) => void;
+}
+
+const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
   const { user } = useAuth();
   const { agents } = useAgents();
   const { contacts } = useContacts();
   const { campaigns } = useCampaigns();
   const { voices: customVoices } = useCustomVoices();
   const [selectedPeriod, setSelectedPeriod] = useState('This month');
-  const navigate = useNavigate();
 
   // Fetch call statistics from database
   const { data: callStats } = useQuery({
@@ -87,7 +90,7 @@ const HomeDashboard = () => {
     {
       title: 'Active Agents',
       value: activeAgents.toString(),
-      description: `of ${totalAgents} total agents`,
+      description: `${activeAgents} of ${totalAgents} total agents`,
       change: totalAgents === 0 ? 'No agents created' : `${totalAgents - activeAgents} inactive`,
       icon: Users,
       color: 'text-green-600',
@@ -97,7 +100,7 @@ const HomeDashboard = () => {
     {
       title: 'Active Campaigns',
       value: activeCampaigns.toString(),
-      description: `of ${totalCampaigns} total campaigns`,
+      description: `${activeCampaigns} of ${totalCampaigns} total campaigns`,
       change: totalCampaigns === 0 ? 'No campaigns created' : `${totalCampaigns - activeCampaigns} inactive`,
       icon: Target,
       color: 'text-orange-600',
@@ -155,147 +158,198 @@ const HomeDashboard = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Agents List - Takes up 3 columns */}
-          <div className="lg:col-span-3">
-            <Card className="bg-white shadow-sm">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl font-semibold text-gray-900">Your Agents</CardTitle>
-                    <CardDescription className="text-gray-600">Manage and monitor your AI agents</CardDescription>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate('/agents')}
-                  >
-                    View All
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Agents List */}
+          <Card className="bg-white shadow-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-semibold text-gray-900">Your Agents</CardTitle>
+                  <CardDescription className="text-gray-600">Manage and monitor your AI agents</CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {agents.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-5 gap-4 text-sm font-medium text-gray-500 pb-3 border-b border-gray-200">
-                      <span>Agent Name</span>
-                      <span>Voice</span>
-                      <span>Status</span>
-                      <span>Conversations</span>
-                      <span>Last Active</span>
-                    </div>
-                    {agents.slice(0, 5).map((agent, index) => (
-                      <div key={index} className="grid grid-cols-5 gap-4 text-sm py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors">
-                        <span className="font-medium text-gray-900">{agent.name}</span>
-                        <span className="text-gray-600">{getVoiceName(agent.voice)}</span>
-                        <div>
-                          <Badge variant={agent.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                            {agent.status}
-                          </Badge>
-                        </div>
-                        <span className="text-gray-600">{agent.conversations}</span>
-                        <span className="text-gray-500 text-xs">
-                          {agent.last_active ? new Date(agent.last_active).toLocaleDateString() : 'Never'}
-                        </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onNavigateToTab?.('agents')}
+                >
+                  View All
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {agents.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-500 pb-3 border-b border-gray-200">
+                    <span>Agent Name</span>
+                    <span>Status</span>
+                    <span>Last Active</span>
+                  </div>
+                  {agents.slice(0, 4).map((agent, index) => (
+                    <div key={index} className="grid grid-cols-3 gap-4 text-sm py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors">
+                      <span className="font-medium text-gray-900 truncate">{agent.name}</span>
+                      <div>
+                        <Badge variant={agent.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                          {agent.status}
+                        </Badge>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No agents created yet</h3>
-                    <p className="text-sm mb-4">Create your first agent to start making calls</p>
-                    <Button size="sm">
-                      Create Agent
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar with additional info */}
-          <div className="space-y-6">
-            {/* Additional Stats Card */}
-            <Card className="bg-white shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
-                  Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-teal-50">
-                      <Users className="h-4 w-4 text-teal-600" />
+                      <span className="text-gray-500 text-xs">
+                        {agent.last_active ? new Date(agent.last_active).toLocaleDateString() : 'Never'}
+                      </span>
                     </div>
-                    <div>
-                      <div className="text-lg font-semibold text-gray-900">{totalContacts}</div>
-                      <div className="text-xs text-gray-600">Total Contacts</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-indigo-50">
-                      <Activity className="h-4 w-4 text-indigo-600" />
-                    </div>
-                    <div>
-                      <div className="text-lg font-semibold text-gray-900">{customVoices?.length || 0}</div>
-                      <div className="text-xs text-gray-600">Custom Voices</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity Card */}
-            <Card className="bg-white shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-gray-900">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-2 text-sm">
-                    <div className={`w-2 h-2 rounded-full ${activeCampaigns > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                    <span className={activeCampaigns > 0 ? 'text-gray-600' : 'text-gray-500'}>
-                      {activeCampaigns > 0 ? `${activeCampaigns} of ${totalCampaigns} campaigns active` : 'No active campaigns'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-2 text-sm">
-                    <div className={`w-2 h-2 rounded-full ${activeAgents > 0 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
-                    <span className={activeAgents > 0 ? 'text-gray-600' : 'text-gray-500'}>
-                      {activeAgents > 0 ? `${activeAgents} of ${totalAgents} agents active` : 'No active agents'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-2 text-sm">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-gray-600">Last updated {new Date().toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Getting Started Card */}
-            {totalAgents === 0 && (
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 shadow-sm">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-gray-900 mb-2">Getting Started</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Create your first agent to start making calls and managing conversations.
-                  </p>
-                  <Button size="sm" className="w-full">
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No agents created yet</h3>
+                  <p className="text-sm mb-4">Create your first agent to start making calls</p>
+                  <Button size="sm" onClick={() => onNavigateToTab?.('agents')}>
                     Create Agent
                   </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Campaigns List */}
+          <Card className="bg-white shadow-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl font-semibold text-gray-900">Your Campaigns</CardTitle>
+                  <CardDescription className="text-gray-600">Monitor your calling campaigns</CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => onNavigateToTab?.('campaigns')}
+                >
+                  View All
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {campaigns.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-500 pb-3 border-b border-gray-200">
+                    <span>Campaign Name</span>
+                    <span>Status</span>
+                    <span>Created</span>
+                  </div>
+                  {campaigns.slice(0, 4).map((campaign, index) => (
+                    <div key={index} className="grid grid-cols-3 gap-4 text-sm py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors">
+                      <span className="font-medium text-gray-900 truncate">{campaign.name}</span>
+                      <div>
+                        <Badge 
+                          variant={campaign.status === 'active' ? 'default' : 
+                                  campaign.status === 'completed' ? 'secondary' : 
+                                  campaign.status === 'paused' ? 'outline' : 'secondary'} 
+                          className="text-xs"
+                        >
+                          {campaign.status}
+                        </Badge>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(campaign.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Target className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No campaigns created yet</h3>
+                  <p className="text-sm mb-4">Create your first campaign to start reaching contacts</p>
+                  <Button size="sm" onClick={() => onNavigateToTab?.('campaigns')}>
+                    Create Campaign
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Additional Stats Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="bg-white shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-teal-50">
+                    <Users className="h-4 w-4 text-teal-600" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-gray-900">{totalContacts}</div>
+                    <div className="text-xs text-gray-600">Total Contacts</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-indigo-50">
+                    <Activity className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-gray-900">{customVoices?.length || 0}</div>
+                    <div className="text-xs text-gray-600">Custom Voices</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity Card */}
+          <Card className="bg-white shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-gray-900">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${activeCampaigns > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                  <span className={activeCampaigns > 0 ? 'text-gray-600' : 'text-gray-500'}>
+                    {activeCampaigns > 0 ? `${activeCampaigns} of ${totalCampaigns} campaigns active` : 'No active campaigns'}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-3 p-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${activeAgents > 0 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                  <span className={activeAgents > 0 ? 'text-gray-600' : 'text-gray-500'}>
+                    {activeAgents > 0 ? `${activeAgents} of ${totalAgents} agents active` : 'No active agents'}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-3 p-2 text-sm">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">Last updated {new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Getting Started Card */}
+          {totalAgents === 0 && (
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 shadow-sm">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Getting Started</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Create your first agent to start making calls and managing conversations.
+                </p>
+                <Button size="sm" className="w-full" onClick={() => onNavigateToTab?.('agents')}>
+                  Create Agent
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

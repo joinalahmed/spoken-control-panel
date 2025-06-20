@@ -514,6 +514,31 @@ const Index = () => {
     }
   };
 
+  const handleNavigateToTab = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === 'contacts') {
+      setContactsView('list');
+    }
+    if (tab === 'files') {
+      setKbsView('list');
+      setEditingKbsItem(null);
+    }
+    if (tab === 'agents') {
+      setShowCreateAgent(false);
+      setSelectedAgent(null);
+    }
+    if (tab === 'campaigns') {
+      setCampaignsView('overview');
+    }
+    if (tab === 'script') {
+      setScriptView('list');
+      setEditingScript(null);
+    }
+    if (tab === 'settings') {
+      setSettingsLoaded(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Sidebar - Fixed height and proper overflow handling */}
@@ -537,30 +562,7 @@ const Index = () => {
             {sidebarItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  if (item.id === 'contacts') {
-                    setContactsView('list');
-                  }
-                  if (item.id === 'files') {
-                    setKbsView('list');
-                    setEditingKbsItem(null);
-                  }
-                  if (item.id === 'agents') {
-                    setShowCreateAgent(false);
-                    setSelectedAgent(null);
-                  }
-                  if (item.id === 'campaigns') {
-                    setCampaignsView('overview');
-                  }
-                  if (item.id === 'script') {
-                    setScriptView('list');
-                    setEditingScript(null);
-                  }
-                  if (item.id === 'settings') {
-                    setSettingsLoaded(false); // Reset to reload settings
-                  }
-                }}
+                onClick={() => handleNavigateToTab(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg mb-1 transition-colors ${
                   activeTab === item.id
                     ? 'bg-purple-600 text-white'
@@ -618,7 +620,7 @@ const Index = () => {
       <div className="flex-1 ml-64 h-screen overflow-hidden">
         <div className="h-full overflow-y-auto">
           {activeTab === 'home' && (
-            <HomeDashboard />
+            <HomeDashboard onNavigateToTab={handleNavigateToTab} />
           )}
 
           {activeTab === 'settings' && (
