@@ -1,13 +1,13 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight, PhoneIncoming, PhoneOutgoing, AlertTriangle } from 'lucide-react';
+import { Loader2, Users, Calendar, Play, Pause, BarChart3, ArrowRight, PhoneIncoming, PhoneOutgoing, AlertTriangle, Copy } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 interface CampaignsListProps {
   onCreateCampaign: () => void;
@@ -17,6 +17,7 @@ interface CampaignsListProps {
 const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProps) => {
   const { campaigns, isLoading } = useCampaigns();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Fetch contact counts for each campaign - remove user filtering
   const { data: contactCounts = {} } = useQuery({
@@ -57,6 +58,23 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
     },
     enabled: !!user?.id && campaigns.length > 0, // Keep auth check but remove user filtering from query
   });
+
+  const handleCopyId = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(id);
+      toast({
+        title: "Copied!",
+        description: "Campaign ID copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy ID to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -223,9 +241,20 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
                     <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
                   </div>
                   <CardTitle className="text-gray-900 text-lg">{campaign.name}</CardTitle>
-                  <CardDescription className="text-gray-600 line-clamp-2">
+                  <CardDescription className="text-gray-600">
                     {campaign.description || 'No description provided'}
                   </CardDescription>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+                    <span>ID: {campaign.id.slice(0, 8)}...</span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="p-1 h-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => handleCopyId(campaign.id, e)}
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
