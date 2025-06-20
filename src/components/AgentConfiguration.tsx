@@ -11,6 +11,7 @@ import { Copy, Settings, Zap, ArrowLeft, BookOpen, Save } from 'lucide-react';
 import { Agent } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
 import { useScripts } from '@/hooks/useScripts';
+import { useCustomVoices } from '@/hooks/useCustomVoices';
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
@@ -21,6 +22,7 @@ interface AgentConfigurationProps {
 const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
   const { kbs: knowledgeBaseItems, isLoading: kbsLoading } = useKbs();
   const { scripts, isLoading: scriptsLoading } = useScripts();
+  const { voices: customVoices, isLoading: voicesLoading } = useCustomVoices();
   
   const [config, setConfig] = useState({
     name: selectedAgent?.name || '',
@@ -33,14 +35,23 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     scriptId: selectedAgent?.script_id || 'none'
   });
 
-  // Voice options
-  const voiceOptions = [
+  // Default voice options (fallback)
+  const defaultVoiceOptions = [
     { id: 'Sarah', name: 'Sarah' },
     { id: 'Alex', name: 'Alex' },
     { id: 'Charlotte', name: 'Charlotte' },
     { id: 'Brian', name: 'Brian' },
     { id: 'Emma', name: 'Emma' },
     { id: 'Liam', name: 'Liam' }
+  ];
+
+  // Combine custom voices with default voices
+  const voiceOptions = [
+    ...defaultVoiceOptions,
+    ...(customVoices?.map(voice => ({
+      id: voice.voice_id,
+      name: voice.voice_name
+    })) || [])
   ];
 
   const handleUpdate = () => {
@@ -201,9 +212,13 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                         <Label htmlFor="voice" className="text-sm font-medium text-gray-700">
                           Voice
                         </Label>
-                        <Select value={config.voice} onValueChange={(value) => setConfig({...config, voice: value})}>
+                        <Select 
+                          value={config.voice} 
+                          onValueChange={(value) => setConfig({...config, voice: value})}
+                          disabled={voicesLoading}
+                        >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select voice" />
+                            <SelectValue placeholder={voicesLoading ? "Loading voices..." : "Select voice"} />
                           </SelectTrigger>
                           <SelectContent>
                             {voiceOptions.map((voice) => (
@@ -213,6 +228,9 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                             ))}
                           </SelectContent>
                         </Select>
+                        {voicesLoading && (
+                          <p className="text-xs text-gray-500">Loading custom voices...</p>
+                        )}
                       </div>
 
                       {/* Language */}
