@@ -2,7 +2,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
 import { handleCorsPrelight, createErrorResponse, createSuccessResponse } from './utils/cors.ts';
 import { findContactByPhone } from './services/contact.ts';
-import { findOutboundCampaignForContact, getCampaignById } from './services/campaign.ts';
+import { getCampaignById } from './services/campaign.ts';
 import { getAgentDetails } from './services/agent.ts';
 import { getScriptDetails } from './services/script.ts';
 import { getUserProfile, getKnowledgeBases } from './services/user.ts';
@@ -31,54 +31,38 @@ Deno.serve(async (req) => {
       phoneNumber = body.phone;
     }
 
-    if (!campaignId && !phoneNumber) {
-      return createErrorResponse('Either campaign_id or phone number is required');
+    // Both campaign_id and phone are required
+    if (!campaignId || !phoneNumber) {
+      return createErrorResponse('Both campaign_id and phone number are required');
     }
 
     let campaign = null;
     let contact = null;
 
-    // If campaign_id is provided, prioritize it and get the campaign directly
-    if (campaignId) {
-      try {
-        campaign = await getCampaignById(supabase, campaignId);
-        console.log(`Found outbound campaign by ID: ${campaign.name}`);
-        
-        // If phone number is also provided, verify the contact exists and is part of this campaign
-        if (phoneNumber) {
-          try {
-            contact = await findContactByPhone(supabase, phoneNumber);
-            
-            // Verify the contact is associated with this specific campaign
-            const { data: campaignContact, error: campaignContactError } = await supabase
-              .from('campaign_contacts')
-              .select('*')
-              .eq('campaign_id', campaignId)
-              .eq('contact_id', contact.id)
-              .single();
+    try {
+      // Get the campaign by ID
+      campaign = await getCampaignById(supabase, campaignId);
+      console.log(`Found outbound campaign by ID: ${campaign.name}`);
+      
+      // Find the contact by phone number
+      contact = await findContactByPhone(supabase, phoneNumber);
+      
+      // Verify the contact is associated with this specific campaign
+      const { data: campaignContact, error: campaignContactError } = await supabase
+        .from('campaign_contacts')
+        .select('*')
+        .eq('campaign_id', campaignId)
+        .eq('contact_id', contact.id)
+        .single();
 
-            if (campaignContactError || !campaignContact) {
-              console.log('Contact not found in the specified campaign');
-              return createErrorResponse('Contact not found in the specified campaign', 404);
-            }
-            
-            console.log(`Verified contact ${contact.name} is in campaign ${campaign.name}`);
-          } catch (error) {
-            return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
-          }
-        }
-      } catch (error) {
-        return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
+      if (campaignContactError || !campaignContact) {
+        console.log('Contact not found in the specified campaign');
+        return createErrorResponse('Contact not found in the specified campaign', 404);
       }
-    } else if (phoneNumber) {
-      // If only phone number is provided, find contact and their outbound campaign
-      try {
-        contact = await findContactByPhone(supabase, phoneNumber);
-        campaign = await findOutboundCampaignForContact(supabase, contact.id);
-        campaignId = campaign.id;
-      } catch (error) {
-        return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
-      }
+      
+      console.log(`Verified contact ${contact.name} is in campaign ${campaign.name}`);
+    } catch (error) {
+      return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
     }
 
     const agent = campaign.agent_id ? await getAgentDetails(supabase, campaign.agent_id) : null;
