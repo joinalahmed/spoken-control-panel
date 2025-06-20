@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,24 +34,11 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     scriptId: selectedAgent?.script_id || 'none'
   });
 
-  // Default voice options (fallback)
-  const defaultVoiceOptions = [
-    { id: 'Sarah', name: 'Sarah' },
-    { id: 'Alex', name: 'Alex' },
-    { id: 'Charlotte', name: 'Charlotte' },
-    { id: 'Brian', name: 'Brian' },
-    { id: 'Emma', name: 'Emma' },
-    { id: 'Liam', name: 'Liam' }
-  ];
-
-  // Combine custom voices with default voices
-  const voiceOptions = [
-    ...defaultVoiceOptions,
-    ...(customVoices?.map(voice => ({
-      id: voice.voice_id,
-      name: voice.voice_name
-    })) || [])
-  ];
+  // Only use custom voices from the database
+  const voiceOptions = customVoices?.map(voice => ({
+    id: voice.voice_id,
+    name: voice.voice_name
+  })) || [];
 
   const handleUpdate = () => {
     if (onUpdate) {
@@ -218,18 +204,29 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                           disabled={voicesLoading}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={voicesLoading ? "Loading voices..." : "Select voice"} />
+                            <SelectValue placeholder={voicesLoading ? "Loading voices..." : voiceOptions.length === 0 ? "No custom voices available" : "Select voice"} />
                           </SelectTrigger>
                           <SelectContent>
-                            {voiceOptions.map((voice) => (
-                              <SelectItem key={voice.id} value={voice.id}>
-                                {voice.name}
+                            {voiceOptions.length === 0 && !voicesLoading ? (
+                              <SelectItem value="no-voices" disabled>
+                                No custom voices available
                               </SelectItem>
-                            ))}
+                            ) : (
+                              voiceOptions.map((voice) => (
+                                <SelectItem key={voice.id} value={voice.id}>
+                                  {voice.name}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                         {voicesLoading && (
                           <p className="text-xs text-gray-500">Loading custom voices...</p>
+                        )}
+                        {voiceOptions.length === 0 && !voicesLoading && (
+                          <p className="text-xs text-gray-500">
+                            No custom voices found. Please add custom voices in Settings to see them here.
+                          </p>
                         )}
                       </div>
 
