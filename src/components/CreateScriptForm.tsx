@@ -1,13 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, GripVertical, FileText, HelpCircle, BookOpen, File } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, GripVertical, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { useScripts, Script } from '@/hooks/useScripts';
 import {
   DndContext,
@@ -178,8 +176,6 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
     name: '',
     description: '',
     company: '',
-    agent_type: 'outbound' as 'inbound' | 'outbound',
-    voice: '',
     first_message: '',
     sections: [] as Array<{
       id: string;
@@ -238,8 +234,6 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
         name: editingScript.name || '',
         description: editingScript.description || '',
         company: editingScript.company || '',
-        agent_type: editingScript.agent_type || 'outbound',
-        voice: editingScript.voice || '',
         first_message: editingScript.first_message || '',
         sections: transformedSections
       });
@@ -301,7 +295,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.agent_type || !formData.voice) {
+    if (!formData.name) {
       return;
     }
 
@@ -327,8 +321,6 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
           name: formData.name,
           description: formData.description || null,
           company: formData.company || null,
-          agent_type: formData.agent_type,
-          voice: formData.voice,
           first_message: formData.first_message || null,
           sections: transformedSections
         });
@@ -338,8 +330,6 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
           name: formData.name,
           description: formData.description || null,
           company: formData.company || null,
-          agent_type: formData.agent_type,
-          voice: formData.voice,
           first_message: formData.first_message || null,
           sections: transformedSections
         });
@@ -411,46 +401,6 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
                 placeholder="Brief description of this script's purpose"
                 rows={3}
               />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Agent Type */}
-              <div className="space-y-2">
-                <Label htmlFor="agent_type">Agent Type *</Label>
-                <Select 
-                  value={formData.agent_type} 
-                  onValueChange={(value) => handleInputChange('agent_type', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select agent type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="inbound">Inbound</SelectItem>
-                    <SelectItem value="outbound">Outbound</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Voice */}
-              <div className="space-y-2">
-                <Label htmlFor="voice">Voice *</Label>
-                <Select 
-                  value={formData.voice} 
-                  onValueChange={(value) => handleInputChange('voice', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select voice" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="alloy">Alloy</SelectItem>
-                    <SelectItem value="echo">Echo</SelectItem>
-                    <SelectItem value="fable">Fable</SelectItem>
-                    <SelectItem value="onyx">Onyx</SelectItem>
-                    <SelectItem value="nova">Nova</SelectItem>
-                    <SelectItem value="shimmer">Shimmer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* First Message */}

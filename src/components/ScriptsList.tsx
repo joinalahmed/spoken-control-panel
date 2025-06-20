@@ -77,11 +77,8 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="flex items-center gap-2">
+                      <CardTitle>
                         {script.name}
-                        <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                          {script.agent_type}
-                        </span>
                       </CardTitle>
                       <CardDescription>
                         {script.description || 'No description available'}
@@ -115,8 +112,6 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>Voice: {script.voice}</span>
-                      <span>Type: {script.agent_type}</span>
                       {script.company && <span>Company: {script.company}</span>}
                     </div>
                     {script.first_message && (

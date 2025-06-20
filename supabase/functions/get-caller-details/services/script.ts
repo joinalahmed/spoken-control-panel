@@ -17,8 +17,6 @@ export const getScriptDetails = async (
       name: scriptData.name,
       description: scriptData.description,
       company: scriptData.company,
-      agent_type: scriptData.agent_type,
-      voice: scriptData.voice,
       first_message: scriptData.first_message,
       sections: scriptData.sections
     };

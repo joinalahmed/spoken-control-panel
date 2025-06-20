@@ -83,8 +83,6 @@ serve(async (req) => {
         name: scriptData.name,
         description: scriptData.description || null,
         company: scriptData.company || null,
-        agent_type: scriptData.agent_type || 'outbound',
-        voice: scriptData.voice || 'Sarah',
         first_message: scriptData.first_message || null,
         sections: scriptData.sections || []
       })

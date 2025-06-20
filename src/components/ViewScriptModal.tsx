@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Script } from '@/hooks/useScripts';
 
@@ -24,30 +23,12 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
 }) => {
   if (!script) return null;
 
-  const getStepTypeColor = (type: string) => {
-    switch (type) {
-      case 'dialogue':
-        return 'bg-blue-100 text-blue-800';
-      case 'instruction':
-        return 'bg-green-100 text-green-800';
-      case 'question':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'objection-handling':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle>
             {script.name}
-            <Badge variant="outline" className="capitalize">
-              {script.agent_type}
-            </Badge>
           </DialogTitle>
           <DialogDescription>
             {script.description || 'No description available'}
@@ -61,17 +42,9 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
               <CardTitle className="text-lg">Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700">Voice:</span>
-                  <span className="ml-2">{script.voice}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Type:</span>
-                  <span className="ml-2 capitalize">{script.agent_type}</span>
-                </div>
+              <div className="grid grid-cols-1 gap-4 text-sm">
                 {script.company && (
-                  <div className="col-span-2">
+                  <div>
                     <span className="font-medium text-gray-700">Company:</span>
                     <span className="ml-2">{script.company}</span>
                   </div>
@@ -110,16 +83,10 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
                         {section.steps.map((step: any, stepIndex: number) => (
                           <div key={step.id || stepIndex} className="border-l-2 border-gray-200 pl-4">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge 
-                                variant="secondary" 
-                                className={getStepTypeColor(step.type)}
-                              >
-                                {step.type}
-                              </Badge>
-                              <span className="font-medium">{step.title}</span>
+                              <span className="font-medium">{step.title || step.name}</span>
                             </div>
                             <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                              {step.content}
+                              {step.content || step.description}
                             </p>
                           </div>
                         ))}

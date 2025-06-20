@@ -417,7 +417,6 @@ export type Database = {
       }
       scripts: {
         Row: {
-          agent_type: string
           company: string | null
           created_at: string
           description: string | null
@@ -427,10 +426,8 @@ export type Database = {
           sections: Json | null
           updated_at: string
           user_id: string
-          voice: string
         }
         Insert: {
-          agent_type?: string
           company?: string | null
           created_at?: string
           description?: string | null
@@ -440,10 +437,8 @@ export type Database = {
           sections?: Json | null
           updated_at?: string
           user_id: string
-          voice?: string
         }
         Update: {
-          agent_type?: string
           company?: string | null
           created_at?: string
           description?: string | null
@@ -453,7 +448,6 @@ export type Database = {
           sections?: Json | null
           updated_at?: string
           user_id?: string
-          voice?: string
         }
         Relationships: []
       }

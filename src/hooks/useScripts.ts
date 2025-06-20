@@ -10,8 +10,6 @@ export interface Script {
   name: string;
   description: string | null;
   company: string | null;
-  agent_type: 'inbound' | 'outbound';
-  voice: string;
   first_message: string | null;
   sections: any[];
   created_at: string;
