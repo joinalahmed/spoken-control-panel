@@ -316,33 +316,6 @@ export type Database = {
         }
         Relationships: []
       }
-      custom_voices: {
-        Row: {
-          created_at: string
-          id: string
-          updated_at: string
-          user_id: string
-          voice_id: string
-          voice_name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id: string
-          voice_id: string
-          voice_name: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-          voice_id?: string
-          voice_name?: string
-        }
-        Relationships: []
-      }
       knowledge_base: {
         Row: {
           content: string | null
