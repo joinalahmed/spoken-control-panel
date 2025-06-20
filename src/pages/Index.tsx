@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType, Save, Globe, Mic, Trash2, Plus, Key, RefreshCw, Eye, EyeOff, Copy } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -639,6 +640,92 @@ const Index = () => {
                 {/* Content */}
                 <div className="max-w-4xl mx-auto px-6 py-8">
                   <div className="space-y-6">
+                    {/* Voice Management Card - Moved to top */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Mic className="w-5 h-5" />
+                          Voice Management
+                          <span className="text-sm text-gray-500">
+                            (Debug: {voicesLoading ? 'Loading...' : `${voices?.length || 0} voices`})
+                          </span>
+                        </CardTitle>
+                        <CardDescription>
+                          Manage custom voices for your AI agents
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* Add New Voice */}
+                        <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                          <h4 className="font-medium text-gray-900">Add New Voice</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="voice-name">Voice Name</Label>
+                              <Input
+                                id="voice-name"
+                                placeholder="e.g., Professional Sarah"
+                                value={newVoiceName}
+                                onChange={(e) => setNewVoiceName(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="voice-id">ElevenLabs Voice ID</Label>
+                              <Input
+                                id="voice-id"
+                                placeholder="e.g., EXAVITQu4vr4xnSDxMaL"
+                                value={newVoiceId}
+                                onChange={(e) => setNewVoiceId(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <Button 
+                            onClick={handleAddVoice}
+                            disabled={voicesLoading || !newVoiceName.trim() || !newVoiceId.trim()}
+                            className="bg-purple-600 hover:bg-purple-700"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Voice
+                          </Button>
+                        </div>
+
+                        {/* Custom Voices List */}
+                        <div className="space-y-4">
+                          <h4 className="font-medium text-gray-900">Custom Voices</h4>
+                          {voicesLoading ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                              <p className="text-sm text-gray-500">Loading voices...</p>
+                            </div>
+                          ) : voices && voices.length > 0 ? (
+                            <div className="space-y-2">
+                              {voices.map((voice) => (
+                                <div key={voice.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                  <div>
+                                    <p className="font-medium text-gray-900">{voice.voice_name}</p>
+                                    <p className="text-sm text-gray-500 font-mono">{voice.voice_id}</p>
+                                  </div>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteVoice(voice.id, voice.voice_name)}
+                                    disabled={voicesLoading}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <Mic className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                              <p>No custom voices added yet</p>
+                              <p className="text-sm">Add your first custom voice above</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     {/* API Key Management Card */}
                     <Card>
                       <CardHeader>
@@ -776,92 +863,6 @@ const Index = () => {
                           >
                             Reset to Default
                           </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Voice Management Card */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Mic className="w-5 h-5" />
-                          Voice Management
-                          <span className="text-sm text-gray-500">
-                            (Debug: {voicesLoading ? 'Loading...' : `${voices?.length || 0} voices`})
-                          </span>
-                        </CardTitle>
-                        <CardDescription>
-                          Manage custom voices for your AI agents
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        {/* Add New Voice */}
-                        <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                          <h4 className="font-medium text-gray-900">Add New Voice</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="voice-name">Voice Name</Label>
-                              <Input
-                                id="voice-name"
-                                placeholder="e.g., Professional Sarah"
-                                value={newVoiceName}
-                                onChange={(e) => setNewVoiceName(e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="voice-id">ElevenLabs Voice ID</Label>
-                              <Input
-                                id="voice-id"
-                                placeholder="e.g., EXAVITQu4vr4xnSDxMaL"
-                                value={newVoiceId}
-                                onChange={(e) => setNewVoiceId(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          <Button 
-                            onClick={handleAddVoice}
-                            disabled={voicesLoading || !newVoiceName.trim() || !newVoiceId.trim()}
-                            className="bg-purple-600 hover:bg-purple-700"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Voice
-                          </Button>
-                        </div>
-
-                        {/* Custom Voices List */}
-                        <div className="space-y-4">
-                          <h4 className="font-medium text-gray-900">Custom Voices</h4>
-                          {voicesLoading ? (
-                            <div className="text-center py-4">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto mb-2"></div>
-                              <p className="text-sm text-gray-500">Loading voices...</p>
-                            </div>
-                          ) : voices && voices.length > 0 ? (
-                            <div className="space-y-2">
-                              {voices.map((voice) => (
-                                <div key={voice.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                                  <div>
-                                    <p className="font-medium text-gray-900">{voice.voice_name}</p>
-                                    <p className="text-sm text-gray-500 font-mono">{voice.voice_id}</p>
-                                  </div>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteVoice(voice.id, voice.voice_name)}
-                                    disabled={voicesLoading}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <Mic className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                              <p>No custom voices added yet</p>
-                              <p className="text-sm">Add your first custom voice above</p>
-                            </div>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
