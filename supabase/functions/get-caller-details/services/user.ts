@@ -25,7 +25,8 @@ export const getUserProfile = async (
 
 export const getCampaignKnowledgeBase = async (
   supabase: SupabaseClient, 
-  knowledgeBaseId: string | null
+  knowledgeBaseId: string | null,
+  userId: string
 ) => {
   if (!knowledgeBaseId) {
     console.log('No knowledge base ID provided');
@@ -36,6 +37,7 @@ export const getCampaignKnowledgeBase = async (
     .from('knowledge_base')
     .select('*')
     .eq('id', knowledgeBaseId)
+    .eq('user_id', userId)
     .eq('status', 'published')
     .single();
 
