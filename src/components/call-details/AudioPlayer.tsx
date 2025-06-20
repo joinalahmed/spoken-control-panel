@@ -33,7 +33,6 @@ const AudioPlayer = ({ recordingUrl }: AudioPlayerProps) => {
               ref={audioRef} 
               src={recordingUrl} 
               preload="metadata"
-              crossOrigin="anonymous"
             />
             
             {audioError ? (

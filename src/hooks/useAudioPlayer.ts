@@ -14,6 +14,11 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
       console.log('Setting up audio with URL:', recordingUrl);
       setIsLoadingAudio(true);
       setAudioError(null);
+      
+      // Reset audio states
+      setCurrentTime(0);
+      setDuration(0);
+      setIsPlaying(false);
     }
   }, [recordingUrl]);
 
@@ -23,6 +28,7 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => {
+      console.log('Audio metadata loaded, duration:', audio.duration);
       setDuration(audio.duration);
       setIsLoadingAudio(false);
     };
@@ -37,13 +43,24 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
       setAudioError(null);
     };
     const handleError = (e: Event) => {
-      console.error('Audio error:', e);
+      const target = e.target as HTMLAudioElement;
+      console.error('Audio error details:', {
+        error: target.error,
+        networkState: target.networkState,
+        readyState: target.readyState,
+        src: target.src
+      });
       setIsLoadingAudio(false);
-      setAudioError('Failed to load audio');
+      setAudioError('Failed to load audio - CORS or network issue');
+    };
+    const handleLoadedData = () => {
+      console.log('Audio data loaded');
+      setIsLoadingAudio(false);
     };
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('loadeddata', handleLoadedData);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('canplay', handleCanPlay);
@@ -52,6 +69,7 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('loadeddata', handleLoadedData);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
@@ -65,13 +83,15 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
 
     if (isPlaying) {
       audio.pause();
+      setIsPlaying(false);
     } else {
       audio.play().catch((error) => {
         console.error('Play failed:', error);
         setAudioError('Failed to play audio');
+        setIsPlaying(false);
       });
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
