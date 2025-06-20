@@ -22,7 +22,8 @@ export const getAgentDetails = async (
       system_prompt: agentData.system_prompt,
       first_message: agentData.first_message,
       company: agentData.company,
-      agent_type: agentData.agent_type
+      gender: agentData.gender,
+      languages: agentData.languages || ['en']
     };
     console.log(`Found agent: ${agent.name}`);
     return agent;

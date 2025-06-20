@@ -16,8 +16,10 @@ export type Database = {
           created_at: string | null
           description: string | null
           first_message: string | null
+          gender: string | null
           id: string
           knowledge_base_id: string | null
+          languages: string[] | null
           last_active: string | null
           name: string
           script_id: string | null
@@ -33,8 +35,10 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           first_message?: string | null
+          gender?: string | null
           id?: string
           knowledge_base_id?: string | null
+          languages?: string[] | null
           last_active?: string | null
           name: string
           script_id?: string | null
@@ -50,8 +54,10 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           first_message?: string | null
+          gender?: string | null
           id?: string
           knowledge_base_id?: string | null
+          languages?: string[] | null
           last_active?: string | null
           name?: string
           script_id?: string | null

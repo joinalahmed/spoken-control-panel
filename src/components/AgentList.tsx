@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MoreHorizontal, Play, Pause, Settings, Trash2, Loader2, Phone, Clock, MessageSquare, Calendar, Building, Users } from 'lucide-react';
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
 import { useAgents, Agent } from '@/hooks/useAgents';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
 import { formatDistanceToNow } from 'date-fns';
+import { generateRandomAvatar, getInitials } from '@/utils/avatarUtils';
 
 interface AgentListProps {
   onSelectAgent: (agent: Agent) => void;
@@ -103,9 +105,10 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 bg-purple-100 border-2 border-white shadow-sm">
-                      <AvatarFallback className="text-purple-600 font-bold text-lg">
-                        {agent.name.split(' ').map(n => n[0]).join('')}
+                    <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+                      <AvatarImage src={generateRandomAvatar(agent.name, 'agent')} alt={agent.name} />
+                      <AvatarFallback className="text-purple-600 font-bold text-lg bg-purple-100">
+                        {getInitials(agent.name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
@@ -176,6 +179,26 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                     </div>
                   </div>
                 </div>
+
+                {agent.gender && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500">Gender:</span>
+                    <span className="text-gray-800 font-medium capitalize">{agent.gender}</span>
+                  </div>
+                )}
+
+                {agent.languages && agent.languages.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500">Languages:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {agent.languages.map((lang) => (
+                        <Badge key={lang} variant="outline" className="text-xs">
+                          {lang.toUpperCase()}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {agent.company && (
                   <div className="bg-black/5 rounded-lg p-3">

@@ -12,12 +12,35 @@ import { Agent } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
 import { useScripts } from '@/hooks/useScripts';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
+import { Badge } from '@/components/ui/badge';
+import { generateRandomAvatar, getInitials } from '@/utils/avatarUtils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
   onBack?: () => void;
   onUpdate?: (agentData: any) => void;
 }
+
+const AVAILABLE_LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'fr', name: 'French' },
+  { code: 'de', name: 'German' },
+  { code: 'it', name: 'Italian' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'zh', name: 'Chinese' },
+];
+
+const GENDER_OPTIONS = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'non-binary', label: 'Non-binary' },
+  { value: 'other', label: 'Other' },
+];
 
 const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
   const { kbs: knowledgeBaseItems, isLoading: kbsLoading } = useKbs();
@@ -30,7 +53,8 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     prompt: selectedAgent?.system_prompt || 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
     firstMessage: selectedAgent?.first_message || 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
-    language: 'en',
+    gender: selectedAgent?.gender || '',
+    languages: selectedAgent?.languages || ['en'],
     knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none',
     scriptId: selectedAgent?.script_id || 'none'
   });
@@ -41,6 +65,15 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     name: voice.voice_name
   })) || [];
 
+  const handleLanguageToggle = (languageCode: string) => {
+    setConfig(prev => ({
+      ...prev,
+      languages: prev.languages.includes(languageCode)
+        ? prev.languages.filter(lang => lang !== languageCode)
+        : [...prev.languages, languageCode]
+    }));
+  };
+
   const handleUpdate = () => {
     if (onUpdate) {
       const updateData = {
@@ -49,6 +82,8 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
         description: config.description,
         systemPrompt: config.prompt,
         firstMessage: config.firstMessage,
+        gender: config.gender || null,
+        languages: config.languages,
         knowledgeBaseId: config.knowledgeBaseId === 'none' ? null : config.knowledgeBaseId,
         scriptId: config.scriptId === 'none' ? null : config.scriptId
       };
@@ -83,11 +118,12 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">
-                  {selectedAgent?.name.split(' ').map(n => n[0]).join('')}
-                </span>
-              </div>
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={generateRandomAvatar(selectedAgent.name, 'agent')} alt={selectedAgent.name} />
+                <AvatarFallback className="bg-purple-600 text-white font-semibold text-sm">
+                  {getInitials(selectedAgent.name)}
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{selectedAgent?.name}</h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -168,6 +204,26 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                           placeholder="Describe what this agent does..."
                         />
                       </div>
+
+                      {/* Gender */}
+                      <div className="space-y-2">
+                        <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
+                          Gender (Optional)
+                        </Label>
+                        <Select value={config.gender} onValueChange={(value) => setConfig({...config, gender: value})}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">None specified</SelectItem>
+                            {GENDER_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -231,23 +287,39 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                         )}
                       </div>
 
-                      {/* Language */}
+                      {/* Languages */}
                       <div className="space-y-2">
-                        <Label htmlFor="language" className="text-sm font-medium text-gray-700">
-                          Language
+                        <Label className="text-sm font-medium text-gray-700">
+                          Languages (Multi-select)
                         </Label>
-                        <Select value={config.language} onValueChange={(value) => setConfig({...config, language: value})}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select language" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Spanish</SelectItem>
-                            <SelectItem value="fr">French</SelectItem>
-                            <SelectItem value="de">German</SelectItem>
-                            <SelectItem value="it">Italian</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="border rounded-lg p-3 max-h-48 overflow-y-auto">
+                          <div className="grid grid-cols-2 gap-2">
+                            {AVAILABLE_LANGUAGES.map((language) => (
+                              <label key={language.code} className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={config.languages.includes(language.code)}
+                                  onChange={() => handleLanguageToggle(language.code)}
+                                  className="rounded border-gray-300"
+                                />
+                                <span className="text-sm">{language.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {config.languages.map((langCode) => {
+                            const language = AVAILABLE_LANGUAGES.find(l => l.code === langCode);
+                            return (
+                              <Badge key={langCode} variant="outline" className="text-xs">
+                                {language?.name || langCode.toUpperCase()}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Select the languages this agent can communicate in.
+                        </p>
                       </div>
                     </CardContent>
                   </Card>

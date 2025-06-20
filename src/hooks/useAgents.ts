@@ -17,6 +17,8 @@ export interface Agent {
   knowledge_base_id: string | null;
   company: string | null;
   script_id: string | null;
+  gender: string | null;
+  languages: string[];
   created_at: string;
   updated_at: string;
   script?: {
@@ -77,7 +79,9 @@ export const useAgents = () => {
         company: agentData.company,
         script_id: agentData.script_id,
         conversations: agentData.conversations,
-        last_active: agentData.last_active
+        last_active: agentData.last_active,
+        gender: agentData.gender,
+        languages: agentData.languages || ['en']
       };
 
       console.log('Mapped data for database:', dbData);
