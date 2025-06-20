@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType, Save, Globe } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -142,17 +141,19 @@ const Index = () => {
         first_message: agentData.firstMessage || null,
         knowledge_base_id: null,
         company: agentData.company || null,
-        agent_type: agentData.agentType || 'outbound' as 'inbound' | 'outbound',
+        agent_type: agentData.agent_type || 'outbound' as 'inbound' | 'outbound',
         script_id: null
       };
 
       console.log('Mapped agent data:', mappedAgentData);
       
       const createdAgent = await createAgent.mutateAsync(mappedAgentData);
+      console.log('Agent created successfully, navigating back to list');
       setShowCreateAgent(false);
       setSelectedAgent(createdAgent);
     } catch (error) {
       console.error('Error creating agent:', error);
+      toast.error('Failed to create agent. Please check the console for details.');
     }
   };
 

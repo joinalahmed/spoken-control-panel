@@ -17,6 +17,7 @@ export interface Agent {
   knowledge_base_id: string | null;
   company: string | null;
   script_id: string | null;
+  agent_type: 'inbound' | 'outbound';
   created_at: string;
   updated_at: string;
   script?: {
@@ -36,13 +37,19 @@ export const useAgents = () => {
     queryFn: async () => {
       if (!user) return [];
       
+      console.log('Fetching agents for user:', user.id);
+      
       const { data, error } = await supabase
         .from('agents')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching agents:', error);
+        throw error;
+      }
       
+      console.log('Fetched agents:', data);
       return (data || []) as Agent[];
     },
     enabled: !!user,
@@ -50,28 +57,62 @@ export const useAgents = () => {
 
   const createAgent = useMutation({
     mutationFn: async (agentData: Omit<Agent, 'id' | 'created_at' | 'updated_at'>) => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('No user found when creating agent');
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Creating agent with data:', agentData);
+      console.log('User ID:', user.id);
+
+      // Map the data to match database schema
+      const dbData = {
+        user_id: user.id,
+        name: agentData.name,
+        voice: agentData.voice,
+        status: agentData.status,
+        description: agentData.description,
+        system_prompt: agentData.system_prompt,
+        first_message: agentData.first_message,
+        knowledge_base_id: agentData.knowledge_base_id,
+        company: agentData.company,
+        script_id: agentData.script_id,
+        agent_type: agentData.agent_type,
+        conversations: agentData.conversations,
+        last_active: agentData.last_active
+      };
+
+      console.log('Mapped data for database:', dbData);
 
       const { data, error } = await supabase
         .from('agents')
-        .insert([{ ...agentData, user_id: user.id }])
+        .insert([dbData])
         .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error creating agent:', error);
+        throw error;
+      }
+
+      console.log('Agent created successfully:', data);
       return data as Agent;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Agent creation success callback:', data);
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       toast.success('Agent created successfully!');
     },
     onError: (error) => {
+      console.error('Agent creation error callback:', error);
       toast.error('Failed to create agent: ' + error.message);
     },
   });
 
   const updateAgent = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Agent> & { id: string }) => {
+      console.log('Updating agent:', id, 'with updates:', updates);
+      
       const { data, error } = await supabase
         .from('agents')
         .update({ ...updates, updated_at: new Date().toISOString() })
@@ -79,7 +120,12 @@ export const useAgents = () => {
         .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating agent:', error);
+        throw error;
+      }
+      
+      console.log('Agent updated successfully:', data);
       return data as Agent;
     },
     onSuccess: () => {
@@ -87,24 +133,33 @@ export const useAgents = () => {
       toast.success('Agent updated successfully!');
     },
     onError: (error) => {
+      console.error('Agent update error:', error);
       toast.error('Failed to update agent: ' + error.message);
     },
   });
 
   const deleteAgent = useMutation({
     mutationFn: async (id: string) => {
+      console.log('Deleting agent:', id);
+      
       const { error } = await supabase
         .from('agents')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting agent:', error);
+        throw error;
+      }
+      
+      console.log('Agent deleted successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agents'] });
       toast.success('Agent deleted successfully!');
     },
     onError: (error) => {
+      console.error('Agent deletion error:', error);
       toast.error('Failed to delete agent: ' + error.message);
     },
   });
