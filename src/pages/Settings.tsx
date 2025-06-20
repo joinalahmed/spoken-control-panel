@@ -5,13 +5,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, Settings as SettingsIcon, Globe } from 'lucide-react';
+import { Save, Settings as SettingsIcon, Globe, Mic, Trash2, Plus } from 'lucide-react';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useCustomVoices } from '@/hooks/useCustomVoices';
 
 const Settings = () => {
   const [outboundCallUrl, setOutboundCallUrl] = useState('');
   const { getSetting, setSetting, isLoading } = useSystemSettings();
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Voice management state
+  const { voices, createVoice, deleteVoice, isLoading: voicesLoading } = useCustomVoices();
+  const [newVoiceName, setNewVoiceName] = useState('');
+  const [newVoiceId, setNewVoiceId] = useState('');
 
   useEffect(() => {
     console.log('Settings page mounted');
@@ -88,6 +94,37 @@ const Settings = () => {
     const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
     setOutboundCallUrl(defaultUrl);
     toast.info('Reset to default URL');
+  };
+
+  const handleAddVoice = async () => {
+    if (!newVoiceName.trim() || !newVoiceId.trim()) {
+      toast.error('Please enter both voice name and voice ID');
+      return;
+    }
+
+    try {
+      await createVoice.mutateAsync({
+        voice_name: newVoiceName.trim(),
+        voice_id: newVoiceId.trim()
+      });
+      
+      setNewVoiceName('');
+      setNewVoiceId('');
+      toast.success('Voice added successfully');
+    } catch (error) {
+      console.error('Error adding voice:', error);
+      toast.error('Failed to add voice');
+    }
+  };
+
+  const handleDeleteVoice = async (voiceId: string, voiceName: string) => {
+    try {
+      await deleteVoice.mutateAsync(voiceId);
+      toast.success(`Voice "${voiceName}" deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting voice:', error);
+      toast.error('Failed to delete voice');
+    }
   };
 
   console.log('Settings page render - isLoadingData:', isLoadingData, 'outboundCallUrl:', outboundCallUrl);
@@ -170,7 +207,90 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Additional Settings Cards can be added here */}
+          {/* Voice Management Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mic className="w-5 h-5" />
+                Voice Management
+              </CardTitle>
+              <CardDescription>
+                Manage custom voices for your AI agents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Add New Voice */}
+              <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h4 className="font-medium text-gray-900">Add New Voice</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="voice-name">Voice Name</Label>
+                    <Input
+                      id="voice-name"
+                      placeholder="e.g., Professional Sarah"
+                      value={newVoiceName}
+                      onChange={(e) => setNewVoiceName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="voice-id">ElevenLabs Voice ID</Label>
+                    <Input
+                      id="voice-id"
+                      placeholder="e.g., EXAVITQu4vr4xnSDxMaL"
+                      value={newVoiceId}
+                      onChange={(e) => setNewVoiceId(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleAddVoice}
+                  disabled={voicesLoading || !newVoiceName.trim() || !newVoiceId.trim()}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Voice
+                </Button>
+              </div>
+
+              {/* Custom Voices List */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">Custom Voices</h4>
+                {voicesLoading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-500">Loading voices...</p>
+                  </div>
+                ) : voices && voices.length > 0 ? (
+                  <div className="space-y-2">
+                    {voices.map((voice) => (
+                      <div key={voice.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900">{voice.voice_name}</p>
+                          <p className="text-sm text-gray-500 font-mono">{voice.voice_id}</p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteVoice(voice.id, voice.voice_name)}
+                          disabled={voicesLoading}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Mic className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>No custom voices added yet</p>
+                    <p className="text-sm">Add your first custom voice above</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* About Card */}
           <Card>
             <CardHeader>
               <CardTitle>About</CardTitle>
