@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HomeDashboard } from '@/components/HomeDashboard';
+import HomeDashboard from '@/components/HomeDashboard';
 import { Settings } from 'lucide-react';
 
 const Index = () => {
