@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Play, Pause, Download, Phone, Clock, TrendingUp, User, MessageSquare, Loader2, CheckCircle, XCircle, Calendar } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CallDetailsProps {
@@ -41,6 +40,11 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
   const [contactData, setContactData] = useState<ContactData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const fetchCallDetails = async () => {
@@ -89,6 +93,90 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
       fetchCallDetails();
     }
   }, [callId]);
+
+  useEffect(() => {
+    const fetchAudio = async () => {
+      if (callData?.recording_url) {
+        try {
+          setIsLoadingAudio(true);
+          console.log('Fetching audio from URL:', callData.recording_url);
+          
+          const response = await fetch(callData.recording_url);
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            setAudioUrl(url);
+            console.log('Audio blob created successfully');
+          } else {
+            console.error('Failed to fetch audio:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching audio:', error);
+        } finally {
+          setIsLoadingAudio(false);
+        }
+      }
+    };
+
+    fetchAudio();
+
+    // Cleanup function to revoke the object URL
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [callData?.recording_url]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+    const handleEnded = () => setIsPlaying(false);
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [audioUrl]);
+
+  const togglePlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const audio = audioRef.current;
+    if (!audio || !duration) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const seekTime = (clickX / rect.width) * duration;
+    
+    audio.currentTime = seekTime;
+    setCurrentTime(seekTime);
+  };
+
+  const formatTime = (time: number) => {
+    if (!time || !isFinite(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -365,33 +453,52 @@ const CallDetails = ({ callId, onBack }: CallDetailsProps) => {
           <CardContent className="space-y-3">
             {callData.recording_url ? (
               <>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                  >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    {isPlaying ? 'Pause' : 'Play'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                    onClick={() => window.open(callData.recording_url!, '_blank')}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>1:58</span>
-                  <span>{formatDuration(callData.duration)}</span>
-                </div>
+                {isLoadingAudio ? (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Loading audio...</span>
+                  </div>
+                ) : audioUrl ? (
+                  <>
+                    <audio ref={audioRef} src={audioUrl} preload="metadata" />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        onClick={togglePlayback}
+                        disabled={!audioUrl}
+                      >
+                        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        {isPlaying ? 'Pause' : 'Play'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        onClick={() => window.open(callData.recording_url!, '_blank')}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                    <div 
+                      className="w-full bg-gray-200 rounded-full h-2 cursor-pointer"
+                      onClick={handleSeek}
+                    >
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-150" 
+                        style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{formatTime(currentTime)}</span>
+                      <span>{formatTime(duration)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-red-500 text-sm">Failed to load audio</p>
+                )}
               </>
             ) : (
               <p className="text-gray-500 text-sm">No recording available</p>
