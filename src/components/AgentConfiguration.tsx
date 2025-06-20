@@ -1,57 +1,25 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Copy, Settings, Zap, ArrowLeft, BookOpen, Save } from 'lucide-react';
+import { Copy, Settings, Zap, ArrowLeft, Save } from 'lucide-react';
 import { Agent } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
 import { useScripts } from '@/hooks/useScripts';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
-import { Badge } from '@/components/ui/badge';
 import { generateRandomAvatar, getInitials } from '@/utils/avatarUtils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import BasicConfigurationCard from './agent-config/BasicConfigurationCard';
+import VoiceLanguageCard from './agent-config/VoiceLanguageCard';
+import KnowledgeBaseScriptCard from './agent-config/KnowledgeBaseScriptCard';
+import SystemPromptCard from './agent-config/SystemPromptCard';
 
 interface AgentConfigurationProps {
   selectedAgent: Agent | null;
   onBack?: () => void;
   onUpdate?: (agentData: any) => void;
 }
-
-const AVAILABLE_LANGUAGES = [
-  { code: 'hi', name: 'Hindi' },
-  { code: 'bn', name: 'Bengali' },
-  { code: 'te', name: 'Telugu' },
-  { code: 'mr', name: 'Marathi' },
-  { code: 'ta', name: 'Tamil' },
-  { code: 'gu', name: 'Gujarati' },
-  { code: 'ur', name: 'Urdu' },
-  { code: 'kn', name: 'Kannada' },
-  { code: 'or', name: 'Odia' },
-  { code: 'pa', name: 'Punjabi' },
-  { code: 'as', name: 'Assamese' },
-  { code: 'ml', name: 'Malayalam' },
-  { code: 'sa', name: 'Sanskrit' },
-  { code: 'ne', name: 'Nepali' },
-  { code: 'sd', name: 'Sindhi' },
-  { code: 'kok', name: 'Konkani' },
-  { code: 'mni', name: 'Manipuri' },
-  { code: 'doi', name: 'Dogri' },
-  { code: 'sat', name: 'Santali' },
-  { code: 'mai', name: 'Maithili' },
-  { code: 'bo', name: 'Bodo' },
-  { code: 'en', name: 'English' }
-];
-
-const GENDER_OPTIONS = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'non-binary', label: 'Non-binary' },
-  { value: 'other', label: 'Other' },
-];
 
 const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
   const { kbs: knowledgeBaseItems, isLoading: kbsLoading } = useKbs();
@@ -76,13 +44,8 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     name: voice.voice_name
   })) || [];
 
-  const handleLanguageToggle = (languageCode: string) => {
-    setConfig(prev => ({
-      ...prev,
-      languages: prev.languages.includes(languageCode)
-        ? prev.languages.filter(lang => lang !== languageCode)
-        : [...prev.languages, languageCode]
-    }));
+  const handleConfigChange = (updates: Partial<typeof config>) => {
+    setConfig(prev => ({ ...prev, ...updates }));
   };
 
   const handleUpdate = () => {
@@ -181,258 +144,34 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-fit">
                 {/* Left Column - Configuration */}
                 <div className="space-y-6">
-                  <Card className="shadow-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg">Basic Configuration</CardTitle>
-                      <CardDescription>Configure the basic settings for your agent</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Agent Name */}
-                      <div className="space-y-2">
-                        <Label htmlFor="agentName" className="text-sm font-medium text-gray-700">
-                          Agent Name
-                        </Label>
-                        <Input
-                          id="agentName"
-                          value={config.name}
-                          onChange={(e) => setConfig({...config, name: e.target.value})}
-                          className="w-full"
-                          placeholder="Enter agent name"
-                        />
-                      </div>
+                  <BasicConfigurationCard 
+                    config={{ name: config.name, description: config.description, gender: config.gender }}
+                    onConfigChange={handleConfigChange}
+                  />
 
-                      {/* Description */}
-                      <div className="space-y-2">
-                        <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                          Description
-                        </Label>
-                        <Textarea
-                          id="description"
-                          value={config.description || ''}
-                          onChange={(e) => setConfig({...config, description: e.target.value})}
-                          className="w-full resize-none"
-                          rows={3}
-                          placeholder="Describe what this agent does..."
-                        />
-                      </div>
+                  <VoiceLanguageCard 
+                    config={{ firstMessage: config.firstMessage, voice: config.voice, languages: config.languages }}
+                    onConfigChange={handleConfigChange}
+                    voiceOptions={voiceOptions}
+                    voicesLoading={voicesLoading}
+                  />
 
-                      {/* Gender */}
-                      <div className="space-y-2">
-                        <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
-                          Gender (Optional)
-                        </Label>
-                        <Select value={config.gender} onValueChange={(value) => setConfig({...config, gender: value})}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None specified</SelectItem>
-                            {GENDER_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="shadow-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg">Voice & Language</CardTitle>
-                      <CardDescription>Configure voice and language settings</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* First Message */}
-                      <div className="space-y-2">
-                        <Label htmlFor="firstMessage" className="text-sm font-medium text-gray-700">
-                          First Message
-                        </Label>
-                        <Input
-                          id="firstMessage"
-                          value={config.firstMessage}
-                          onChange={(e) => setConfig({...config, firstMessage: e.target.value})}
-                          className="w-full"
-                          placeholder="Hello! How can I help you today?"
-                        />
-                        <p className="text-xs text-gray-500">
-                          The first message that the assistant will say when starting a conversation.
-                        </p>
-                      </div>
-
-                      {/* Voice Selection */}
-                      <div className="space-y-2">
-                        <Label htmlFor="voice" className="text-sm font-medium text-gray-700">
-                          Voice
-                        </Label>
-                        <Select 
-                          value={config.voice} 
-                          onValueChange={(value) => setConfig({...config, voice: value})}
-                          disabled={voicesLoading}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={voicesLoading ? "Loading voices..." : voiceOptions.length === 0 ? "No custom voices available" : "Select voice"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {voiceOptions.length === 0 && !voicesLoading ? (
-                              <SelectItem value="no-voices" disabled>
-                                No custom voices available
-                              </SelectItem>
-                            ) : (
-                              voiceOptions.map((voice) => (
-                                <SelectItem key={voice.id} value={voice.id}>
-                                  {voice.name}
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                        {voicesLoading && (
-                          <p className="text-xs text-gray-500">Loading custom voices...</p>
-                        )}
-                        {voiceOptions.length === 0 && !voicesLoading && (
-                          <p className="text-xs text-gray-500">
-                            No custom voices found. Please add custom voices in Settings to see them here.
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Languages */}
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-700">
-                          Languages (Multi-select)
-                        </Label>
-                        <div className="border rounded-lg p-3 max-h-48 overflow-y-auto">
-                          <div className="grid grid-cols-2 gap-2">
-                            {AVAILABLE_LANGUAGES.map((language) => (
-                              <label key={language.code} className="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={config.languages.includes(language.code)}
-                                  onChange={() => handleLanguageToggle(language.code)}
-                                  className="rounded border-gray-300"
-                                />
-                                <span className="text-sm">{language.name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {config.languages.map((langCode) => {
-                            const language = AVAILABLE_LANGUAGES.find(l => l.code === langCode);
-                            return (
-                              <Badge key={langCode} variant="outline" className="text-xs">
-                                {language?.name || langCode.toUpperCase()}
-                              </Badge>
-                            );
-                          })}
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          Select the languages this agent can communicate in.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="shadow-sm">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg">Knowledge Base & Script</CardTitle>
-                      <CardDescription>Link additional context and script information</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="knowledgeBase" className="text-sm font-medium text-gray-700">
-                          Knowledge Base (Optional)
-                        </Label>
-                        <Select 
-                          value={config.knowledgeBaseId} 
-                          onValueChange={(value) => setConfig({...config, knowledgeBaseId: value})}
-                          disabled={kbsLoading}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={kbsLoading ? "Loading..." : "Select knowledge base"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">
-                              <div className="flex items-center gap-2">
-                                <span>None</span>
-                              </div>
-                            </SelectItem>
-                            {knowledgeBaseItems.map((item) => (
-                              <SelectItem key={item.id} value={item.id}>
-                                <div className="flex items-center gap-2">
-                                  <BookOpen className="w-4 h-4" />
-                                  <span>{item.title}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-gray-500">
-                          Link a knowledge base to provide the agent with additional context and information.
-                        </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="script" className="text-sm font-medium text-gray-700">
-                          Script (Optional)
-                        </Label>
-                        <Select 
-                          value={config.scriptId} 
-                          onValueChange={(value) => setConfig({...config, scriptId: value})}
-                          disabled={scriptsLoading}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={scriptsLoading ? "Loading..." : "Select script"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">
-                              <div className="flex items-center gap-2">
-                                <span>None</span>
-                              </div>
-                            </SelectItem>
-                            {scripts.map((script) => (
-                              <SelectItem key={script.id} value={script.id}>
-                                <div className="flex items-center gap-2">
-                                  <span>{script.name}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-gray-500">
-                          Link a script to define the conversation flow and structure for this agent.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <KnowledgeBaseScriptCard 
+                    config={{ knowledgeBaseId: config.knowledgeBaseId, scriptId: config.scriptId }}
+                    onConfigChange={handleConfigChange}
+                    knowledgeBaseItems={knowledgeBaseItems}
+                    scripts={scripts}
+                    kbsLoading={kbsLoading}
+                    scriptsLoading={scriptsLoading}
+                  />
                 </div>
 
                 {/* Right Column - System Prompt */}
                 <div className="space-y-6">
-                  <Card className="shadow-sm h-fit">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-lg">System Prompt</CardTitle>
-                      <CardDescription>
-                        Define the agent's role, personality, and instructions
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <Textarea
-                        id="prompt"
-                        value={config.prompt}
-                        onChange={(e) => setConfig({...config, prompt: e.target.value})}
-                        className="w-full resize-none"
-                        rows={20}
-                        placeholder="You are a helpful assistant..."
-                      />
-                      <p className="text-xs text-gray-500">
-                        The system prompt defines the agent's behavior, personality, and capabilities. 
-                        Be specific about the agent's role and how it should interact with users.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <SystemPromptCard 
+                    prompt={config.prompt}
+                    onPromptChange={(prompt) => handleConfigChange({ prompt })}
+                  />
                 </div>
               </div>
             </div>
