@@ -14,7 +14,7 @@ import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
 import TriggerOutboundCall from '@/components/TriggerOutboundCall';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -46,6 +46,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const { kbs } = useKbs();
   const { updateCampaign, deleteCampaign } = useCampaigns();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch campaign contacts from the junction table
   const { data: campaignContactIds = [] } = useQuery({
@@ -94,6 +95,10 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
         toast.error('Failed to remove contact from campaign');
         return;
       }
+
+      // Invalidate and refetch both campaign contact counts and the campaign contacts list
+      queryClient.invalidateQueries({ queryKey: ['campaign-contact-counts'] });
+      queryClient.invalidateQueries({ queryKey: ['campaign-contacts', campaign.id] });
 
       toast.success('Contact removed from campaign');
     } catch (error) {
