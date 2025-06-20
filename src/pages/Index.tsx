@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType, Save, Globe, Mic, Trash2, Plus, Key, RefreshCw, Eye, EyeOff, Copy } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -190,8 +189,9 @@ const Index = () => {
         first_message: agentData.firstMessage || null,
         knowledge_base_id: null,
         company: agentData.company || null,
-        agent_type: agentData.agent_type || 'outbound' as 'inbound' | 'outbound',
-        script_id: null
+        script_id: null,
+        gender: agentData.gender || null,
+        languages: agentData.languages || ['en']
       };
 
       console.log('Mapped agent data:', mappedAgentData);
@@ -221,7 +221,9 @@ const Index = () => {
         system_prompt: agentData.systemPrompt || null,
         first_message: agentData.firstMessage || null,
         knowledge_base_id: agentData.knowledgeBaseId || null,
-        script_id: agentData.scriptId || null
+        script_id: agentData.scriptId || null,
+        gender: agentData.gender || null,
+        languages: agentData.languages || ['en']
       };
 
       console.log('Mapped agent update data:', mappedAgentData);

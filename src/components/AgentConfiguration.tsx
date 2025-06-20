@@ -53,7 +53,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
     prompt: selectedAgent?.system_prompt || 'You are a voice assistant for Mary\'s Dental, a dental office located at 123 North Face Place, Anaheim, California. The hours are 8 AM to 5PM daily, but they are closed on Sundays.\n\nMary\'s dental provides dental services to the local Anaheim community. The practicing dentist is Dr. Mary Smith.\n\nYou are tasked with answering questions about the business, and booking appointments. If they wish to book an appointment, your goal is to gather necessary information from callers in a friendly and efficient manner like follows:\n\n1. Ask for their full name.\n2. Ask for the purpose of their appointment.\n3. Request their preferred date and time for the appointment.',
     firstMessage: selectedAgent?.first_message || 'Type Name',
     voice: selectedAgent?.voice || 'Sarah',
-    gender: selectedAgent?.gender || '',
+    gender: selectedAgent?.gender || 'none',
     languages: selectedAgent?.languages || ['en'],
     knowledgeBaseId: selectedAgent?.knowledge_base_id || 'none',
     scriptId: selectedAgent?.script_id || 'none'
@@ -82,7 +82,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
         description: config.description,
         systemPrompt: config.prompt,
         firstMessage: config.firstMessage,
-        gender: config.gender || null,
+        gender: config.gender === 'none' ? null : config.gender,
         languages: config.languages,
         knowledgeBaseId: config.knowledgeBaseId === 'none' ? null : config.knowledgeBaseId,
         scriptId: config.scriptId === 'none' ? null : config.scriptId
@@ -215,7 +215,7 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None specified</SelectItem>
+                            <SelectItem value="none">None specified</SelectItem>
                             {GENDER_OPTIONS.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.label}
