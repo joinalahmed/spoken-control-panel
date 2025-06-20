@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -196,9 +197,13 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
 
   // Populate form data when editing an existing script
   useEffect(() => {
+    console.log('editingScript changed:', editingScript);
+    
     if (editingScript) {
       // Transform sections to match new structure
       const transformedSections = (editingScript.sections || []).map((section: any, index: number) => {
+        console.log('Processing section:', section);
+        
         let transformedSteps: Array<{ name: string; content: string }> = [];
         
         if (section.steps && Array.isArray(section.steps)) {
@@ -225,12 +230,14 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
         }
         
         return {
-          id: section.id || Date.now().toString() + index,
+          id: section.id || `section-${Date.now()}-${index}`,
           title: section.title || section.description || '',
-          content: section.description || section.content || '',
+          content: section.content || section.description || '',
           steps: transformedSteps
         };
       });
+
+      console.log('Transformed sections:', transformedSections);
 
       setFormData({
         name: editingScript.name || '',
@@ -238,6 +245,15 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
         company: editingScript.company || '',
         first_message: editingScript.first_message || '',
         sections: transformedSections
+      });
+    } else {
+      // Reset form when not editing
+      setFormData({
+        name: '',
+        description: '',
+        company: '',
+        first_message: '',
+        sections: []
       });
     }
   }, [editingScript]);
@@ -251,7 +267,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
 
   const handleAddSection = () => {
     const newSection = {
-      id: Date.now().toString(),
+      id: `section-${Date.now()}`,
       title: '',
       content: '',
       steps: []
