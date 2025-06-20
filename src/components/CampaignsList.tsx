@@ -24,9 +24,11 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
       if (!user?.id || campaigns.length === 0) return {};
       
       const campaignIds = campaigns.map(c => c.id);
+      
+      // Use a more explicit query to count contacts per campaign
       const { data, error } = await supabase
         .from('campaign_contacts')
-        .select('campaign_id')
+        .select('campaign_id, contact_id')
         .in('campaign_id', campaignIds);
 
       if (error) {
@@ -34,12 +36,22 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
         return {};
       }
 
+      console.log('Campaign contacts data:', data);
+
       // Count contacts per campaign
       const counts: Record<string, number> = {};
+      
+      // Initialize all campaigns with 0 count
+      campaignIds.forEach(id => {
+        counts[id] = 0;
+      });
+      
+      // Count actual contacts
       data.forEach(item => {
         counts[item.campaign_id] = (counts[item.campaign_id] || 0) + 1;
       });
 
+      console.log('Contact counts:', counts);
       return counts;
     },
     enabled: !!user?.id && campaigns.length > 0,
@@ -178,6 +190,7 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((campaign) => {
             const typeInfo = getCampaignTypeInfo(campaign);
+            const contactCount = contactCounts[campaign.id] || 0;
             
             return (
               <Card 
@@ -218,7 +231,7 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Users className="w-4 h-4" />
-                      <span>{contactCounts[campaign.id] || 0} contacts</span>
+                      <span>{contactCount} contacts</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4" />
