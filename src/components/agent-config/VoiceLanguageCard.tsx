@@ -6,28 +6,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 
 const AVAILABLE_LANGUAGES = [
+  { code: 'en', name: 'English' },
   { code: 'hi', name: 'Hindi' },
-  { code: 'bn', name: 'Bengali' },
-  { code: 'te', name: 'Telugu' },
-  { code: 'mr', name: 'Marathi' },
-  { code: 'ta', name: 'Tamil' },
-  { code: 'gu', name: 'Gujarati' },
-  { code: 'ur', name: 'Urdu' },
-  { code: 'kn', name: 'Kannada' },
-  { code: 'or', name: 'Odia' },
-  { code: 'pa', name: 'Punjabi' },
-  { code: 'as', name: 'Assamese' },
-  { code: 'ml', name: 'Malayalam' },
-  { code: 'sa', name: 'Sanskrit' },
-  { code: 'ne', name: 'Nepali' },
-  { code: 'sd', name: 'Sindhi' },
-  { code: 'kok', name: 'Konkani' },
-  { code: 'mni', name: 'Manipuri' },
-  { code: 'doi', name: 'Dogri' },
-  { code: 'sat', name: 'Santali' },
-  { code: 'mai', name: 'Maithili' },
-  { code: 'bo', name: 'Bodo' },
-  { code: 'en', name: 'English' }
+  { code: 'bn', name: 'Bengali', disabled: true },
+  { code: 'te', name: 'Telugu', disabled: true },
+  { code: 'mr', name: 'Marathi', disabled: true },
+  { code: 'ta', name: 'Tamil', disabled: true },
+  { code: 'gu', name: 'Gujarati', disabled: true },
+  { code: 'ur', name: 'Urdu', disabled: true },
+  { code: 'kn', name: 'Kannada', disabled: true },
+  { code: 'or', name: 'Odia', disabled: true },
+  { code: 'pa', name: 'Punjabi', disabled: true },
+  { code: 'as', name: 'Assamese', disabled: true },
+  { code: 'ml', name: 'Malayalam', disabled: true },
+  { code: 'sa', name: 'Sanskrit', disabled: true },
+  { code: 'ne', name: 'Nepali', disabled: true },
+  { code: 'sd', name: 'Sindhi', disabled: true },
+  { code: 'kok', name: 'Konkani', disabled: true },
+  { code: 'mni', name: 'Manipuri', disabled: true },
+  { code: 'doi', name: 'Dogri', disabled: true },
+  { code: 'sat', name: 'Santali', disabled: true },
+  { code: 'mai', name: 'Maithili', disabled: true },
+  { code: 'bo', name: 'Bodo', disabled: true }
 ];
 
 interface VoiceLanguageCardProps {
@@ -43,6 +43,9 @@ interface VoiceLanguageCardProps {
 
 const VoiceLanguageCard = ({ config, onConfigChange, voiceOptions, voicesLoading }: VoiceLanguageCardProps) => {
   const handleLanguageToggle = (languageCode: string) => {
+    const language = AVAILABLE_LANGUAGES.find(l => l.code === languageCode);
+    if (language?.disabled) return;
+    
     const updatedLanguages = config.languages.includes(languageCode)
       ? config.languages.filter(lang => lang !== languageCode)
       : [...config.languages, languageCode];
@@ -118,14 +121,21 @@ const VoiceLanguageCard = ({ config, onConfigChange, voiceOptions, voicesLoading
           <div className="border rounded-lg p-3 max-h-48 overflow-y-auto">
             <div className="grid grid-cols-2 gap-2">
               {AVAILABLE_LANGUAGES.map((language) => (
-                <label key={language.code} className="flex items-center space-x-2 cursor-pointer">
+                <label 
+                  key={language.code} 
+                  className={`flex items-center space-x-2 ${language.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
                   <input
                     type="checkbox"
                     checked={config.languages.includes(language.code)}
                     onChange={() => handleLanguageToggle(language.code)}
+                    disabled={language.disabled}
                     className="rounded border-gray-300"
                   />
                   <span className="text-sm">{language.name}</span>
+                  {language.disabled && (
+                    <span className="text-xs text-gray-400">(Coming Soon)</span>
+                  )}
                 </label>
               ))}
             </div>
@@ -141,7 +151,7 @@ const VoiceLanguageCard = ({ config, onConfigChange, voiceOptions, voicesLoading
             })}
           </div>
           <p className="text-xs text-gray-500">
-            Select the languages this agent can communicate in.
+            Select the languages this agent can communicate in. Currently only English and Hindi are available.
           </p>
         </div>
       </CardContent>
