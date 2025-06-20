@@ -46,8 +46,11 @@ export const useCampaignAnalytics = (campaignId: string) => {
       const totalCalls = calls?.length || 0;
       const callsCompleted = calls?.filter(call => call.status === 'completed').length || 0;
       const callsFailed = calls?.filter(call => call.status === 'failed').length || 0;
-      const totalDuration = calls?.reduce((sum, call) => sum + (call.duration || 0), 0) || 0;
-      const averageDuration = totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0;
+      
+      // Only include calls with valid duration data for total and average calculations
+      const callsWithDuration = calls?.filter(call => call.duration && call.duration > 0) || [];
+      const totalDuration = callsWithDuration.reduce((sum, call) => sum + call.duration, 0);
+      const averageDuration = callsWithDuration.length > 0 ? Math.round(totalDuration / callsWithDuration.length) : 0;
       
       // Calculate objectives
       const callsWithObjectives = calls?.filter(call => call.objective_met !== null) || [];
