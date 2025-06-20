@@ -19,12 +19,18 @@ export const findCampaignForContact = async (
 
   // Filter for active inbound campaigns only
   const inboundCampaigns = campaigns?.filter(c => {
-    const cType = c.settings?.campaign_type || 'outbound';
+    // Check both possible field names for campaign type
+    const cType = c.settings?.campaign_type || c.settings?.campaignType || 'outbound';
     return cType === 'inbound';
   }) || [];
 
   if (inboundCampaigns.length === 0) {
     console.log('No active inbound campaigns found for contact user');
+    console.log('Available campaigns:', campaigns?.map(c => ({ 
+      name: c.name, 
+      id: c.id, 
+      settings: c.settings 
+    })));
     throw new Error('No active inbound campaigns found for this contact');
   }
 
