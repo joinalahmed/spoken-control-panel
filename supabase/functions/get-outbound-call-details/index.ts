@@ -5,7 +5,7 @@ import { findContactByPhone } from './services/contact.ts';
 import { getCampaignById } from './services/campaign.ts';
 import { getAgentDetails } from './services/agent.ts';
 import { getScriptDetails } from './services/script.ts';
-import { getUserProfile, getKnowledgeBases } from './services/user.ts';
+import { getUserProfile, getCampaignKnowledgeBase } from './services/user.ts';
 import { buildOutboundCallResponse } from './utils/response.ts';
 
 Deno.serve(async (req) => {
@@ -76,9 +76,12 @@ Deno.serve(async (req) => {
     
     // Get user profile details for the contact (phone number owner)
     const contactUser = await getUserProfile(supabase, contact.user_id);
-    const knowledgeBases = await getKnowledgeBases(supabase, contact.user_id);
+    
+    // Get only the knowledge base linked to this campaign
+    const knowledgeBases = await getCampaignKnowledgeBase(supabase, campaign.knowledge_base_id);
 
     console.log(`Found user details for phone ${phoneNumber}: ${contactUser ? contactUser.full_name || contactUser.email : 'No user found'}`);
+    console.log(`Found ${knowledgeBases.length} knowledge base(s) linked to campaign`);
 
     const response = buildOutboundCallResponse(campaign, agent, script, contactUser, knowledgeBases, contact);
 

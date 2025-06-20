@@ -23,20 +23,26 @@ export const getUserProfile = async (
   } : null;
 };
 
-export const getKnowledgeBases = async (
+export const getCampaignKnowledgeBase = async (
   supabase: SupabaseClient, 
-  userId: string
+  knowledgeBaseId: string | null
 ) => {
-  const { data: knowledgeBases, error: kbError } = await supabase
-    .from('knowledge_base')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'published');
-
-  if (kbError) {
-    console.log('Error fetching knowledge bases:', kbError);
+  if (!knowledgeBaseId) {
+    console.log('No knowledge base ID provided');
     return [];
   }
 
-  return knowledgeBases || [];
+  const { data: knowledgeBase, error: kbError } = await supabase
+    .from('knowledge_base')
+    .select('*')
+    .eq('id', knowledgeBaseId)
+    .eq('status', 'published')
+    .single();
+
+  if (kbError) {
+    console.log('Error fetching campaign knowledge base:', kbError);
+    return [];
+  }
+
+  return knowledgeBase ? [knowledgeBase] : [];
 };
