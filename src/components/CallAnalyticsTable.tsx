@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Phone, Clock, TrendingUp, TrendingDown, Play, Loader2, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Call {
   id: string;
@@ -30,6 +31,7 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
   const [calls, setCalls] = useState<Call[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchCalls = async () => {
@@ -96,6 +98,9 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
 
         console.log('Transformed calls:', transformedCalls);
         setCalls(transformedCalls);
+
+        // Invalidate analytics when calls are fetched to refresh the stats
+        queryClient.invalidateQueries({ queryKey: ['campaign-analytics', campaignId] });
       } catch (err) {
         console.error('Error in fetchCalls:', err);
         setError('An unexpected error occurred');
@@ -107,7 +112,7 @@ const CallAnalyticsTable = ({ campaignId, onCallClick }: CallAnalyticsTableProps
     if (campaignId) {
       fetchCalls();
     }
-  }, [campaignId]);
+  }, [campaignId, queryClient]);
 
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);

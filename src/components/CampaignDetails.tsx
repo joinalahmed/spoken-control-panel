@@ -10,6 +10,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns, Campaign } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
+import { useCampaignAnalytics } from '@/hooks/useCampaignAnalytics';
 import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
 import TriggerOutboundCall from '@/components/TriggerOutboundCall';
@@ -68,6 +69,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     },
     enabled: !!user?.id,
   });
+
+  // Fetch campaign analytics
+  const { data: analytics, isLoading: analyticsLoading } = useCampaignAnalytics(campaign.id);
 
   // Get campaign contacts
   const campaignContacts = contacts.filter(contact => 
@@ -290,6 +294,12 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const currentCampaignType = campaign.settings?.campaignType || 'outbound';
   const typeInfo = getCampaignTypeInfo(currentCampaignType);
 
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       {/* Empty Header at Top */}
@@ -401,7 +411,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Enhanced Stats Cards - All with same styling */}
+        {/* Enhanced Stats Cards - Now with real data */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
@@ -423,8 +433,12 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-emerald-700 mb-1">Calls Made</p>
-                  <p className="text-3xl font-bold text-emerald-900">0</p>
-                  <p className="text-xs text-emerald-600 mt-1">Total completed</p>
+                  <p className="text-3xl font-bold text-emerald-900">
+                    {analyticsLoading ? '...' : analytics?.totalCalls || 0}
+                  </p>
+                  <p className="text-xs text-emerald-600 mt-1">
+                    {analyticsLoading ? 'Loading...' : `${analytics?.callsCompleted || 0} completed`}
+                  </p>
                 </div>
                 <div className="h-14 w-14 bg-emerald-200 rounded-2xl flex items-center justify-center">
                   <Phone className="h-7 w-7 text-emerald-700" />
@@ -438,8 +452,12 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-purple-700 mb-1">Success Rate</p>
-                  <p className="text-3xl font-bold text-purple-900">0%</p>
-                  <p className="text-xs text-purple-600 mt-1">Conversion rate</p>
+                  <p className="text-3xl font-bold text-purple-900">
+                    {analyticsLoading ? '...' : `${analytics?.successRate || 0}%`}
+                  </p>
+                  <p className="text-xs text-purple-600 mt-1">
+                    {analyticsLoading ? 'Loading...' : `${analytics?.objectivesMet || 0}/${analytics?.totalObjectives || 0} objectives met`}
+                  </p>
                 </div>
                 <div className="h-14 w-14 bg-purple-200 rounded-2xl flex items-center justify-center">
                   <TrendingUp className="h-7 w-7 text-purple-700" />
@@ -453,8 +471,12 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-orange-700 mb-1">Avg Duration</p>
-                  <p className="text-3xl font-bold text-orange-900">0m</p>
-                  <p className="text-xs text-orange-600 mt-1">Call duration</p>
+                  <p className="text-3xl font-bold text-orange-900">
+                    {analyticsLoading ? '...' : `${Math.floor((analytics?.averageDuration || 0) / 60)}m`}
+                  </p>
+                  <p className="text-xs text-orange-600 mt-1">
+                    {analyticsLoading ? 'Loading...' : `${formatDuration(analytics?.averageDuration || 0)} per call`}
+                  </p>
                 </div>
                 <div className="h-14 w-14 bg-orange-200 rounded-2xl flex items-center justify-center">
                   <Clock className="h-7 w-7 text-orange-700" />
