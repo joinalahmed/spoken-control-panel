@@ -38,7 +38,40 @@ Deno.serve(async (req) => {
     let campaign = null;
     let contact = null;
 
-    if (phoneNumber) {
+    // If campaign_id is provided, prioritize it and get the campaign directly
+    if (campaignId) {
+      try {
+        campaign = await getCampaignById(supabase, campaignId);
+        console.log(`Found outbound campaign by ID: ${campaign.name}`);
+        
+        // If phone number is also provided, verify the contact exists and is part of this campaign
+        if (phoneNumber) {
+          try {
+            contact = await findContactByPhone(supabase, phoneNumber);
+            
+            // Verify the contact is associated with this specific campaign
+            const { data: campaignContact, error: campaignContactError } = await supabase
+              .from('campaign_contacts')
+              .select('*')
+              .eq('campaign_id', campaignId)
+              .eq('contact_id', contact.id)
+              .single();
+
+            if (campaignContactError || !campaignContact) {
+              console.log('Contact not found in the specified campaign');
+              return createErrorResponse('Contact not found in the specified campaign', 404);
+            }
+            
+            console.log(`Verified contact ${contact.name} is in campaign ${campaign.name}`);
+          } catch (error) {
+            return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
+          }
+        }
+      } catch (error) {
+        return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
+      }
+    } else if (phoneNumber) {
+      // If only phone number is provided, find contact and their outbound campaign
       try {
         contact = await findContactByPhone(supabase, phoneNumber);
         campaign = await findOutboundCampaignForContact(supabase, contact.id);
@@ -46,15 +79,7 @@ Deno.serve(async (req) => {
       } catch (error) {
         return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
       }
-    } else {
-      try {
-        campaign = await getCampaignById(supabase, campaignId!);
-      } catch (error) {
-        return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
-      }
     }
-
-    console.log(`Found outbound campaign: ${campaign.name}`);
 
     const agent = campaign.agent_id ? await getAgentDetails(supabase, campaign.agent_id) : null;
 

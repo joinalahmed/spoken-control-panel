@@ -54,7 +54,8 @@ export const getCampaignById = async (
     throw new Error('Campaign not found');
   }
 
-  const campaignType = campaignData.settings?.campaign_type || 'outbound';
+  // Only verify campaign type if it's explicitly set to inbound
+  const campaignType = campaignData.settings?.campaign_type;
   if (campaignType === 'inbound') {
     console.log('Campaign is inbound, not outbound:', campaignId);
     throw new Error('Campaign is not an outbound campaign');
