@@ -5,12 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, Settings as SettingsIcon, Globe } from 'lucide-react';
+import { Save, Settings as SettingsIcon, Globe, Mic, Trash2, Plus } from 'lucide-react';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useCustomVoices } from '@/hooks/useCustomVoices';
 
 const Settings = () => {
   const [outboundCallUrl, setOutboundCallUrl] = useState('');
+  const [voiceName, setVoiceName] = useState('');
+  const [voiceId, setVoiceId] = useState('');
   const { getSetting, setSetting, isLoading } = useSystemSettings();
+  const { voices, addVoice, deleteVoice, isLoading: voicesLoading } = useCustomVoices();
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
@@ -88,6 +92,21 @@ const Settings = () => {
     const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
     setOutboundCallUrl(defaultUrl);
     toast.info('Reset to default URL');
+  };
+
+  const handleAddVoice = async () => {
+    if (!voiceName.trim() || !voiceId.trim()) {
+      toast.error('Please fill in both voice name and voice ID');
+      return;
+    }
+
+    await addVoice.mutateAsync({ voice_name: voiceName, voice_id: voiceId });
+    setVoiceName('');
+    setVoiceId('');
+  };
+
+  const handleDeleteVoice = async (id: string) => {
+    await deleteVoice.mutateAsync(id);
   };
 
   console.log('Settings page render - isLoadingData:', isLoadingData, 'outboundCallUrl:', outboundCallUrl);
@@ -170,7 +189,81 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Additional Settings Cards can be added here */}
+          {/* Voice Management Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mic className="w-5 h-5" />
+                Voice Management
+              </CardTitle>
+              <CardDescription>
+                Add custom voices for your AI agents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Add Voice Form */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="voice-name">Voice Name</Label>
+                  <Input
+                    id="voice-name"
+                    placeholder="e.g., Jessica"
+                    value={voiceName}
+                    onChange={(e) => setVoiceName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="voice-id">Voice ID</Label>
+                  <Input
+                    id="voice-id"
+                    placeholder="e.g., jessica_v2"
+                    value={voiceId}
+                    onChange={(e) => setVoiceId(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddVoice}
+                  disabled={addVoice.isPending || !voiceName.trim() || !voiceId.trim()}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Voice
+                </Button>
+              </div>
+
+              {/* Voice List */}
+              <div className="space-y-2">
+                <Label>Custom Voices</Label>
+                {voicesLoading ? (
+                  <div className="text-sm text-gray-500">Loading voices...</div>
+                ) : voices.length === 0 ? (
+                  <div className="text-sm text-gray-500">No custom voices added yet</div>
+                ) : (
+                  <div className="space-y-2">
+                    {voices.map((voice) => (
+                      <div key={voice.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <div className="font-medium">{voice.voice_name}</div>
+                          <div className="text-sm text-gray-500">ID: {voice.voice_id}</div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteVoice(voice.id)}
+                          disabled={deleteVoice.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* About Card */}
           <Card>
             <CardHeader>
               <CardTitle>About</CardTitle>

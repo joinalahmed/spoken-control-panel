@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase, ArrowLeft, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCustomVoices } from '@/hooks/useCustomVoices';
 
 interface CreateAgentFlowProps {
   onAgentCreated: (agentData: any) => void;
@@ -18,7 +20,11 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
   const [companyIndustry, setCompanyIndustry] = useState('');
   const [agentRole, setAgentRole] = useState('');
   const [agentType, setAgentType] = useState<'inbound' | 'outbound'>('outbound');
+  const [selectedVoice, setSelectedVoice] = useState('Sarah');
   const { toast } = useToast();
+  const { getAllVoices } = useCustomVoices();
+
+  const voices = getAllVoices();
 
   const industries = [
     'Healthcare',
@@ -237,11 +243,10 @@ Be professional, helpful, and maintain confidentiality.`,
     
     const agentData = {
       name,
-      voice: 'Sarah',
+      voice: selectedVoice,
       description: template.description,
       systemPrompt: template.systemPrompt,
       firstMessage: template.firstMessage,
-      agent_type: agentType
     };
 
     onAgentCreated(agentData);
@@ -313,6 +318,24 @@ Be professional, helpful, and maintain confidentiality.`,
                       <span>Inbound - Receives incoming calls</span>
                     </div>
                   </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="voice" className="text-sm font-medium text-gray-700">
+                Voice <span className="text-red-500">*</span>
+              </Label>
+              <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select voice" />
+                </SelectTrigger>
+                <SelectContent>
+                  {voices.map((voice) => (
+                    <SelectItem key={voice.id} value={voice.id}>
+                      {voice.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
