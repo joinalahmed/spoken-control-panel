@@ -35,17 +35,36 @@ Deno.serve(async (req) => {
       return createErrorResponse('Phone number is required');
     }
 
+    console.log(`Processing request for phone: ${phoneNumber}`);
+
     let contact;
     try {
       contact = await findContactByPhone(supabase, phoneNumber);
+      console.log(`Found contact: ${contact.name} (user_id: ${contact.user_id})`);
     } catch (error) {
+      console.log(`Contact lookup failed: ${error.message}`);
       return createErrorResponse(error.message, error.message.includes('not found') ? 404 : 500);
     }
 
     let campaign;
     try {
+      // Check if contact is associated with an active inbound campaign
       campaign = await findCampaignForContact(supabase, contact.user_id, campaignType);
+      console.log(`Found active inbound campaign: ${campaign.name} (id: ${campaign.id})`);
+      
+      // Verify campaign is truly active and inbound
+      if (campaign.status !== 'active') {
+        throw new Error(`Campaign ${campaign.name} is not active (status: ${campaign.status})`);
+      }
+      
+      const campaignType = campaign.settings?.campaign_type || campaign.settings?.campaignType || 'outbound';
+      if (campaignType !== 'inbound') {
+        throw new Error(`Campaign ${campaign.name} is not an inbound campaign (type: ${campaignType})`);
+      }
+      
+      console.log(`Campaign validation passed: ${campaign.name} is active inbound campaign`);
     } catch (error) {
+      console.log(`Campaign lookup failed: ${error.message}`);
       return createErrorResponse(error.message, 404);
     }
 
@@ -55,6 +74,8 @@ Deno.serve(async (req) => {
     
     // Get only the knowledge base linked to this campaign
     const knowledgeBases = await getCampaignKnowledgeBase(supabase, campaign.knowledge_base_id);
+
+    console.log(`Response includes: agent=${agent?.name || 'none'}, script=${script?.name || 'none'}, user=${user?.full_name || user?.email || 'none'}, knowledge_bases=${knowledgeBases.length}`);
 
     const response = buildCallerResponse(campaign, contact, agent, script, user, knowledgeBases);
 

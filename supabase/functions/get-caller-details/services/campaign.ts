@@ -6,35 +6,45 @@ export const findCampaignForContact = async (
   userId: string,
   campaignType?: string | null
 ) => {
+  console.log(`Looking for campaigns for user: ${userId}`);
+  
   const { data: campaigns, error: campaignsError } = await supabase
     .from('campaigns')
     .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active');
+    .eq('user_id', userId);
 
   if (campaignsError) {
     console.log('Error fetching campaigns:', campaignsError);
     throw new Error('Error fetching campaigns');
   }
 
+  console.log(`Found ${campaigns?.length || 0} total campaigns for user`);
+
   // Filter for active inbound campaigns only
-  const inboundCampaigns = campaigns?.filter(c => {
-    // Check both possible field names for campaign type
+  const activeInboundCampaigns = campaigns?.filter(c => {
     const cType = c.settings?.campaign_type || c.settings?.campaignType || 'outbound';
-    return cType === 'inbound';
+    const isInbound = cType === 'inbound';
+    const isActive = c.status === 'active';
+    
+    console.log(`Campaign ${c.name}: type=${cType}, status=${c.status}, isInbound=${isInbound}, isActive=${isActive}`);
+    
+    return isInbound && isActive;
   }) || [];
 
-  if (inboundCampaigns.length === 0) {
+  console.log(`Found ${activeInboundCampaigns.length} active inbound campaigns`);
+
+  if (activeInboundCampaigns.length === 0) {
     console.log('No active inbound campaigns found for contact user');
     console.log('Available campaigns:', campaigns?.map(c => ({ 
       name: c.name, 
       id: c.id, 
-      settings: c.settings 
+      type: c.settings?.campaign_type || c.settings?.campaignType || 'outbound',
+      status: c.status
     })));
     throw new Error('No active inbound campaigns found for this contact');
   }
 
-  const selectedCampaign = inboundCampaigns[0];
-  console.log(`Found active inbound campaign: ${selectedCampaign.name}`);
+  const selectedCampaign = activeInboundCampaigns[0];
+  console.log(`Selected active inbound campaign: ${selectedCampaign.name} (status: ${selectedCampaign.status})`);
   return selectedCampaign;
 };
