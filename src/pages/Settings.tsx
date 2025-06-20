@@ -4,9 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, Settings as SettingsIcon, Globe, Mic, Trash2, Plus } from 'lucide-react';
+import { Save, Settings as SettingsIcon, Globe, Mic, Trash2, Plus, Key, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
+import { useApiKeys } from '@/hooks/useApiKeys';
 
 const Settings = () => {
   console.log('Settings component rendering...');
@@ -19,6 +20,11 @@ const Settings = () => {
   const { voices, createVoice, deleteVoice, isLoading: voicesLoading } = useCustomVoices();
   const [newVoiceName, setNewVoiceName] = useState('');
   const [newVoiceId, setNewVoiceId] = useState('');
+
+  // API Key management state
+  const { generateApiKey, getApiKey, revokeApiKey, isLoading: apiKeyLoading } = useApiKeys();
+  const [currentApiKey, setCurrentApiKey] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   console.log('Voice management state:', { voices, voicesLoading });
 
@@ -34,6 +40,10 @@ const Settings = () => {
         console.log('Loading system settings...');
         const savedUrl = await getSetting('outbound_call_api_url');
         console.log('Loaded saved URL:', savedUrl);
+        
+        // Load API key
+        const apiKey = await getApiKey();
+        setCurrentApiKey(apiKey);
         
         if (!isMounted) return;
         
@@ -65,7 +75,7 @@ const Settings = () => {
     return () => {
       isMounted = false;
     };
-  }, [getSetting]);
+  }, [getSetting, getApiKey]);
 
   const handleSave = async () => {
     if (!outboundCallUrl.trim()) {
@@ -130,6 +140,38 @@ const Settings = () => {
     }
   };
 
+  const handleGenerateApiKey = async () => {
+    try {
+      const newApiKey = await generateApiKey();
+      setCurrentApiKey(newApiKey);
+    } catch (error) {
+      console.error('Error generating API key:', error);
+    }
+  };
+
+  const handleRevokeApiKey = async () => {
+    try {
+      const success = await revokeApiKey();
+      if (success) {
+        setCurrentApiKey(null);
+        setShowApiKey(false);
+      }
+    } catch (error) {
+      console.error('Error revoking API key:', error);
+    }
+  };
+
+  const copyApiKey = async () => {
+    if (currentApiKey) {
+      try {
+        await navigator.clipboard.writeText(currentApiKey);
+        toast.success('API key copied to clipboard');
+      } catch (error) {
+        toast.error('Failed to copy API key');
+      }
+    }
+  };
+
   console.log('Settings page render - isLoadingData:', isLoadingData, 'outboundCallUrl:', outboundCallUrl);
 
   if (isLoadingData) {
@@ -163,6 +205,100 @@ const Settings = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
+          {/* API Key Management Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                API Key Management
+              </CardTitle>
+              <CardDescription>
+                Generate and manage your personal API key for programmatic access to create agents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {currentApiKey ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Your API Key</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={currentApiKey}
+                        readOnly
+                        className="font-mono text-sm"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                      >
+                        {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={copyApiKey}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-medium text-blue-900 mb-2">Usage Example</h4>
+                    <code className="text-sm text-blue-800 bg-blue-100 p-2 rounded block whitespace-pre-wrap">
+{`curl --location 'https://vegryoncdzcxmornresu.supabase.co/functions/v1/create-agent' \\
+--header 'Content-Type: application/json' \\
+--header 'Authorization: Bearer ${showApiKey ? currentApiKey : '••••••••••••••••'}' \\
+--header 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \\
+--data '{
+    "name": "Your Agent Name",
+    "agent_type": "inbound",
+    "company": "Your Company"
+}'`}
+                    </code>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleGenerateApiKey}
+                      disabled={apiKeyLoading}
+                      variant="outline"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Regenerate Key
+                    </Button>
+                    <Button
+                      onClick={handleRevokeApiKey}
+                      disabled={apiKeyLoading}
+                      variant="destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Revoke Key
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Key className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No API Key Generated</h3>
+                  <p className="text-gray-600 mb-4">
+                    Generate an API key to create agents programmatically from external systems
+                  </p>
+                  <Button
+                    onClick={handleGenerateApiKey}
+                    disabled={apiKeyLoading}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Key className="w-4 h-4 mr-2" />
+                    {apiKeyLoading ? 'Generating...' : 'Generate API Key'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* API Configuration Card */}
           <Card>
             <CardHeader>
@@ -210,7 +346,7 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Voice Management Card - Adding debug info */}
+          {/* Voice Management Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
