@@ -73,8 +73,9 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
         return;
       }
 
-      // Invalidate and refetch campaign contact counts
+      // Invalidate and refetch both campaign contact counts and the campaign contacts list
       queryClient.invalidateQueries({ queryKey: ['campaign-contact-counts'] });
+      queryClient.invalidateQueries({ queryKey: ['campaign-contacts', campaignId] });
 
       toast.success(`Added ${selectedContactIds.length} contact(s) to campaign`);
       setSelectedContactIds([]);
