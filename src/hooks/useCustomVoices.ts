@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -29,7 +28,7 @@ export const useCustomVoices = () => {
         throw error;
       }
 
-      console.log('Custom voices fetched:', data);
+      console.log('Custom voices fetched successfully:', data);
       return data as CustomVoice[];
     }
   });
@@ -92,6 +91,8 @@ export const useCustomVoices = () => {
       toast.error('Failed to delete custom voice');
     }
   });
+
+  console.log('useCustomVoices hook state:', { voices, isLoading, error });
 
   return {
     voices,

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,8 @@ import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
 
 const Settings = () => {
+  console.log('Settings component rendering...');
+  
   const [outboundCallUrl, setOutboundCallUrl] = useState('');
   const { getSetting, setSetting, isLoading } = useSystemSettings();
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -18,6 +19,8 @@ const Settings = () => {
   const { voices, createVoice, deleteVoice, isLoading: voicesLoading } = useCustomVoices();
   const [newVoiceName, setNewVoiceName] = useState('');
   const [newVoiceId, setNewVoiceId] = useState('');
+
+  console.log('Voice management state:', { voices, voicesLoading });
 
   useEffect(() => {
     console.log('Settings page mounted');
@@ -207,12 +210,15 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Voice Management Card */}
+          {/* Voice Management Card - Adding debug info */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mic className="w-5 h-5" />
                 Voice Management
+                <span className="text-sm text-gray-500">
+                  (Debug: {voicesLoading ? 'Loading...' : `${voices?.length || 0} voices`})
+                </span>
               </CardTitle>
               <CardDescription>
                 Manage custom voices for your AI agents
