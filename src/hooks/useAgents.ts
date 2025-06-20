@@ -17,7 +17,6 @@ export interface Agent {
   knowledge_base_id: string | null;
   company: string | null;
   script_id: string | null;
-  agent_type: 'inbound' | 'outbound';
   created_at: string;
   updated_at: string;
   script?: {
@@ -77,7 +76,6 @@ export const useAgents = () => {
         knowledge_base_id: agentData.knowledge_base_id,
         company: agentData.company,
         script_id: agentData.script_id,
-        agent_type: agentData.agent_type,
         conversations: agentData.conversations,
         last_active: agentData.last_active
       };
