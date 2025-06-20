@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,16 +22,28 @@ interface AgentConfigurationProps {
 }
 
 const AVAILABLE_LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'zh', name: 'Chinese' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'bn', name: 'Bengali' },
+  { code: 'te', name: 'Telugu' },
+  { code: 'mr', name: 'Marathi' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'gu', name: 'Gujarati' },
+  { code: 'ur', name: 'Urdu' },
+  { code: 'kn', name: 'Kannada' },
+  { code: 'or', name: 'Odia' },
+  { code: 'pa', name: 'Punjabi' },
+  { code: 'as', name: 'Assamese' },
+  { code: 'ml', name: 'Malayalam' },
+  { code: 'sa', name: 'Sanskrit' },
+  { code: 'ne', name: 'Nepali' },
+  { code: 'sd', name: 'Sindhi' },
+  { code: 'kok', name: 'Konkani' },
+  { code: 'mni', name: 'Manipuri' },
+  { code: 'doi', name: 'Dogri' },
+  { code: 'sat', name: 'Santali' },
+  { code: 'mai', name: 'Maithili' },
+  { code: 'bo', name: 'Bodo' },
+  { code: 'en', name: 'English' }
 ];
 
 const GENDER_OPTIONS = [
