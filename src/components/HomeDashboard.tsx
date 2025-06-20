@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,18 +85,18 @@ const HomeDashboard = () => {
     {
       title: 'Active Agents',
       value: activeAgents.toString(),
-      description: `${totalAgents} total agents`,
-      change: `${totalAgents - activeAgents} inactive`,
+      description: `of ${totalAgents} total agents`,
+      change: totalAgents === 0 ? 'No agents created' : `${totalAgents - activeAgents} inactive`,
       icon: Users,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200'
     },
     {
-      title: 'Campaigns',
+      title: 'Active Campaigns',
       value: activeCampaigns.toString(),
-      description: `${totalCampaigns} total campaigns`,
-      change: `${totalCampaigns - activeCampaigns} inactive`,
+      description: `of ${totalCampaigns} total campaigns`,
+      change: totalCampaigns === 0 ? 'No campaigns created' : `${totalCampaigns - activeCampaigns} inactive`,
       icon: Target,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
@@ -254,29 +253,19 @@ const HomeDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {activeCampaigns > 0 ? (
-                    <div className="flex items-center gap-3 p-2 text-sm">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-gray-600">{activeCampaigns} campaigns running</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 p-2 text-sm">
-                      <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                      <span className="text-gray-500">No active campaigns</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3 p-2 text-sm">
+                    <div className={`w-2 h-2 rounded-full ${activeCampaigns > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span className={activeCampaigns > 0 ? 'text-gray-600' : 'text-gray-500'}>
+                      {activeCampaigns > 0 ? `${activeCampaigns} of ${totalCampaigns} campaigns active` : 'No active campaigns'}
+                    </span>
+                  </div>
                   
-                  {activeAgents > 0 ? (
-                    <div className="flex items-center gap-3 p-2 text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-gray-600">{activeAgents} agents active</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 p-2 text-sm">
-                      <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                      <span className="text-gray-500">No active agents</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3 p-2 text-sm">
+                    <div className={`w-2 h-2 rounded-full ${activeAgents > 0 ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                    <span className={activeAgents > 0 ? 'text-gray-600' : 'text-gray-500'}>
+                      {activeAgents > 0 ? `${activeAgents} of ${totalAgents} agents active` : 'No active agents'}
+                    </span>
+                  </div>
                   
                   <div className="flex items-center gap-3 p-2 text-sm">
                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
