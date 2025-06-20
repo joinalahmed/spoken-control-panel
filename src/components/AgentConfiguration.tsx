@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Settings, Zap, ArrowLeft, Save } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Agent } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
 import { useScripts } from '@/hooks/useScripts';
@@ -22,6 +23,7 @@ interface AgentConfigurationProps {
 }
 
 const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurationProps) => {
+  const { toast } = useToast();
   const { kbs: knowledgeBaseItems, isLoading: kbsLoading } = useKbs();
   const { scripts, isLoading: scriptsLoading } = useScripts();
   const { voices: customVoices, isLoading: voicesLoading } = useCustomVoices();
@@ -46,6 +48,24 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
 
   const handleConfigChange = (updates: Partial<typeof config>) => {
     setConfig(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleCopyId = async () => {
+    if (selectedAgent?.id) {
+      try {
+        await navigator.clipboard.writeText(selectedAgent.id);
+        toast({
+          title: "Copied!",
+          description: "Agent ID copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy agent ID to clipboard",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleUpdate = () => {
@@ -102,7 +122,12 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                 <h1 className="text-2xl font-bold text-gray-900">{selectedAgent?.name}</h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <span>ID: {selectedAgent?.id.slice(0, 8)}...</span>
-                  <Button size="sm" variant="ghost" className="p-1 h-auto">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="p-1 h-auto"
+                    onClick={handleCopyId}
+                  >
                     <Copy className="w-3 h-3" />
                   </Button>
                 </div>
