@@ -739,7 +739,7 @@ const Index = () => {
                         <CardTitle className="flex items-center gap-2">
                           <Globe className="w-5 h-5" />
                           API Configuration
-                        CardTitle>
+                        </CardTitle>
                         <CardDescription>
                           Configure the endpoints for external API services (System-wide settings)
                         </CardDescription>
