@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,11 +18,11 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
   const { campaigns, isLoading } = useCampaigns();
   const { user } = useAuth();
 
-  // Fetch contact counts for each campaign
+  // Fetch contact counts for each campaign - remove user filtering
   const { data: contactCounts = {} } = useQuery({
     queryKey: ['campaign-contact-counts', campaigns.map(c => c.id)],
     queryFn: async () => {
-      if (!user?.id || campaigns.length === 0) return {};
+      if (campaigns.length === 0) return {};
       
       const campaignIds = campaigns.map(c => c.id);
       
@@ -54,7 +55,7 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
       console.log('Contact counts:', counts);
       return counts;
     },
-    enabled: !!user?.id && campaigns.length > 0,
+    enabled: !!user?.id && campaigns.length > 0, // Keep auth check but remove user filtering from query
   });
 
   if (isLoading) {
@@ -128,8 +129,8 @@ const CampaignsList = ({ onCreateCampaign, onSelectCampaign }: CampaignsListProp
     <div className="flex-1 bg-gray-50 p-6 overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Campaigns</h1>
-          <p className="text-gray-600">Manage your voice campaigns where contacts are mapped with agents</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">All Campaigns</h1>
+          <p className="text-gray-600">View all voice campaigns across all users</p>
         </div>
         <Button 
           onClick={onCreateCampaign}

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -79,8 +78,7 @@ export const useCampaigns = () => {
   } = useQuery({
     queryKey: ['campaigns'],
     queryFn: async () => {
-      if (!user?.id) return [];
-      
+      // Remove user filtering to show all campaigns
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -97,7 +95,7 @@ export const useCampaigns = () => {
         settings: parseSettings(campaign.settings)
       })) as Campaign[];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id, // Keep this check for authentication
   });
 
   const createCampaign = useMutation({
