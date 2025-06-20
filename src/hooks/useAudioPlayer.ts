@@ -3,44 +3,18 @@ import { useState, useEffect, useRef } from 'react';
 
 export const useAudioPlayer = (recordingUrl: string | null) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    const fetchAudio = async () => {
-      if (recordingUrl) {
-        try {
-          setIsLoadingAudio(true);
-          console.log('Fetching audio from URL:', recordingUrl);
-          
-          const response = await fetch(recordingUrl);
-          if (response.ok) {
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            setAudioUrl(url);
-            console.log('Audio blob created successfully');
-          } else {
-            console.error('Failed to fetch audio:', response.status, response.statusText);
-          }
-        } catch (error) {
-          console.error('Error fetching audio:', error);
-        } finally {
-          setIsLoadingAudio(false);
-        }
-      }
-    };
-
-    fetchAudio();
-
-    // Cleanup function to revoke the object URL
-    return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-    };
+    if (recordingUrl) {
+      console.log('Setting up audio with URL:', recordingUrl);
+      setIsLoadingAudio(true);
+      setAudioError(null);
+    }
   }, [recordingUrl]);
 
   useEffect(() => {
@@ -48,19 +22,42 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
     if (!audio) return;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
+    const updateDuration = () => {
+      setDuration(audio.duration);
+      setIsLoadingAudio(false);
+    };
     const handleEnded = () => setIsPlaying(false);
+    const handleLoadStart = () => {
+      console.log('Audio load started');
+      setIsLoadingAudio(true);
+    };
+    const handleCanPlay = () => {
+      console.log('Audio can play');
+      setIsLoadingAudio(false);
+      setAudioError(null);
+    };
+    const handleError = (e: Event) => {
+      console.error('Audio error:', e);
+      setIsLoadingAudio(false);
+      setAudioError('Failed to load audio');
+    };
 
     audio.addEventListener('timeupdate', updateTime);
     audio.addEventListener('loadedmetadata', updateDuration);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('error', handleError);
     };
-  }, [audioUrl]);
+  }, [recordingUrl]);
 
   const togglePlayback = () => {
     const audio = audioRef.current;
@@ -69,7 +66,10 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      audio.play().catch((error) => {
+        console.error('Play failed:', error);
+        setAudioError('Failed to play audio');
+      });
     }
     setIsPlaying(!isPlaying);
   };
@@ -95,10 +95,10 @@ export const useAudioPlayer = (recordingUrl: string | null) => {
 
   return {
     isPlaying,
-    audioUrl,
     isLoadingAudio,
     currentTime,
     duration,
+    audioError,
     audioRef,
     togglePlayback,
     handleSeek,
