@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAgents, Agent } from '@/hooks/useAgents';
+import { useCustomVoices } from '@/hooks/useCustomVoices';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AgentListProps {
@@ -20,6 +20,12 @@ interface AgentListProps {
 
 const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
   const { agents, isLoading, deleteAgent, updateAgent } = useAgents();
+  const { voices: customVoices } = useCustomVoices();
+
+  const getVoiceName = (voiceId: string) => {
+    const voice = customVoices?.find(v => v.voice_id === voiceId);
+    return voice?.voice_name || voiceId;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -159,7 +165,7 @@ const AgentList = ({ onSelectAgent, onCreateAgent }: AgentListProps) => {
                     <MessageSquare className="w-4 h-4 text-gray-500 mt-1 flex-shrink-0" />
                     <div>
                       <span className="text-gray-500">Voice:</span>
-                      <p className="text-gray-800 font-medium">{agent.voice}</p>
+                      <p className="text-gray-800 font-medium">{getVoiceName(agent.voice)}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
