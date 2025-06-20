@@ -22,10 +22,101 @@ const ApiDocumentation = () => {
       name: "Get Caller Details",
       methods: ["GET", "POST"],
       path: "/get-caller-details",
-      description: "Retrieve caller information including contact details, campaign, agent, and user information based on phone number.",
+      description: "Retrieve caller information including contact details, campaign, agent, and user information based on phone number. Used for inbound calls.",
       parameters: [
         { name: "phone", type: "string", required: true, description: "Phone number of the caller" },
         { name: "campaign_type", type: "string", required: false, description: "Filter campaigns by type (inbound/outbound)" }
+      ],
+      responseExample: `{
+  "success": true,
+  "campaign_id": "uuid",
+  "voice_id": "voice_uuid",
+  "caller": {
+    "contact": {
+      "id": "contact_uuid",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890",
+      "address": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "zip_code": "12345",
+      "status": "active"
+    },
+    "campaign": {
+      "id": "campaign_uuid",
+      "name": "Sales Campaign",
+      "description": "Lead qualification",
+      "status": "active",
+      "campaign_type": "inbound"
+    },
+    "agent": {
+      "id": "agent_uuid",
+      "name": "Sales Agent",
+      "voice": "nova",
+      "status": "active"
+    },
+    "script": {
+      "id": "script_uuid",
+      "name": "Sales Script",
+      "first_message": "Hello, how can I help you today?"
+    },
+    "user": {
+      "id": "user_uuid",
+      "full_name": "Company Owner",
+      "email": "owner@company.com"
+    },
+    "knowledge_bases": []
+  }
+}`
+    },
+    {
+      name: "Get Outbound Call Details",
+      methods: ["GET", "POST"],
+      path: "/get-outbound-call-details",
+      description: "Retrieve details for outbound call configuration including campaign, agent, and contact information.",
+      parameters: [
+        { name: "campaign_id", type: "string", required: false, description: "Campaign ID for the outbound call" },
+        { name: "phone", type: "string", required: false, description: "Target phone number (either campaign_id or phone required)" }
+      ],
+      responseExample: `{
+  "success": true,
+  "campaign_id": "uuid",
+  "voice_id": "voice_uuid", 
+  "outbound_call": {
+    "campaign": {
+      "id": "campaign_uuid",
+      "name": "Outbound Sales",
+      "description": "Cold calling campaign",
+      "status": "active",
+      "campaign_type": "outbound"
+    },
+    "agent": {
+      "id": "agent_uuid",
+      "name": "Outbound Agent",
+      "voice": "alloy",
+      "system_prompt": "You are a sales agent..."
+    },
+    "script": {
+      "id": "script_uuid",
+      "name": "Cold Call Script",
+      "sections": []
+    },
+    "contact": {
+      "id": "contact_uuid",
+      "name": "Lead Name",
+      "phone": "+1234567890"
+    }
+  }
+}`
+    },
+    {
+      name: "Get Agent by Number",
+      methods: ["GET", "POST"],
+      path: "/get-agent-by-number",
+      description: "Retrieve agent information by phone number lookup.",
+      parameters: [
+        { name: "phone", type: "string", required: true, description: "Phone number to lookup agent for" }
       ]
     },
     {
@@ -130,32 +221,13 @@ const ApiDocumentation = () => {
       parameters: []
     },
     {
-      name: "Get Agent by Number",
-      methods: ["GET", "POST"],
-      path: "/get-agent-by-number",
-      description: "Retrieve agent information by phone number.",
-      parameters: [
-        { name: "phone", type: "string", required: true, description: "Phone number to lookup" }
-      ]
-    },
-    {
-      name: "Get Outbound Call Details",
-      methods: ["GET", "POST"],
-      path: "/get-outbound-call-details",
-      description: "Retrieve details for outbound call configuration.",
-      parameters: [
-        { name: "phone", type: "string", required: true, description: "Target phone number" },
-        { name: "campaign_id", type: "string", required: false, description: "Campaign ID for the call" }
-      ]
-    },
-    {
       name: "Create Entity",
       methods: ["POST"],
       path: "/create-entity",
       description: "Universal endpoint for creating various entity types.",
       parameters: [
-        { name: "entityType", type: "string", required: true, description: "Type of entity (agent, contact, knowledge_base, campaign)" },
-        { name: "data", type: "object", required: true, description: "Entity data object" }
+        { name: "entityType", type: "string", required: true, description: "Type of entity (agent, contact, knowledge_base, campaign, script)" },
+        { name: "data", type: "object", required: true, description: "Entity data object containing the fields specific to the entity type" }
       ]
     }
   ];
@@ -244,7 +316,7 @@ const ApiDocumentation = () => {
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Dhwani Voice AI API Documentation</h1>
         <p className="text-lg text-gray-600 mb-4">
-          Complete REST API documentation for the Dhwani Voice AI platform
+          Complete REST API documentation for the Dhwani Voice AI platform. This API enables voice-based AI interactions, call management, and comprehensive contact and campaign handling.
         </p>
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
           <h3 className="font-semibold text-blue-800 mb-2">Base URL</h3>
@@ -259,16 +331,16 @@ const ApiDocumentation = () => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-4">
-            All API endpoints require authentication using Bearer token and API key headers.
+            All API endpoints require authentication using Bearer token and API key headers. Both headers must be included in every request.
           </p>
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
             <h4 className="font-semibold text-yellow-800 mb-2">Required Headers</h4>
             <div className="space-y-2 text-sm">
               <div className="font-mono bg-yellow-100 p-2 rounded">
-                <span className="text-yellow-700">Authorization:</span> Bearer YOUR_TOKEN
+                <span className="text-yellow-700">Authorization:</span> Bearer {authToken}
               </div>
               <div className="font-mono bg-yellow-100 p-2 rounded">
-                <span className="text-yellow-700">apikey:</span> YOUR_API_KEY
+                <span className="text-yellow-700">apikey:</span> {authToken}
               </div>
               <div className="font-mono bg-yellow-100 p-2 rounded">
                 <span className="text-yellow-700">Content-Type:</span> application/json
@@ -377,18 +449,7 @@ const ApiDocumentation = () => {
               <div>
                 <h3 className="font-semibold mb-2">Response Format</h3>
                 <pre className="bg-gray-900 text-white p-4 rounded-lg text-sm overflow-x-auto">
-{endpoint.name.includes('Get Caller Details') ? 
-`{
-  "success": true,
-  "campaign_id": "uuid",
-  "caller": {
-    "contact": { /* contact details */ },
-    "campaign": { /* campaign details */ },
-    "agent": { /* agent details */ },
-    "user": { /* user details */ }
-  }
-}` :
-endpoint.name.includes('Get') ? 
+{endpoint.responseExample || (endpoint.name.includes('Get') ? 
 `{
   "success": true,
   "data": {
@@ -404,7 +465,7 @@ endpoint.name.includes('Get') ?
     "updated_at": "2024-01-15T10:30:00Z"
     /* other entity fields */
   }
-}`}
+}`)}
                 </pre>
               </div>
             </CardContent>
@@ -476,7 +537,16 @@ endpoint.name.includes('Get') ?
                 <li>Implement retry logic for transient failures</li>
                 <li>Cache responses when appropriate</li>
                 <li>Use HTTPS for all API calls</li>
+                <li>Validate phone numbers before sending to endpoints</li>
+                <li>Store sensitive data securely</li>
               </ul>
+            </div>
+
+            <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+              <h4 className="font-medium text-purple-800 mb-2">Phone Number Format</h4>
+              <p className="text-sm text-purple-700">
+                Phone numbers should be in E.164 format (e.g., +1234567890). The API will normalize phone numbers by removing spaces, dashes, and parentheses for comparison.
+              </p>
             </div>
           </div>
         </CardContent>
