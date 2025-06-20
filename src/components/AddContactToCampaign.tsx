@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AddContactToCampaignProps {
   campaignId: string;
@@ -28,6 +29,7 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const { contacts, isLoading: contactsLoading } = useContacts();
+  const queryClient = useQueryClient();
 
   // Filter contacts that aren't already in the campaign
   const availableContacts = contacts.filter(contact => 
@@ -70,6 +72,9 @@ const AddContactToCampaign: React.FC<AddContactToCampaignProps> = ({
         toast.error('Failed to add contacts to campaign');
         return;
       }
+
+      // Invalidate and refetch campaign contact counts
+      queryClient.invalidateQueries({ queryKey: ['campaign-contact-counts'] });
 
       toast.success(`Added ${selectedContactIds.length} contact(s) to campaign`);
       setSelectedContactIds([]);

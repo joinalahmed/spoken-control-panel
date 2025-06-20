@@ -40,5 +40,7 @@ export const useCampaignContactCounts = (campaigns: Campaign[]) => {
       return counts;
     },
     enabled: !!user?.id && campaigns.length > 0,
+    staleTime: 0, // Always refetch to ensure fresh data
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 };
