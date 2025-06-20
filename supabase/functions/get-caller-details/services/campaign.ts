@@ -17,32 +17,18 @@ export const findCampaignForContact = async (
     throw new Error('Error fetching campaigns');
   }
 
-  // Filter campaigns by type if specified
-  let filteredCampaigns = campaigns || [];
-  if (campaignType) {
-    filteredCampaigns = campaigns?.filter(c => {
-      const cType = c.settings?.campaign_type || 'outbound';
-      return cType === campaignType;
-    }) || [];
+  // Filter for active inbound campaigns only
+  const inboundCampaigns = campaigns?.filter(c => {
+    const cType = c.settings?.campaign_type || 'outbound';
+    return cType === 'inbound';
+  }) || [];
+
+  if (inboundCampaigns.length === 0) {
+    console.log('No active inbound campaigns found for contact user');
+    throw new Error('No active inbound campaigns found for this contact');
   }
 
-  // For inbound calls, prioritize inbound campaigns, otherwise use any active campaign
-  let selectedCampaign = null;
-  if (!campaignType || campaignType === 'inbound') {
-    // Look for active inbound campaigns first
-    const inboundCampaigns = filteredCampaigns.filter(c => 
-      (c.settings?.campaign_type === 'inbound')
-    );
-    selectedCampaign = inboundCampaigns[0] || filteredCampaigns[0];
-  } else {
-    selectedCampaign = filteredCampaigns[0];
-  }
-
-  if (!selectedCampaign) {
-    console.log('No active campaigns found for contact user');
-    throw new Error('No active campaigns found for this contact');
-  }
-
-  console.log(`Found campaign: ${selectedCampaign.name}`);
+  const selectedCampaign = inboundCampaigns[0];
+  console.log(`Found active inbound campaign: ${selectedCampaign.name}`);
   return selectedCampaign;
 };
