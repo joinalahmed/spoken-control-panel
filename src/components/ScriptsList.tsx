@@ -147,7 +147,7 @@ const ScriptsList: React.FC<ScriptsListProps> = ({
                     {script.first_message && (
                       <div className="text-sm">
                         <strong>Opening Message:</strong>
-                        <p className="mt-1 text-gray-600 line-clamp-2">
+                        <p className="mt-1 text-gray-600">
                           {script.first_message}
                         </p>
                       </div>

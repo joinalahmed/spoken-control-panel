@@ -44,7 +44,7 @@ const KbsCard = ({ item, onView, onEdit, onDelete, onCopyId }: KbsCardProps) => 
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-gray-900 text-xl font-bold mb-2 line-clamp-2">{item.title}</CardTitle>
+            <CardTitle className="text-gray-900 text-xl font-bold mb-2">{item.title}</CardTitle>
             <div className="flex items-center gap-2 mb-2">
               <Badge className={getTypeColor(item.type)}>{item.type}</Badge>
               <Badge 
@@ -98,7 +98,7 @@ const KbsCard = ({ item, onView, onEdit, onDelete, onCopyId }: KbsCardProps) => 
         </div>
       </CardHeader>
       <CardContent className="space-y-4 flex-1 flex flex-col">
-        <p className="text-gray-600 text-sm line-clamp-3 min-h-[60px] flex-1">
+        <p className="text-gray-600 text-sm flex-1">
           {item.description || 'No description provided.'}
         </p>
         {item.tags && item.tags.length > 0 && (
