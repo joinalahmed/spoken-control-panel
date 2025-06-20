@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical, FileText, HelpCircle, BookOpen, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -217,7 +218,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
               }
             } else if (step && typeof step === 'object') {
               return {
-                name: step.title || step.name || '',
+                name: step.name || step.title || '',
                 content: step.content || step.description || ''
               };
             }
@@ -305,6 +306,20 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
     }
 
     try {
+      // Transform sections for saving - ensure correct mapping of name and content
+      const transformedSections = formData.sections.map(section => ({
+        id: section.id,
+        title: section.title,
+        content: section.content, // This should be the section content, not description
+        description: section.content, // Keep for backward compatibility
+        steps: (section.steps || []).map(step => ({
+          name: step.name, // Step name stays as name
+          content: step.content, // Step content stays as content
+          title: step.name, // Keep for backward compatibility
+          description: step.content // Keep for backward compatibility
+        }))
+      }));
+
       if (editingScript) {
         // Update existing script
         await updateScript.mutateAsync({
@@ -315,7 +330,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
           agent_type: formData.agent_type,
           voice: formData.voice,
           first_message: formData.first_message || null,
-          sections: formData.sections
+          sections: transformedSections
         });
       } else {
         // Create new script
@@ -326,7 +341,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
           agent_type: formData.agent_type,
           voice: formData.voice,
           first_message: formData.first_message || null,
-          sections: formData.sections
+          sections: transformedSections
         });
       }
       onSave(formData);
