@@ -53,8 +53,8 @@ Deno.serve(async (req) => {
     const script = campaign.script_id ? await getScriptDetails(supabase, campaign.script_id) : null;
     const user = await getUserProfile(supabase, contact.user_id);
     
-    // Get only the knowledge base linked to this campaign and owned by the same user
-    const knowledgeBases = await getCampaignKnowledgeBase(supabase, campaign.knowledge_base_id, contact.user_id);
+    // Get only the knowledge base linked to this campaign
+    const knowledgeBases = await getCampaignKnowledgeBase(supabase, campaign.knowledge_base_id);
 
     const response = buildCallerResponse(campaign, contact, agent, script, user, knowledgeBases);
 
