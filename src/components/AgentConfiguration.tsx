@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -312,7 +313,6 @@ const AgentConfiguration = ({ selectedAgent, onBack, onUpdate }: AgentConfigurat
                               <SelectItem key={script.id} value={script.id}>
                                 <div className="flex items-center gap-2">
                                   <span>{script.name}</span>
-                                  <span className="text-xs text-gray-500">({script.agent_type})</span>
                                 </div>
                               </SelectItem>
                             ))}

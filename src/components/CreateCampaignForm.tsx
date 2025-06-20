@@ -148,7 +148,7 @@ const CreateCampaignForm = ({ onBack, onSave }: CreateCampaignFormProps) => {
                     <SelectContent>
                       {scripts.map((script) => (
                         <SelectItem key={script.id} value={script.id}>
-                          {script.name} - {script.agent_type}
+                          {script.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
