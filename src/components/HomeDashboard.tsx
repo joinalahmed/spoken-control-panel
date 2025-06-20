@@ -1,13 +1,16 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Phone, Clock, DollarSign, Users, Calendar, Bell, Search, ChevronRight, TrendingUp } from 'lucide-react';
+import { Phone, Clock, DollarSign, Users, Calendar, Bell, Search, ChevronRight, TrendingUp, Activity, Target } from 'lucide-react';
 import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const HomeDashboard = () => {
   const { user } = useAuth();
@@ -17,16 +20,39 @@ const HomeDashboard = () => {
   const { voices: customVoices } = useCustomVoices();
   const [selectedPeriod, setSelectedPeriod] = useState('This month');
 
+  // Fetch call statistics from database
+  const { data: callStats } = useQuery({
+    queryKey: ['call-stats', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('calls')
+        .select('duration, status, created_at')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const totalCalls = data.length;
+      const totalMinutes = data.reduce((sum, call) => sum + (call.duration || 0), 0);
+      const completedCalls = data.filter(call => call.status === 'completed').length;
+      const successRate = totalCalls > 0 ? (completedCalls / totalCalls) * 100 : 0;
+
+      return {
+        totalCalls,
+        totalMinutes,
+        successRate: Math.round(successRate)
+      };
+    },
+    enabled: !!user?.id,
+  });
+
   // Calculate real stats from data
   const activeAgents = agents.filter(agent => agent.status === 'active').length;
   const totalAgents = agents.length;
   const totalContacts = contacts.length;
   const activeCampaigns = campaigns.filter(campaign => campaign.status === 'active').length;
   const totalCampaigns = campaigns.length;
-
-  // Mock call data - in a real app, this would come from a calls API
-  const totalCallMinutes = 0; // This would be calculated from actual call data
-  const numberOfCalls = 0;
 
   const userName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
 
@@ -35,223 +61,261 @@ const HomeDashboard = () => {
     return voice?.voice_name || voiceId;
   };
 
-  const callsOverview = [
+  // Main metrics cards
+  const mainMetrics = [
     {
-      title: totalCallMinutes.toString(),
-      subtitle: 'Total Call Minutes',
-      change: 'Based on your calls',
+      title: 'Total Calls',
+      value: callStats?.totalCalls?.toString() || '0',
+      description: 'All time calls',
+      change: `${callStats?.successRate || 0}% success rate`,
       icon: Phone,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-500/20'
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200'
     },
     {
-      title: numberOfCalls.toString(),
-      subtitle: 'Number of calls',
-      change: 'All time total',
-      icon: Phone,
-      color: 'text-teal-400',
-      bgColor: 'bg-teal-500/20'
+      title: 'Call Minutes',
+      value: Math.round((callStats?.totalMinutes || 0) / 60).toString(),
+      description: 'Total conversation time',
+      change: `${callStats?.totalMinutes || 0} minutes total`,
+      icon: Clock,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200'
+    },
+    {
+      title: 'Active Agents',
+      value: activeAgents.toString(),
+      description: `${totalAgents} total agents`,
+      change: `${totalAgents - activeAgents} inactive`,
+      icon: Users,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200'
+    },
+    {
+      title: 'Campaigns',
+      value: activeCampaigns.toString(),
+      description: `${totalCampaigns} total campaigns`,
+      change: `${totalCampaigns - activeCampaigns} inactive`,
+      icon: Target,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-orange-200'
     }
   ];
 
-  const systemOverview = [
+  // Quick stats for sidebar
+  const quickStats = [
     {
-      title: totalAgents.toString(),
-      subtitle: 'Total Agents',
-      active: activeAgents,
+      label: 'Total Contacts',
+      value: totalContacts,
       icon: Users,
-      color: 'text-blue-400'
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-50'
     },
     {
-      title: totalContacts.toString(),
-      subtitle: 'Total Contacts',
-      active: totalContacts,
-      icon: Users,
-      color: 'text-green-400'
+      label: 'Success Rate',
+      value: `${callStats?.successRate || 0}%`,
+      icon: TrendingUp,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50'
     },
     {
-      title: totalCampaigns.toString(),
-      subtitle: 'Total Campaigns',
-      active: activeCampaigns,
-      icon: Calendar,
-      color: 'text-purple-400'
+      label: 'Custom Voices',
+      value: customVoices?.length || 0,
+      icon: Activity,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50'
     }
   ];
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Hello, {userName} 👋</h1>
-          <p className="text-gray-600">Your AI-powered calling platform at a glance</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="p-6 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Hello, {userName} 👋</h1>
+            <p className="text-gray-600 mt-1">Welcome to your AI-powered calling platform</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" className="bg-white">
+              <Search className="w-4 h-4 mr-2" />
+              Search...
+            </Button>
+            <select 
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option>This month</option>
+              <option>Last month</option>
+              <option>This year</option>
+            </select>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm">
-            <Search className="w-4 h-4 mr-2" />
-            Search...
-          </Button>
-          <select 
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-          >
-            <option>This month</option>
-            <option>Last month</option>
-            <option>This year</option>
-          </select>
-        </div>
-      </div>
 
-      {/* System Overview */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">System Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {systemOverview.map((stat, index) => (
-            <Card key={index} className="bg-white border border-gray-200">
+        {/* Main Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {mainMetrics.map((metric, index) => (
+            <Card key={index} className={`bg-white hover:shadow-lg transition-all duration-200 ${metric.borderColor} border-l-4`}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-lg bg-gray-100">
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className={`p-3 rounded-xl ${metric.bgColor}`}>
+                    <metric.icon className={`h-6 w-6 ${metric.color}`} />
                   </div>
-                  <Badge variant="secondary">{stat.active} active</Badge>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                    <div className="text-sm text-gray-600">{metric.description}</div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <div className="text-2xl font-bold text-gray-900">{stat.title}</div>
-                  <div className="text-sm text-gray-600">{stat.subtitle}</div>
+                <div className="text-xs text-gray-500 flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" />
+                  {metric.change}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-      </div>
 
-      {/* Calls Overview */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Calls Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {callsOverview.map((stat, index) => (
-            <Card key={index} className="bg-white border border-gray-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Agents List - Takes up 3 columns */}
+          <div className="lg:col-span-3">
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-semibold text-gray-900">Your Agents</CardTitle>
+                    <CardDescription className="text-gray-600">Manage and monitor your AI agents</CardDescription>
                   </div>
+                  <Button variant="outline" size="sm">
+                    View All
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
                 </div>
-                <div className="space-y-1">
-                  <div className="text-2xl font-bold text-gray-900">{stat.title}</div>
-                  <div className="text-sm text-gray-600">{stat.subtitle}</div>
-                  <div className="text-xs text-gray-500">{stat.change}</div>
+              </CardHeader>
+              <CardContent>
+                {agents.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-5 gap-4 text-sm font-medium text-gray-500 pb-3 border-b border-gray-200">
+                      <span>Agent Name</span>
+                      <span>Voice</span>
+                      <span>Status</span>
+                      <span>Conversations</span>
+                      <span>Last Active</span>
+                    </div>
+                    {agents.slice(0, 5).map((agent, index) => (
+                      <div key={index} className="grid grid-cols-5 gap-4 text-sm py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors">
+                        <span className="font-medium text-gray-900">{agent.name}</span>
+                        <span className="text-gray-600">{getVoiceName(agent.voice)}</span>
+                        <div>
+                          <Badge variant={agent.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                            {agent.status}
+                          </Badge>
+                        </div>
+                        <span className="text-gray-600">{agent.conversations}</span>
+                        <span className="text-gray-500 text-xs">
+                          {agent.last_active ? new Date(agent.last_active).toLocaleDateString() : 'Never'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No agents created yet</h3>
+                    <p className="text-sm mb-4">Create your first agent to start making calls</p>
+                    <Button size="sm">
+                      Create Agent
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Stats Sidebar - Takes up 1 column */}
+          <div className="space-y-6">
+            {/* Quick Stats Card */}
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Quick Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {quickStats.map((stat, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                        <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900">{stat.value}</div>
+                        <div className="text-xs text-gray-600">{stat.label}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity Card */}
+            <Card className="bg-white shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900">Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {activeCampaigns > 0 ? (
+                    <div className="flex items-center gap-3 p-2 text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-gray-600">{activeCampaigns} campaigns running</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-2 text-sm">
+                      <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                      <span className="text-gray-500">No active campaigns</span>
+                    </div>
+                  )}
+                  
+                  {activeAgents > 0 ? (
+                    <div className="flex items-center gap-3 p-2 text-sm">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-600">{activeAgents} agents active</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3 p-2 text-sm">
+                      <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                      <span className="text-gray-500">No active agents</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-3 p-2 text-sm">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-gray-600">{totalContacts} contacts available</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Agents */}
-        <div className="lg:col-span-2">
-          <Card className="bg-white border border-gray-200">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Your Agents</CardTitle>
-                <Button variant="ghost" size="sm">
-                  View All
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {agents.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-500 pb-2 border-b">
-                    <span>Agent Name</span>
-                    <span>Voice</span>
-                    <span>Status</span>
-                    <span>Conversations</span>
-                  </div>
-                  {agents.slice(0, 5).map((agent, index) => (
-                    <div key={index} className="grid grid-cols-4 gap-4 text-sm py-3 border-b border-gray-100 last:border-0">
-                      <span className="font-medium text-gray-900">{agent.name}</span>
-                      <span className="text-gray-600">{getVoiceName(agent.voice)}</span>
-                      <span className={`text-sm ${agent.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>
-                        <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
-                          {agent.status}
-                        </Badge>
-                      </span>
-                      <span className="text-gray-600">{agent.conversations}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No agents created yet</p>
-                  <p className="text-sm">Create your first agent to get started</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="space-y-6">
-          <Card className="bg-white border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Quick Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100">
-                    <Users className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{activeAgents}</div>
-                    <div className="text-sm text-gray-600">Active Agents</div>
-                    <div className="text-xs text-gray-500">
-                      {totalAgents - activeAgents} inactive
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <Calendar className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{activeCampaigns}</div>
-                    <div className="text-sm text-gray-600">Active Campaigns</div>
-                    <div className="text-xs text-gray-500">
-                      {totalCampaigns - activeCampaigns} inactive
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Getting Started */}
-          {totalAgents === 0 && (
-            <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Getting Started</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Create your first agent to start making calls and managing conversations.
-                </p>
-                <Button size="sm" className="w-full">
-                  Create Agent
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+            {/* Getting Started Card */}
+            {totalAgents === 0 && (
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-gray-900 mb-2">Getting Started</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Create your first agent to start making calls and managing conversations.
+                  </p>
+                  <Button size="sm" className="w-full">
+                    Create Agent
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>
