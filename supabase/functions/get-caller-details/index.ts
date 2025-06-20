@@ -5,7 +5,7 @@ import { findContactByPhone } from './services/contact.ts';
 import { findCampaignForContact } from './services/campaign.ts';
 import { getAgentDetails } from './services/agent.ts';
 import { getScriptDetails } from './services/script.ts';
-import { getUserProfile, getKnowledgeBases } from './services/user.ts';
+import { getUserProfile, getCampaignKnowledgeBase } from './services/user.ts';
 import { buildCallerResponse } from './utils/response.ts';
 
 Deno.serve(async (req) => {
@@ -52,7 +52,9 @@ Deno.serve(async (req) => {
     const agent = campaign.agent_id ? await getAgentDetails(supabase, campaign.agent_id) : null;
     const script = campaign.script_id ? await getScriptDetails(supabase, campaign.script_id) : null;
     const user = await getUserProfile(supabase, contact.user_id);
-    const knowledgeBases = await getKnowledgeBases(supabase, contact.user_id);
+    
+    // Get only the knowledge base linked to this campaign
+    const knowledgeBases = await getCampaignKnowledgeBase(supabase, campaign.knowledge_base_id);
 
     const response = buildCallerResponse(campaign, contact, agent, script, user, knowledgeBases);
 
