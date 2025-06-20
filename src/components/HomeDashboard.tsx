@@ -10,6 +10,7 @@ import { useCustomVoices } from '@/hooks/useCustomVoices';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const HomeDashboard = () => {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ const HomeDashboard = () => {
   const { campaigns } = useCampaigns();
   const { voices: customVoices } = useCustomVoices();
   const [selectedPeriod, setSelectedPeriod] = useState('This month');
+  const navigate = useNavigate();
 
   // Fetch call statistics from database
   const { data: callStats } = useQuery({
@@ -163,7 +165,11 @@ const HomeDashboard = () => {
                     <CardTitle className="text-xl font-semibold text-gray-900">Your Agents</CardTitle>
                     <CardDescription className="text-gray-600">Manage and monitor your AI agents</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/agents')}
+                  >
                     View All
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
