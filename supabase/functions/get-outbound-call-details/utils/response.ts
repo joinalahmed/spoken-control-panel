@@ -19,12 +19,12 @@ export const buildOutboundCallResponse = (
     success: true,
     campaign_id: campaign.id,
     voice_id: agent.voice_id,
-    user: user ? buildUserObject(user) : null,
+    // User details for the contact/phone number
+    contact_user: user ? buildUserObject(user) : null,
     outbound_call: {
       campaign: buildCampaignObject(campaign),
       agent: buildAgentObject(agent),
       script: script ? buildScriptObject(script) : null,
-      user: user ? buildUserObject(user) : null,
       knowledge_bases: knowledgeBases
     }
   };

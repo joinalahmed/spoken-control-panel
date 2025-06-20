@@ -74,13 +74,13 @@ Deno.serve(async (req) => {
 
     const script = campaign.script_id ? await getScriptDetails(supabase, campaign.script_id) : null;
     
-    // Get user details from the contact's user_id
-    const user = await getUserProfile(supabase, contact.user_id);
+    // Get user profile details for the contact (phone number owner)
+    const contactUser = await getUserProfile(supabase, contact.user_id);
     const knowledgeBases = await getKnowledgeBases(supabase, contact.user_id);
 
-    console.log(`Found user details for contact: ${user ? user.full_name || user.email : 'No user found'}`);
+    console.log(`Found user details for phone ${phoneNumber}: ${contactUser ? contactUser.full_name || contactUser.email : 'No user found'}`);
 
-    const response = buildOutboundCallResponse(campaign, agent, script, user, knowledgeBases, contact);
+    const response = buildOutboundCallResponse(campaign, agent, script, contactUser, knowledgeBases, contact);
 
     return createSuccessResponse(response);
 
