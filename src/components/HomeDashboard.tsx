@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Phone, Clock, DollarSign, Users, Calendar, Bell, Search, ChevronRight, 
 import { useAgents } from '@/hooks/useAgents';
 import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns } from '@/hooks/useCampaigns';
+import { useCustomVoices } from '@/hooks/useCustomVoices';
 import { useAuth } from '@/contexts/AuthContext';
 
 const HomeDashboard = () => {
@@ -14,6 +14,7 @@ const HomeDashboard = () => {
   const { agents } = useAgents();
   const { contacts } = useContacts();
   const { campaigns } = useCampaigns();
+  const { voices: customVoices } = useCustomVoices();
   const [selectedPeriod, setSelectedPeriod] = useState('This month');
 
   // Calculate real stats from data
@@ -28,6 +29,11 @@ const HomeDashboard = () => {
   const numberOfCalls = 0;
 
   const userName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
+
+  const getVoiceName = (voiceId: string) => {
+    const voice = customVoices?.find(v => v.voice_id === voiceId);
+    return voice?.voice_name || voiceId;
+  };
 
   const callsOverview = [
     {
@@ -167,7 +173,7 @@ const HomeDashboard = () => {
                   {agents.slice(0, 5).map((agent, index) => (
                     <div key={index} className="grid grid-cols-4 gap-4 text-sm py-3 border-b border-gray-100 last:border-0">
                       <span className="font-medium text-gray-900">{agent.name}</span>
-                      <span className="text-gray-600 capitalize">{agent.voice}</span>
+                      <span className="text-gray-600">{getVoiceName(agent.voice)}</span>
                       <span className={`text-sm ${agent.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>
                         <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
                           {agent.status}
