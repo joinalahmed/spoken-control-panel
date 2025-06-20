@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Calendar, MessageSquare, ShoppingCart, UserPlus, Bell, Target, Briefcase, ArrowLeft, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import LanguageSelector from './LanguageSelector';
 
 interface CreateAgentFlowProps {
   onAgentCreated: (agentData: any) => void;
@@ -18,6 +19,7 @@ const CreateAgentFlow = ({ onAgentCreated, onBack }: CreateAgentFlowProps) => {
   const [companyIndustry, setCompanyIndustry] = useState('');
   const [agentRole, setAgentRole] = useState('');
   const [agentType, setAgentType] = useState<'inbound' | 'outbound'>('outbound');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['en']);
   const { toast } = useToast();
 
   const industries = [
@@ -241,7 +243,8 @@ Be professional, helpful, and maintain confidentiality.`,
       description: template.description,
       systemPrompt: template.systemPrompt,
       firstMessage: template.firstMessage,
-      agent_type: agentType
+      agent_type: agentType,
+      languages: selectedLanguages
     };
 
     onAgentCreated(agentData);
@@ -256,7 +259,8 @@ Be professional, helpful, and maintain confidentiality.`,
     agentName.trim().length > 0 && 
     companyName.trim().length > 0 && 
     companyIndustry.trim().length > 0 && 
-    agentRole.trim().length > 0;
+    agentRole.trim().length > 0 &&
+    selectedLanguages.length > 0;
 
   return (
     <div className="flex-1 p-8">
@@ -362,6 +366,11 @@ Be professional, helpful, and maintain confidentiality.`,
                 required
               />
             </div>
+
+            <LanguageSelector
+              selectedLanguages={selectedLanguages}
+              onLanguageChange={setSelectedLanguages}
+            />
 
             {!areAllFieldsValid && (
               <p className="text-sm text-red-500 mt-2">Please fill in all required fields to proceed</p>
