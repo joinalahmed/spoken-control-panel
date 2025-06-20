@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -86,6 +85,7 @@ const SortableSection = ({ section, index, onUpdate, onRemove }: SortableSection
           className="flex-1"
         />
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => onRemove(index)}
@@ -111,6 +111,7 @@ const SortableSection = ({ section, index, onUpdate, onRemove }: SortableSection
           <div className="flex items-center justify-between mb-2">
             <Label>Steps (Optional)</Label>
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={handleAddStep}
@@ -125,6 +126,7 @@ const SortableSection = ({ section, index, onUpdate, onRemove }: SortableSection
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-medium text-gray-700">Step {stepIndex + 1}</h4>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => handleRemoveStep(stepIndex)}
