@@ -1,4 +1,12 @@
 
+import { 
+  buildCampaignObject, 
+  buildContactObject, 
+  buildAgentObject, 
+  buildScriptObject, 
+  buildUserObject 
+} from '../../shared/utils/campaign-response.ts';
+
 export const buildCallerResponse = (
   campaign: any,
   contact: any,
@@ -12,27 +20,11 @@ export const buildCallerResponse = (
     campaign_id: campaign.id,
     voice_id: agent?.voice_id || null,
     caller: {
-      contact: {
-        id: contact.id,
-        name: contact.name,
-        email: contact.email,
-        phone: contact.phone,
-        address: contact.address,
-        city: contact.city,
-        state: contact.state,
-        zip_code: contact.zip_code,
-        status: contact.status
-      },
-      campaign: {
-        id: campaign.id,
-        name: campaign.name,
-        description: campaign.description,
-        status: campaign.status,
-        campaign_type: campaign.settings?.campaign_type || 'outbound'
-      },
-      agent: agent,
-      script: script,
-      user: user,
+      contact: buildContactObject(contact),
+      campaign: buildCampaignObject(campaign),
+      agent: agent ? buildAgentObject(agent) : null,
+      script: script ? buildScriptObject(script) : null,
+      user: user ? buildUserObject(user) : null,
       knowledge_bases: knowledgeBases
     }
   };
