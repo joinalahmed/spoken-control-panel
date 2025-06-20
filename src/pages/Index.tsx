@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType, Save, Globe, Mic, Trash2, Plus } from 'lucide-react';
+import { Home, Users, FileText, Settings, BarChart3, LogOut, Heart, User, FileType, Save, Globe, Mic, Trash2, Plus, Key, RefreshCw, Eye, EyeOff, Copy } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,6 +15,7 @@ import { useCampaigns } from '@/hooks/useCampaigns';
 import { useScripts, Script } from '@/hooks/useScripts';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useCustomVoices } from '@/hooks/useCustomVoices';
+import { useApiKeys } from '@/hooks/useApiKeys';
 import AgentConfiguration from '@/components/AgentConfiguration';
 import ConversationInterface from '@/components/ConversationInterface';
 import AgentList from '@/components/AgentList';
@@ -46,6 +46,11 @@ const Index = () => {
   const { voices, createVoice, deleteVoice, isLoading: voicesLoading } = useCustomVoices();
   const [newVoiceName, setNewVoiceName] = useState('');
   const [newVoiceId, setNewVoiceId] = useState('');
+  
+  // API Key management hooks
+  const { generateApiKey, getApiKey, revokeApiKey, isLoading: apiKeyLoading } = useApiKeys();
+  const [currentApiKey, setCurrentApiKey] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
   
   const [activeTab, setActiveTab] = useState('home');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -78,6 +83,11 @@ const Index = () => {
             const defaultUrl = 'https://7263-49-207-61-173.ngrok-free.app/outbound_call';
             setOutboundCallUrl(defaultUrl);
           }
+          
+          // Load API key
+          const apiKey = await getApiKey();
+          setCurrentApiKey(apiKey);
+          
           setSettingsLoaded(true);
         } catch (error) {
           console.error('Error loading system settings:', error);
@@ -89,7 +99,7 @@ const Index = () => {
       };
       loadSettings();
     }
-  }, [activeTab, getSetting, settingsLoaded]);
+  }, [activeTab, getSetting, getApiKey, settingsLoaded]);
 
   const handleSaveSettings = async () => {
     if (!outboundCallUrl.trim()) {
@@ -469,6 +479,38 @@ const Index = () => {
     setViewingScript(script);
   };
 
+  const handleGenerateApiKey = async () => {
+    try {
+      const newApiKey = await generateApiKey();
+      setCurrentApiKey(newApiKey);
+    } catch (error) {
+      console.error('Error generating API key:', error);
+    }
+  };
+
+  const handleRevokeApiKey = async () => {
+    try {
+      const success = await revokeApiKey();
+      if (success) {
+        setCurrentApiKey(null);
+        setShowApiKey(false);
+      }
+    } catch (error) {
+      console.error('Error revoking API key:', error);
+    }
+  };
+
+  const copyApiKey = async () => {
+    if (currentApiKey) {
+      try {
+        await navigator.clipboard.writeText(currentApiKey);
+        toast.success('API key copied to clipboard');
+      } catch (error) {
+        toast.error('Failed to copy API key');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Sidebar - Fixed height and proper overflow handling */}
@@ -597,13 +639,107 @@ const Index = () => {
                 {/* Content */}
                 <div className="max-w-4xl mx-auto px-6 py-8">
                   <div className="space-y-6">
+                    {/* API Key Management Card */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Key className="w-5 h-5" />
+                          API Key Management
+                        </CardTitle>
+                        <CardDescription>
+                          Generate and manage your personal API key for programmatic access to create agents
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {currentApiKey ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label>Your API Key</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  type={showApiKey ? 'text' : 'password'}
+                                  value={currentApiKey}
+                                  readOnly
+                                  className="font-mono text-sm"
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setShowApiKey(!showApiKey)}
+                                >
+                                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={copyApiKey}
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <h4 className="font-medium text-blue-900 mb-2">Usage Example</h4>
+                              <code className="text-sm text-blue-800 bg-blue-100 p-2 rounded block whitespace-pre-wrap">
+{`curl --location 'https://vegryoncdzcxmornresu.supabase.co/functions/v1/create-agent' \\
+--header 'Content-Type: application/json' \\
+--header 'Authorization: Bearer ${showApiKey ? currentApiKey : '••••••••••••••••'}' \\
+--header 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \\
+--data '{
+    "name": "Your Agent Name",
+    "agent_type": "inbound",
+    "company": "Your Company"
+}'`}
+                              </code>
+                            </div>
+
+                            <div className="flex gap-3">
+                              <Button
+                                onClick={handleGenerateApiKey}
+                                disabled={apiKeyLoading}
+                                variant="outline"
+                              >
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Regenerate Key
+                              </Button>
+                              <Button
+                                onClick={handleRevokeApiKey}
+                                disabled={apiKeyLoading}
+                                variant="destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Revoke Key
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <Key className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">No API Key Generated</h3>
+                            <p className="text-gray-600 mb-4">
+                              Generate an API key to create agents programmatically from external systems
+                            </p>
+                            <Button
+                              onClick={handleGenerateApiKey}
+                              disabled={apiKeyLoading}
+                              className="bg-purple-600 hover:bg-purple-700"
+                            >
+                              <Key className="w-4 h-4 mr-2" />
+                              {apiKeyLoading ? 'Generating...' : 'Generate API Key'}
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
                     {/* API Configuration Card */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Globe className="w-5 h-5" />
                           API Configuration
-                        </CardTitle>
+                        CardTitle>
                         <CardDescription>
                           Configure the endpoints for external API services (System-wide settings)
                         </CardDescription>
