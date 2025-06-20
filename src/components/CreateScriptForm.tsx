@@ -208,25 +208,37 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
         
         if (section.steps && Array.isArray(section.steps)) {
           transformedSteps = section.steps.map((step: any) => {
+            console.log('Processing step:', step);
+            
+            // Handle different step formats
             if (typeof step === 'string') {
-              // Parse "name: content" format back to separate fields
+              // If step is just a string, treat it as content with empty name
+              if (step.trim() === '') {
+                return { name: '', content: '' };
+              }
+              
+              // Try to parse "name: content" format
               const colonIndex = step.indexOf(':');
-              if (colonIndex > 0) {
+              if (colonIndex > 0 && colonIndex < step.length - 1) {
                 return {
                   name: step.substring(0, colonIndex).trim(),
                   content: step.substring(colonIndex + 1).trim()
                 };
               } else {
-                return { name: step, content: '' };
+                // If no colon or colon at wrong position, treat whole string as content
+                return { name: '', content: step.trim() };
               }
             } else if (step && typeof step === 'object') {
+              // Handle object format
               return {
                 name: step.name || step.title || '',
                 content: step.content || step.description || ''
               };
             }
+            
+            // Fallback for any other format
             return { name: '', content: '' };
-          });
+          }).filter(step => step.name || step.content); // Remove completely empty steps
         }
         
         return {
@@ -324,7 +336,7 @@ const CreateScriptForm = ({ onBack, onSave, editingScript }: CreateScriptFormPro
         title: section.title,
         content: section.content, // This should be the section content, not description
         description: section.content, // Keep for backward compatibility
-        steps: (section.steps || []).map(step => ({
+        steps: (section.steps || []).filter(step => step.name || step.content).map(step => ({
           name: step.name, // Step name stays as name
           content: step.content, // Step content stays as content
           title: step.name, // Keep for backward compatibility
