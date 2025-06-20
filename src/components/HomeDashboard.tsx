@@ -65,6 +65,17 @@ const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
     return voice?.voice_name || voiceId;
   };
 
+  // Format time duration
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${remainingMinutes}m`;
+    }
+    return `${remainingMinutes}m`;
+  };
+
   // Main metrics cards
   const mainMetrics = [
     {
@@ -79,13 +90,14 @@ const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
     },
     {
       title: 'Call Minutes',
-      value: Math.round((callStats?.totalMinutes || 0) / 60).toString(),
+      value: formatDuration(callStats?.totalMinutes || 0),
       description: 'Total conversation time',
-      change: `${callStats?.totalMinutes || 0} minutes total`,
+      change: `${callStats?.totalMinutes || 0} minutes logged`,
       icon: Clock,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200'
+      borderColor: 'border-purple-200',
+      isCustomCard: true
     },
     {
       title: 'Active Agents',
@@ -140,19 +152,49 @@ const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
           {mainMetrics.map((metric, index) => (
             <Card key={index} className={`bg-white hover:shadow-lg transition-all duration-200 ${metric.borderColor} border-l-4`}>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl ${metric.bgColor}`}>
-                    <metric.icon className={`h-6 w-6 ${metric.color}`} />
+                {metric.isCustomCard ? (
+                  // Custom design for Call Minutes card
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`p-3 rounded-xl ${metric.bgColor}`}>
+                        <metric.icon className={`h-6 w-6 ${metric.color}`} />
+                      </div>
+                      <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
+                        Active
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-600">{metric.title}</h3>
+                      <div className="text-3xl font-bold text-gray-900">{metric.value}</div>
+                      <p className="text-sm text-gray-500">{metric.description}</p>
+                    </div>
+                    
+                    <div className="pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500">Total logged:</span>
+                        <span className="font-medium text-purple-600">{callStats?.totalMinutes || 0} min</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
-                    <div className="text-sm text-gray-600">{metric.description}</div>
+                ) : (
+                  // Default design for other cards
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-3 rounded-xl ${metric.bgColor}`}>
+                        <metric.icon className={`h-6 w-6 ${metric.color}`} />
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                        <div className="text-sm text-gray-600">{metric.description}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" />
+                      {metric.change}
+                    </div>
                   </div>
-                </div>
-                <div className="text-xs text-gray-500 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  {metric.change}
-                </div>
+                )}
               </CardContent>
             </Card>
           ))}
