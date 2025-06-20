@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock } from 'lucide-react';
+import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useCampaigns, Campaign } from '@/hooks/useCampaigns';
 import { useAgents } from '@/hooks/useAgents';
 import { useKbs } from '@/hooks/useKbs';
+import { useScripts } from '@/hooks/useScripts';
 import { useCampaignAnalytics } from '@/hooks/useCampaignAnalytics';
 import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
@@ -45,6 +46,7 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
   const { contacts } = useContacts();
   const { agents } = useAgents();
   const { kbs } = useKbs();
+  const { scripts } = useScripts();
   const { updateCampaign, deleteCampaign } = useCampaigns();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -83,6 +85,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
 
   // Get campaign knowledge base
   const campaignKb = kbs.find(kb => kb.id === campaign.knowledge_base_id);
+
+  // Get campaign script
+  const campaignScript = scripts.find(script => script.id === campaign.script_id);
 
   const handleRemoveContact = async (contactId: string) => {
     try {
@@ -568,6 +573,30 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
                       </Button>
                     </div>
                   )}
+                </div>
+
+                {/* Script */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="h-4 w-4 text-indigo-600" />
+                    <h4 className="font-medium text-gray-900 text-sm">Script</h4>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <FileText className="h-3 w-3 text-indigo-600" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900 text-xs">
+                          {campaignScript ? campaignScript.name : 'No script'}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {campaignScript ? 'Script assigned' : 'None assigned'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Description */}
