@@ -107,25 +107,47 @@ const ViewScriptModal: React.FC<ViewScriptModalProps> = ({
               <CardContent className="space-y-4">
                 {script.sections.map((section: any, sectionIndex: number) => (
                   <div key={section.id || sectionIndex} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-lg">{section.title}</h3>
-                      {section.description && (
-                        <span className="text-sm text-gray-600">{section.description}</span>
-                      )}
+                    <div className="mb-3">
+                      <h3 className="font-semibold text-lg">{section.title || `Section ${sectionIndex + 1}`}</h3>
                     </div>
+                    
+                    {section.content && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                          {section.content}
+                        </p>
+                      </div>
+                    )}
                     
                     {section.steps && section.steps.length > 0 && (
                       <div className="space-y-3">
-                        {section.steps.map((step: any, stepIndex: number) => (
-                          <div key={step.id || stepIndex} className="border-l-2 border-gray-200 pl-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="font-medium">{step.title || step.name}</span>
+                        <h4 className="font-medium text-gray-800">Steps:</h4>
+                        {section.steps.map((step: any, stepIndex: number) => {
+                          const stepName = step.title || step.name;
+                          const stepContent = step.content || step.description;
+                          
+                          return (
+                            <div key={step.id || stepIndex} className="border-l-4 border-blue-200 pl-4">
+                              {stepName && (
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="font-medium text-blue-700">
+                                    {stepName}
+                                  </span>
+                                </div>
+                              )}
+                              {stepContent && (
+                                <p className="text-sm text-gray-700 bg-blue-50 p-2 rounded">
+                                  {stepContent}
+                                </p>
+                              )}
+                              {!stepName && !stepContent && (
+                                <p className="text-sm text-gray-500 italic">
+                                  Step {stepIndex + 1} - No content available
+                                </p>
+                              )}
                             </div>
-                            <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
-                              {step.content || step.description}
-                            </p>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
