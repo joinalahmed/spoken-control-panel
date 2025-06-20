@@ -82,42 +82,49 @@ const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
       title: 'Total Calls',
       value: callStats?.totalCalls?.toString() || '0',
       description: 'All time calls',
-      change: `${callStats?.successRate || 0}% success rate`,
+      subtitle: `${callStats?.successRate || 0}% success rate`,
       icon: Phone,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200'
+      borderColor: 'border-blue-200',
+      badgeColor: 'bg-blue-100 text-blue-700',
+      accentColor: 'text-blue-600'
     },
     {
       title: 'Call Minutes',
       value: formatDuration(callStats?.totalMinutes || 0),
       description: 'Total conversation time',
-      change: `${callStats?.totalMinutes || 0} minutes logged`,
+      subtitle: `${callStats?.totalMinutes || 0} minutes logged`,
       icon: Clock,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
-      isCustomCard: true
+      badgeColor: 'bg-purple-100 text-purple-700',
+      accentColor: 'text-purple-600'
     },
     {
       title: 'Active Agents',
       value: activeAgents.toString(),
-      description: `${activeAgents} of ${totalAgents} total agents`,
-      change: totalAgents === 0 ? 'No agents created' : `${totalAgents - activeAgents} inactive`,
+      description: `${activeAgents} of ${totalAgents} total`,
+      subtitle: totalAgents === 0 ? 'No agents created' : `${totalAgents - activeAgents} inactive`,
       icon: Users,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
-      borderColor: 'border-green-200'
+      borderColor: 'border-green-200',
+      badgeColor: 'bg-green-100 text-green-700',
+      accentColor: 'text-green-600'
     },
     {
       title: 'Active Campaigns',
       value: activeCampaigns.toString(),
-      description: `${activeCampaigns} of ${totalCampaigns} total campaigns`,
-      change: totalCampaigns === 0 ? 'No campaigns created' : `${totalCampaigns - activeCampaigns} inactive`,
+      description: `${activeCampaigns} of ${totalCampaigns} total`,
+      subtitle: totalCampaigns === 0 ? 'No campaigns created' : `${totalCampaigns - activeCampaigns} inactive`,
       icon: Target,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
-      borderColor: 'border-orange-200'
+      borderColor: 'border-orange-200',
+      badgeColor: 'bg-orange-100 text-orange-700',
+      accentColor: 'text-orange-600'
     }
   ];
 
@@ -152,49 +159,29 @@ const HomeDashboard = ({ onNavigateToTab }: HomeDashboardProps) => {
           {mainMetrics.map((metric, index) => (
             <Card key={index} className={`bg-white hover:shadow-lg transition-all duration-200 ${metric.borderColor} border-l-4`}>
               <CardContent className="p-6">
-                {metric.isCustomCard ? (
-                  // Custom design for Call Minutes card
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className={`p-3 rounded-xl ${metric.bgColor}`}>
-                        <metric.icon className={`h-6 w-6 ${metric.color}`} />
-                      </div>
-                      <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700">
-                        Active
-                      </Badge>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-3 rounded-xl ${metric.bgColor}`}>
+                      <metric.icon className={`h-6 w-6 ${metric.color}`} />
                     </div>
-                    
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-600">{metric.title}</h3>
-                      <div className="text-3xl font-bold text-gray-900">{metric.value}</div>
-                      <p className="text-sm text-gray-500">{metric.description}</p>
-                    </div>
-                    
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">Total logged:</span>
-                        <span className="font-medium text-purple-600">{callStats?.totalMinutes || 0} min</span>
-                      </div>
+                    <Badge variant="secondary" className={`text-xs ${metric.badgeColor}`}>
+                      Active
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-600">{metric.title}</h3>
+                    <div className="text-3xl font-bold text-gray-900">{metric.value}</div>
+                    <p className="text-sm text-gray-500">{metric.description}</p>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">Status:</span>
+                      <span className={`font-medium ${metric.accentColor}`}>{metric.subtitle}</span>
                     </div>
                   </div>
-                ) : (
-                  // Default design for other cards
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl ${metric.bgColor}`}>
-                        <metric.icon className={`h-6 w-6 ${metric.color}`} />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
-                        <div className="text-sm text-gray-600">{metric.description}</div>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3" />
-                      {metric.change}
-                    </div>
-                  </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}
