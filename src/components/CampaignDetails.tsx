@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -927,24 +926,6 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
           </div>
         </div>
 
-        {/* Data Extraction Settings */}
-        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Database className="h-5 w-5 text-white" />
-              </div>
-              Data Extraction Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <DataExtractionSettings
-              extractedDataConfig={campaign.extracted_data_config || []}
-              onConfigChange={handleExtractedDataConfigChange}
-            />
-          </CardContent>
-        </Card>
-
         {/* Call Analytics at Bottom - Same styling as other cards */}
         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
           <CardHeader className="pb-4">
@@ -959,6 +940,24 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             <CallAnalyticsTable 
               campaignId={campaign.id} 
               onCallClick={onCallClick}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Data Extraction Settings - Now below Call Analytics */}
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Database className="h-5 w-5 text-white" />
+              </div>
+              Data Extraction Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <DataExtractionSettings
+              extractedDataConfig={campaign.settings?.extractedDataConfig || []}
+              onConfigChange={handleExtractedDataConfigChange}
             />
           </CardContent>
         </Card>
