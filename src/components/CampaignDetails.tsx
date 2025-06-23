@@ -15,6 +15,7 @@ import { useCampaignAnalytics } from '@/hooks/useCampaignAnalytics';
 import CallAnalyticsTable from '@/components/CallAnalyticsTable';
 import AddContactToCampaign from '@/components/AddContactToCampaign';
 import TriggerOutboundCall from '@/components/TriggerOutboundCall';
+import DataExtractionSettings from '@/components/campaign/DataExtractionSettings';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -296,13 +297,46 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     }
   };
 
-  const currentCampaignType = campaign.settings?.campaignType || 'outbound';
-  const typeInfo = getCampaignTypeInfo(currentCampaignType);
-
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+  };
+
+  const handleExtractedDataConfigChange = async (config: any[]) => {
+    try {
+      const updatedSettings = {
+        ...(campaign.settings || {
+          campaignType: 'outbound' as const,
+          callScheduling: {
+            startTime: '09:00',
+            endTime: '17:00',
+            timezone: 'America/New_York',
+            daysOfWeek: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+          },
+          retryLogic: {
+            maxRetries: 3,
+            retryInterval: 60,
+            enableRetry: true
+          },
+          callBehavior: {
+            maxCallDuration: 300,
+            recordCalls: true,
+            enableVoicemail: true
+          }
+        }),
+        extractedDataConfig: config
+      };
+      
+      await updateCampaign.mutateAsync({
+        id: campaign.id,
+        settings: updatedSettings
+      });
+      toast.success('Data extraction settings updated');
+    } catch (error) {
+      console.error('Error updating data extraction settings:', error);
+      toast.error('Failed to update data extraction settings');
+    }
   };
 
   return (
@@ -888,6 +922,24 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
             </Card>
           </div>
         </div>
+
+        {/* Data Extraction Settings */}
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Database className="h-5 w-5 text-white" />
+              </div>
+              Data Extraction Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <DataExtractionSettings
+              extractedDataConfig={campaign.extracted_data_config || []}
+              onConfigChange={handleExtractedDataConfigChange}
+            />
+          </CardContent>
+        </Card>
 
         {/* Call Analytics at Bottom - Same styling as other cards */}
         <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
