@@ -1,8 +1,10 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CampaignSettingsData } from '@/components/CampaignSettings';
+import { DataField } from '@/components/campaign/DataExtractionSettings';
 import { Json } from '@/integrations/supabase/types';
 
 export interface Campaign {
@@ -17,6 +19,7 @@ export interface Campaign {
   updated_at: string;
   knowledge_base_id?: string | null;
   settings?: CampaignSettingsData | null;
+  extracted_data_config?: DataField[] | null;
 }
 
 // Helper function to convert Json to CampaignSettingsData
@@ -35,6 +38,17 @@ const parseSettings = (settings: Json | null): CampaignSettingsData | null => {
       } as CampaignSettingsData;
     }
     return null;
+  } catch {
+    return null;
+  }
+};
+
+// Helper function to parse extracted data config
+const parseExtractedDataConfig = (config: Json | null): DataField[] | null => {
+  if (!config || !Array.isArray(config)) return null;
+  
+  try {
+    return config as DataField[];
   } catch {
     return null;
   }
@@ -92,7 +106,8 @@ export const useCampaigns = () => {
       // Convert the data to Campaign type with proper settings parsing
       return data.map(campaign => ({
         ...campaign,
-        settings: parseSettings(campaign.settings)
+        settings: parseSettings(campaign.settings),
+        extracted_data_config: parseExtractedDataConfig(campaign.extracted_data_config)
       })) as Campaign[];
     },
     enabled: !!user?.id, // Keep this check for authentication
@@ -139,7 +154,8 @@ export const useCampaigns = () => {
           script_id: campaignData.scriptId,
           status: campaignData.status || 'draft',
           knowledge_base_id: campaignData.knowledgeBaseId,
-          settings: stringifySettings(campaignData.settings || null)
+          settings: stringifySettings(campaignData.settings || null),
+          extracted_data_config: campaignData.settings?.extractedDataConfig || []
         })
         .select()
         .single();
@@ -169,7 +185,8 @@ export const useCampaigns = () => {
       console.log('Campaign created successfully:', data);
       return {
         ...data,
-        settings: parseSettings(data.settings)
+        settings: parseSettings(data.settings),
+        extracted_data_config: parseExtractedDataConfig(data.extracted_data_config)
       } as Campaign;
     },
     onSuccess: (data) => {
@@ -224,6 +241,7 @@ export const useCampaigns = () => {
       if (campaignData.status !== undefined) updateData.status = campaignData.status;
       if (campaignData.knowledge_base_id !== undefined) updateData.knowledge_base_id = campaignData.knowledge_base_id;
       if (campaignData.settings !== undefined) updateData.settings = stringifySettings(campaignData.settings);
+      if (campaignData.extracted_data_config !== undefined) updateData.extracted_data_config = campaignData.extracted_data_config;
 
       const { data, error } = await supabase
         .from('campaigns')
@@ -240,7 +258,8 @@ export const useCampaigns = () => {
       console.log('Campaign updated successfully:', data);
       return {
         ...data,
-        settings: parseSettings(data.settings)
+        settings: parseSettings(data.settings),
+        extracted_data_config: parseExtractedDataConfig(data.extracted_data_config)
       } as Campaign;
     },
     onSuccess: () => {

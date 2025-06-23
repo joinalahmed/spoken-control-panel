@@ -215,6 +215,7 @@ export type Database = {
           agent_id: string | null
           created_at: string
           description: string | null
+          extracted_data_config: Json | null
           id: string
           knowledge_base_id: string | null
           name: string
@@ -228,6 +229,7 @@ export type Database = {
           agent_id?: string | null
           created_at?: string
           description?: string | null
+          extracted_data_config?: Json | null
           id?: string
           knowledge_base_id?: string | null
           name: string
@@ -241,6 +243,7 @@ export type Database = {
           agent_id?: string | null
           created_at?: string
           description?: string | null
+          extracted_data_config?: Json | null
           id?: string
           knowledge_base_id?: string | null
           name?: string
