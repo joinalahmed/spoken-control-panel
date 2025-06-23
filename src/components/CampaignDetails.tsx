@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Phone, Mail, MapPin, Trash, Plus, Calendar, User, Database, Activity, BarChart3, Edit2, Check, X, Trash2, PhoneIncoming, PhoneOutgoing, Settings, TrendingUp, Clock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -302,6 +303,9 @@ const CampaignDetails: React.FC<CampaignDetailsProps> = ({
     const remainingSeconds = seconds % 60;
     return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
   };
+
+  const currentCampaignType = campaign.settings?.campaignType || 'outbound';
+  const typeInfo = getCampaignTypeInfo(currentCampaignType);
 
   const handleExtractedDataConfigChange = async (config: any[]) => {
     try {
