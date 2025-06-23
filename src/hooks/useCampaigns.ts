@@ -48,7 +48,17 @@ const parseExtractedDataConfig = (config: Json | null): DataField[] | null => {
   if (!config || !Array.isArray(config)) return null;
   
   try {
-    return config as DataField[];
+    // Safely convert Json array to DataField array
+    return (config as unknown[]).map(item => {
+      const field = item as any;
+      return {
+        id: field.id || '',
+        name: field.name || '',
+        type: field.type || 'text',
+        description: field.description,
+        required: field.required || false
+      } as DataField;
+    });
   } catch {
     return null;
   }
@@ -78,6 +88,19 @@ const stringifySettings = (settings: CampaignSettingsData | null): Json => {
       enableVoicemail: settings.callBehavior.enableVoicemail
     }
   } as Json;
+};
+
+// Helper function to convert DataField array to Json
+const stringifyExtractedDataConfig = (config: DataField[] | null): Json => {
+  if (!config || !Array.isArray(config)) return [];
+  
+  return config.map(field => ({
+    id: field.id,
+    name: field.name,
+    type: field.type,
+    description: field.description,
+    required: field.required
+  })) as Json;
 };
 
 export const useCampaigns = () => {
@@ -155,7 +178,7 @@ export const useCampaigns = () => {
           status: campaignData.status || 'draft',
           knowledge_base_id: campaignData.knowledgeBaseId,
           settings: stringifySettings(campaignData.settings || null),
-          extracted_data_config: campaignData.settings?.extractedDataConfig || []
+          extracted_data_config: stringifyExtractedDataConfig(campaignData.settings?.extractedDataConfig || [])
         })
         .select()
         .single();
@@ -241,7 +264,7 @@ export const useCampaigns = () => {
       if (campaignData.status !== undefined) updateData.status = campaignData.status;
       if (campaignData.knowledge_base_id !== undefined) updateData.knowledge_base_id = campaignData.knowledge_base_id;
       if (campaignData.settings !== undefined) updateData.settings = stringifySettings(campaignData.settings);
-      if (campaignData.extracted_data_config !== undefined) updateData.extracted_data_config = campaignData.extracted_data_config;
+      if (campaignData.extracted_data_config !== undefined) updateData.extracted_data_config = stringifyExtractedDataConfig(campaignData.extracted_data_config);
 
       const { data, error } = await supabase
         .from('campaigns')

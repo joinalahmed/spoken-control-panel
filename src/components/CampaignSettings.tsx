@@ -62,13 +62,18 @@ const CampaignSettings = ({ settings, onSettingsChange }: CampaignSettingsProps)
         ...settings,
         extractedDataConfig: value
       });
-    } else {
+    } else if (typeof settings[category] === 'object' && settings[category] !== null) {
       onSettingsChange({
         ...settings,
         [category]: {
           ...settings[category],
           [field]: value
         }
+      });
+    } else {
+      onSettingsChange({
+        ...settings,
+        [category]: value
       });
     }
   };
